@@ -1,0 +1,332 @@
+[
+  {
+    "safe": "alpine_3.19",
+    "image": "alpine:3.19",
+    "group": "C",
+    "trivy": {
+      "CRITICAL": 0,
+      "HIGH": 0,
+      "MEDIUM": 3,
+      "LOW": 3,
+      "UNKNOWN": 0,
+      "total": 6,
+      "fixed": 6
+    },
+    "os_family": "alpine",
+    "os_version": "3.19.9",
+    "os_eosl": true,
+    "grype": {
+      "CRITICAL": 0,
+      "HIGH": 0,
+      "MEDIUM": 4,
+      "LOW": 6,
+      "NEGLIGIBLE": 0,
+      "UNKNOWN": 0,
+      "total": 10,
+      "fixed": 6
+    },
+    "osv": {
+      "advisories": 2,
+      "total": 6
+    },
+    "sbom_total": 15,
+    "sbom_ecosystems": {
+      "apk": 15
+    }
+  },
+  {
+    "safe": "nginx_latest",
+    "image": "nginx:latest",
+    "group": "C",
+    "trivy": {
+      "CRITICAL": 0,
+      "HIGH": 14,
+      "MEDIUM": 29,
+      "LOW": 126,
+      "UNKNOWN": 0,
+      "total": 169,
+      "fixed": 0
+    },
+    "os_family": "debian",
+    "os_version": "13.4",
+    "os_eosl": false,
+    "grype": {
+      "CRITICAL": 0,
+      "HIGH": 25,
+      "MEDIUM": 33,
+      "LOW": 8,
+      "NEGLIGIBLE": 97,
+      "UNKNOWN": 9,
+      "total": 172,
+      "fixed": 0
+    },
+    "osv": {
+      "advisories": 102,
+      "total": 177
+    },
+    "sbom_total": 152,
+    "sbom_ecosystems": {
+      "deb": 151,
+      "java-archive": 1
+    }
+  },
+  {
+    "safe": "node_20",
+    "image": "node:20",
+    "group": "C",
+    "trivy": {
+      "CRITICAL": 33,
+      "HIGH": 277,
+      "MEDIUM": 936,
+      "LOW": 997,
+      "UNKNOWN": 25,
+      "total": 2268,
+      "fixed": 14
+    },
+    "os_family": "debian",
+    "os_version": "12.13",
+    "os_eosl": false,
+    "grype": {
+      "CRITICAL": 32,
+      "HIGH": 178,
+      "MEDIUM": 360,
+      "LOW": 67,
+      "NEGLIGIBLE": 826,
+      "UNKNOWN": 11,
+      "total": 1474,
+      "fixed": 14
+    },
+    "osv": {
+      "advisories": 317,
+      "total": 1458
+    },
+    "sbom_total": 619,
+    "sbom_ecosystems": {
+      "npm": 204,
+      "deb": 413,
+      "python": 1,
+      "binary": 1
+    }
+  },
+  {
+    "safe": "python_3.12",
+    "image": "python:3.12",
+    "group": "C",
+    "trivy": {
+      "CRITICAL": 0,
+      "HIGH": 196,
+      "MEDIUM": 557,
+      "LOW": 971,
+      "UNKNOWN": 27,
+      "total": 1751,
+      "fixed": 238
+    },
+    "os_family": "debian",
+    "os_version": "13.4",
+    "os_eosl": false,
+    "grype": {
+      "CRITICAL": 0,
+      "HIGH": 165,
+      "MEDIUM": 375,
+      "LOW": 59,
+      "NEGLIGIBLE": 807,
+      "UNKNOWN": 12,
+      "total": 1418,
+      "fixed": 249
+    },
+    "osv": {
+      "advisories": 286,
+      "total": 1422
+    },
+    "sbom_total": 479,
+    "sbom_ecosystems": {
+      "binary": 7,
+      "deb": 469,
+      "python": 3
+    }
+  },
+  {
+    "safe": "nginx_1.19",
+    "image": "nginx:1.19",
+    "group": "B",
+    "trivy": {
+      "CRITICAL": 42,
+      "HIGH": 149,
+      "MEDIUM": 193,
+      "LOW": 31,
+      "UNKNOWN": 9,
+      "total": 424,
+      "fixed": 337
+    },
+    "os_family": "debian",
+    "os_version": "10.9",
+    "os_eosl": true,
+    "grype": {
+      "CRITICAL": 40,
+      "HIGH": 159,
+      "MEDIUM": 194,
+      "LOW": 35,
+      "NEGLIGIBLE": 118,
+      "UNKNOWN": 4,
+      "total": 550,
+      "fixed": 320
+    },
+    "osv": {
+      "advisories": 81,
+      "total": 132
+    },
+    "sbom_total": 136,
+    "sbom_ecosystems": {
+      "deb": 135,
+      "java-archive": 1
+    }
+  },
+  {
+    "safe": "node_14",
+    "image": "node:14",
+    "group": "B",
+    "trivy": {
+      "CRITICAL": 22,
+      "HIGH": 569,
+      "MEDIUM": 754,
+      "LOW": 90,
+      "UNKNOWN": 4,
+      "total": 1439,
+      "fixed": 1112
+    },
+    "os_family": "debian",
+    "os_version": "10.13",
+    "os_eosl": true,
+    "grype": {
+      "CRITICAL": 19,
+      "HIGH": 453,
+      "MEDIUM": 477,
+      "LOW": 95,
+      "NEGLIGIBLE": 943,
+      "UNKNOWN": 8,
+      "total": 1995,
+      "fixed": 681
+    },
+    "osv": {
+      "advisories": 57,
+      "total": 210
+    },
+    "sbom_total": 879,
+    "sbom_ecosystems": {
+      "npm": 461,
+      "deb": 413,
+      "python": 3,
+      "binary": 2
+    }
+  },
+  {
+    "safe": "python_3.8",
+    "image": "python:3.8",
+    "group": "B",
+    "trivy": {
+      "CRITICAL": 182,
+      "HIGH": 1369,
+      "MEDIUM": 2957,
+      "LOW": 1114,
+      "UNKNOWN": 38,
+      "total": 5660,
+      "fixed": 3371
+    },
+    "os_family": "debian",
+    "os_version": "12.7",
+    "os_eosl": false,
+    "grype": {
+      "CRITICAL": 185,
+      "HIGH": 652,
+      "MEDIUM": 694,
+      "LOW": 125,
+      "NEGLIGIBLE": 866,
+      "UNKNOWN": 11,
+      "total": 2533,
+      "fixed": 1030
+    },
+    "osv": {
+      "advisories": 567,
+      "total": 2620
+    },
+    "sbom_total": 446,
+    "sbom_ecosystems": {
+      "binary": 13,
+      "deb": 429,
+      "python": 4
+    }
+  },
+  {
+    "safe": "vulnerables_web-dvwa",
+    "image": "vulnerables/web-dvwa:latest",
+    "group": "A",
+    "trivy": {
+      "CRITICAL": 254,
+      "HIGH": 551,
+      "MEDIUM": 642,
+      "LOW": 116,
+      "UNKNOWN": 12,
+      "total": 1575,
+      "fixed": 1380
+    },
+    "os_family": "debian",
+    "os_version": "9.5",
+    "os_eosl": true,
+    "grype": {
+      "CRITICAL": 327,
+      "HIGH": 760,
+      "MEDIUM": 700,
+      "LOW": 99,
+      "NEGLIGIBLE": 210,
+      "UNKNOWN": 1,
+      "total": 2097,
+      "fixed": 1362
+    },
+    "osv": {
+      "advisories": 129,
+      "total": 336
+    },
+    "sbom_total": 221,
+    "sbom_ecosystems": {
+      "php-pear": 6,
+      "deb": 215
+    }
+  },
+  {
+    "safe": "bkimminich_juice-shop",
+    "image": "bkimminich/juice-shop:latest",
+    "group": "A",
+    "trivy": {
+      "CRITICAL": 10,
+      "HIGH": 47,
+      "MEDIUM": 27,
+      "LOW": 14,
+      "UNKNOWN": 0,
+      "total": 98,
+      "fixed": 83
+    },
+    "os_family": "debian",
+    "os_version": "13.4",
+    "os_eosl": false,
+    "grype": {
+      "CRITICAL": 10,
+      "HIGH": 46,
+      "MEDIUM": 26,
+      "LOW": 4,
+      "NEGLIGIBLE": 7,
+      "UNKNOWN": 0,
+      "total": 93,
+      "fixed": 78
+    },
+    "osv": {
+      "advisories": 80,
+      "total": 94
+    },
+    "sbom_total": 1125,
+    "sbom_ecosystems": {
+      "npm": 1111,
+      "deb": 13,
+      "binary": 1
+    }
+  }
+]

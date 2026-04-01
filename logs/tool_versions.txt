@@ -1,0 +1,29 @@
+Version: 0.69.3
+Vulnerability DB:
+  Version: 2
+  UpdatedAt: 2026-03-30 13:22:17.259279391 +0000 UTC
+  NextUpdate: 2026-03-31 13:22:17.259279101 +0000 UTC
+  DownloadedAt: 2026-03-31 04:08:23.099479098 +0000 UTC
+Application:         grype
+Version:             0.110.0
+BuildDate:           2026-03-19T18:01:59Z
+GitCommit:           dee8de483dfba5b4e0bc0aa8e4ab2ce52137e490
+GitDescription:      v0.110.0
+Platform:            linux/amd64
+GoVersion:           go1.25.8
+Compiler:            gc
+Syft Version:        v1.42.3
+Supported DB Schema: 6
+Application:   syft
+Version:       1.42.3
+BuildDate:     2026-03-19T17:00:58Z
+GitCommit:     860126c650c2d05b63b83a3895e41268162315a3
+GitDescription: v1.42.3
+Platform:      linux/amd64
+GoVersion:     go1.26.1
+Compiler:      gc
+SchemaVersion: 16.1.3
+osv-scanner version: 2.3.5
+osv-scalibr version: 0.4.5
+commit: 30bcc134e23fbc35731021ee43ec433c483715d7
+built at: 2026-03-24T05:36:59Z

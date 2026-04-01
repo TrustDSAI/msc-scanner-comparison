@@ -1,0 +1,17 @@
+# Grype DB snapshot — too large for git (1.4 GB)
+logs/db_snapshots/
+
+# SBOMs — regeneratable via Syft; large (up to 33 MB each)
+sbom/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+*.swp

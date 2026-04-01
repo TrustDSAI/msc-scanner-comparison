@@ -1,0 +1,35 @@
+=== ENVIRONMENT SNAPSHOT — 2026-03-31 ===
+
+-- Host --
+OS: Linux 6.8.0-100-generic x86_64
+Docker: 26.0.0 (linux/x86_64)
+
+-- Tool Binaries (SHA-256) --
+trivy:       8266084a71d2e6a2333bc2c69b91c93c26dee9ef39ac2587ace2df54cc9b746b  /usr/local/bin/trivy
+grype:       465f6a532ab425228a639e70139192fbc458ebab8e6932c714a2f3a450a018cb  /usr/local/bin/grype
+syft:        6c1eb5c6f15c177fa3dd727ee186c61a660a3939a4e1dc1bc4b3e00eafec098e  /usr/local/bin/syft
+osv-scanner: bb30c580afe5e757d3e959f4afd08a4795ea505ef84c46962b9a738aa573b41b  /usr/local/bin/osv-scanner
+
+-- Vulnerability Databases --
+Trivy DB:
+  Schema:      v2
+  UpdatedAt:   2026-03-30T13:22:17Z
+  DownloadedAt: 2026-03-31T04:08:23Z
+  NextUpdate:  2026-03-31T13:22:17Z
+
+Trivy Java DB:
+  Schema:      v1
+  UpdatedAt:   2026-03-19T01:17:54Z
+  (Note: Java DB is cached; expiry was 2026-03-22 — may have been refreshed during scan of nginx:latest)
+
+Grype DB:
+  Schema:      v6.1.4
+  Built:       2026-03-30T06:50:11Z
+  Checksum:    sha256:5c24a396641568114dafff5cd572fbf63351795a9aa6f4a07f6c41e081c58f33
+  Source URL:  https://grype.anchore.io/databases/v6/vulnerability-db_v6.1.4_2026-03-30T00:35:04Z_1774853411.tar.zst
+
+OSV-Scanner:
+  Database:    LIVE (fetched from https://api.osv.dev at scan time)
+  Snapshot:    NOT AVAILABLE — OSV-Scanner v2.x does not expose DB version in output
+  Limitation:  Results are NOT reproducible by re-running; offline mode requires
+               --offline-vulnerabilities + --download-offline-databases (changes command config)
