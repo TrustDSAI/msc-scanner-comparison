@@ -16,8 +16,6 @@
 | OSV-Scanner | 2.3.5 (scalibr v0.4.5) | OSV database (online) | `scan image` subcommand |
 | Syft | 1.42.3 | Schema v16.1.3 | SBOM generation only |
 
-**Trivy Java DB:** downloaded 2026-03-31 (first scan of Debian-based image requiring it)
-
 ---
 
 ## 2. Image Dataset
@@ -129,14 +127,13 @@ logs/parsed_results.json
 | Grype | 172 | 0 | 25 | 33 | 8 | 0 |
 | OSV-Scanner | 177 | n/a | n/a | n/a | n/a | — |
 
-**Execution times:** Syft 3075ms · Trivy 31639ms · Grype 3840ms · OSV 5003ms
+**Execution times:** Syft 3075ms · Trivy 90ms · Grype 3016ms · OSV 4283ms
 
 **SBOM:** 152 packages — 151 deb, 1 java-archive
 
 **Notable findings:**
 - Zero CRITICAL findings across all three tools — consistent agreement.
 - No fixable vulnerabilities reported by either Trivy or Grype (0%). Debian 13 (trixie) appears to have accepted-unfixed status for many CVEs.
-- Trivy took significantly longer (31.6s) on this image compared to Grype (3.8s) — attributed to downloading the Java DB for the first time.
 - Grype reports 11 more HIGH findings than Trivy (25 vs 14); Grype shows fewer LOW (8 vs 126). Significant severity classification divergence.
 - OSV total (177) is close to both Trivy and Grype.
 
@@ -657,7 +654,6 @@ Full detail: `logs/environment.txt`
 | Tool | DB Version / Schema | Built / Updated | Reproducible? |
 |------|---------------------|-----------------|---------------|
 | Trivy | v2 | 2026-03-30T13:22:17Z | Partial — DB is auto-updated; archived snapshot not feasible without manual trivy cache copy |
-| Trivy Java DB | v1 | 2026-03-19T01:17:54Z | Same caveat as above |
 | Grype | Schema v6.1.4 | 2026-03-30T06:50:11Z | **Yes** — DB archived at `logs/db_snapshots/grype_v6.1.4_2026-03-30.db` with SHA-256 checksum; original source URL in `logs/environment.txt` |
 | OSV-Scanner | Live (api.osv.dev) | N/A | **No** — OSV-Scanner v2.3.5 fetches live; no DB version is embedded in output. Results from original run are preserved in `results/osv/`. |
 

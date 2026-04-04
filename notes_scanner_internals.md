@@ -29,8 +29,6 @@ Trivy uses a **pre-built inverted index** — its vulnerability database is stru
 
 **Why it's fast:** Steps 2 and 3 are both O(packages) with very low constants. The DB lookup is a simple key-value read against a BoltDB (embedded key-value store). There is no image layer traversal for the matching step — it's just package list parsing + index lookup.
 
-**Why it's slower on first Debian scan:** Trivy has a separate Java DB for JAR/WAR vulnerability detection. The first scan of an image containing Java artifacts triggers a ~840MB download. Subsequent scans use the cached DB.
-
 ### Where its data comes from
 
 - **OS packages:** Debian Security Tracker, Alpine SecDB, RHEL/CentOS advisories, Ubuntu USN
