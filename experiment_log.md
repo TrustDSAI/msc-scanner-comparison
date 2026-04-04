@@ -3,7 +3,7 @@
 **Project:** MSc Research — Security of Containerised CI/CD Pipelines
 **Focus:** Empirical evaluation of vulnerability scanner consistency and policy-based gating
 **Log version:** 2.0 (full dataset)
-**Last updated:** 2026-04-04
+**Last updated:** 2026-04-04 (v3.0 — full benchmark data, CVE overlap analysis, CWE pivot, policy evaluation, file manifest)
 
 ---
 
@@ -72,16 +72,37 @@ osv-scanner scan image --format json --output-file results/osv/<name>_osv.json <
 
 ## 4. Raw Output Inventory
 
-All files stored in `/home/ansuser/`:
-
 ```
-results/trivy/  — 9 JSON files
-results/grype/  — 9 JSON files
-results/osv/    — 9 JSON files
-sbom/           — 9 JSON files (Syft SBOM)
-logs/digests.log
-logs/timing.log
-logs/parsed_results.json
+results/trivy/              — 9 JSON files (raw Trivy output)
+results/grype/              — 9 JSON files (raw Grype output)
+results/osv/                — 9 JSON files (raw OSV-Scanner output)
+sbom/                       — 9 JSON files (Syft SBOM, gitignored)
+logs/digests.log            — image digest registry
+logs/timing.log             — per-tool single-run execution times
+logs/tool_versions.txt      — tool version metadata
+logs/environment.txt        — full environment snapshot (binary checksums, DB versions)
+logs/parsed_results.json    — structured raw finding counts (parse_results.py output)
+logs/analysis_tables.json   — structured analysis outputs (analysis.py --save output)
+logs/analysis_results.txt   — human-readable analysis table output (6 tables)
+logs/benchmark.log          — raw benchmark timing (3 runs × 9 images × 3 tools)
+logs/benchmark_summary.json — parsed benchmark means and std devs per image per tool
+logs/csv/                   — 13 CSV exports (tables 1–6, datasets D1–D7)
+logs/graphs/                — 8 generated figures (fig1–fig8, PNG, 150 dpi)
+```
+
+**Analysis scripts:**
+```
+parse_results.py      — extract raw counts from JSON → parsed_results.json
+analysis.py           — 6-table analysis (CVE overlap, severity agreement, CWE, policy, performance)
+benchmark.sh          — 3-run performance benchmark per image per tool
+export_csv.py         — export all analysis tables and datasets to CSV
+generate_graphs.py    — generate 8 publication-ready figures
+```
+
+**Documentation:**
+```
+analysis_narrative.md       — structured narrative walkthrough of all results
+notes_scanner_internals.md  — technical explanation of scanner architectures and timing
 ```
 
 ---
@@ -100,7 +121,7 @@ logs/parsed_results.json
 | Grype | 10 | 0 | 0 | 4 | 6 | 6 |
 | OSV-Scanner | 6 | n/a | n/a | n/a | n/a | — |
 
-**Execution times:** Syft 1671ms · Trivy 55ms · Grype 32970ms · OSV 2376ms
+**Execution times (benchmark mean, 3 runs):** Syft 1671ms · Trivy 56ms · Grype 1451ms · OSV 1900ms
 
 **SBOM:** 15 packages — all `apk` ecosystem
 
@@ -127,7 +148,7 @@ logs/parsed_results.json
 | Grype | 172 | 0 | 25 | 33 | 8 | 0 |
 | OSV-Scanner | 177 | n/a | n/a | n/a | n/a | — |
 
-**Execution times:** Syft 3075ms · Trivy 90ms · Grype 3016ms · OSV 4283ms
+**Execution times (benchmark mean, 3 runs):** Syft 3075ms · Trivy 90ms · Grype 3016ms · OSV 4283ms
 
 **SBOM:** 152 packages — 151 deb, 1 java-archive
 
@@ -151,7 +172,7 @@ logs/parsed_results.json
 | Grype | 1474 | 32 | 178 | 360 | 67 | 14 |
 | OSV-Scanner | 1458 | n/a | n/a | n/a | n/a | — |
 
-**Execution times:** Syft 16793ms · Trivy 9476ms · Grype 17824ms · OSV 21142ms
+**Execution times (benchmark mean, 3 runs):** Syft 16793ms · Trivy 346ms · Grype 18606ms · OSV 25506ms
 
 **SBOM:** 619 packages — 413 deb, 204 npm, 1 python, 1 binary
 
@@ -178,7 +199,7 @@ logs/parsed_results.json
 | Grype | 1418 | 0 | 165 | 375 | 59 | 249 |
 | OSV-Scanner | 1422 | n/a | n/a | n/a | n/a | — |
 
-**Execution times:** Syft 14461ms · Trivy 10216ms · Grype 15652ms · OSV 21076ms
+**Execution times (benchmark mean, 3 runs):** Syft 14461ms · Trivy 315ms · Grype 15631ms · OSV 24610ms
 
 **SBOM:** 479 packages — 469 deb, 7 binary, 3 python
 
@@ -204,7 +225,7 @@ logs/parsed_results.json
 | Grype | 550 | 40 | 159 | 194 | 35 | 320 |
 | OSV-Scanner | 132 | n/a | n/a | n/a | n/a | — |
 
-**Execution times:** Syft 3317ms · Trivy 1253ms · Grype 3125ms · OSV 8375ms
+**Execution times (benchmark mean, 3 runs):** Syft 3317ms · Trivy 93ms · Grype 3136ms · OSV 5329ms
 
 **SBOM:** 136 packages — 135 deb, 1 java-archive
 
@@ -231,7 +252,7 @@ logs/parsed_results.json
 | Grype | 1995 | 19 | 453 | 477 | 95 | 681 |
 | OSV-Scanner | 210 | n/a | n/a | n/a | n/a | — |
 
-**Execution times:** Syft 16458ms · Trivy 8483ms · Grype 16882ms · OSV 16565ms
+**Execution times (benchmark mean, 3 runs):** Syft 16458ms · Trivy 231ms · Grype 17776ms · OSV 16614ms
 
 **SBOM:** 879 packages — 461 npm, 413 deb, 3 python, 2 binary
 
@@ -259,7 +280,7 @@ logs/parsed_results.json
 | Grype | 2533 | 185 | 652 | 694 | 125 | 1030 |
 | OSV-Scanner | 2620 | n/a | n/a | n/a | n/a | — |
 
-**Execution times:** Syft 16572ms · Trivy 9991ms · Grype 17587ms · OSV 27032ms
+**Execution times (benchmark mean, 3 runs):** Syft 16572ms · Trivy 558ms · Grype 18251ms · OSV 22709ms
 
 **SBOM:** 446 packages — 429 deb, 13 binary, 4 python
 
@@ -285,7 +306,7 @@ logs/parsed_results.json
 | Grype | 2097 | 327 | 760 | 700 | 99 | 1362 |
 | OSV-Scanner | 336 | n/a | n/a | n/a | n/a | — |
 
-**Execution times:** Syft 10979ms · Trivy 6012ms · Grype 11667ms · OSV (retry) ~30s
+**Execution times (benchmark mean, 3 runs):** Syft 10979ms · Trivy 184ms · Grype 11158ms · OSV 10832ms
 
 **SBOM:** 221 packages — 215 deb, 6 php-pear
 
@@ -314,7 +335,7 @@ logs/parsed_results.json
 | Grype | 93 | 10 | 46 | 26 | 4 | 78 |
 | OSV-Scanner | 94 | n/a | n/a | n/a | n/a | — |
 
-**Execution times:** Syft 10492ms · Trivy 8015ms · Grype 10012ms · OSV (retry) ~30s
+**Execution times (benchmark mean, 3 runs):** Syft 10492ms · Trivy 110ms · Grype 11443ms · OSV 12550ms
 
 **SBOM:** 1125 packages — 1111 npm, 13 deb, 1 binary
 
@@ -521,6 +542,14 @@ Policies are evaluated based on Trivy and Grype findings (OSV severity breakdown
 
 7. **Grype > Trivy on npm images:** For npm-heavy images (node:14, web-dvwa), Grype finds more vulnerabilities than Trivy. For OS-package-heavy images, Trivy typically finds more. This suggests tool-specific database coverage differences by ecosystem.
 
+8. **Severity source divergence:** When both tools report the same CVE, they frequently assign different severities. Trivy prefers NVD CVSS v3 base scores; Grype prefers vendor advisory scores (GitHub Advisory Database). NVD scores are theoretical worst-case; vendor scores are more conservative. Result: Trivy rates higher than Grype in 8 of 9 images on shared CVEs, with juice-shop showing only 8% severity agreement.
+
+9. **CVE-level overlap is low for large images:** Jaccard similarity between Trivy and Grype CVE sets ranges from 0.143 (python:3.8) to 0.885 (nginx:latest). For python:3.8, only 530 of 4228 distinct CVE IDs are shared — Trivy reports 3154 CVEs not found by Grype, virtually all at LOW severity.
+
+10. **Fix rate divergence between tools:** For the same image, Trivy and Grype can disagree significantly on what fraction of findings are fixable. node:14: Trivy 77% vs Grype 34% (43pp gap). python:3.8: 60% vs 41%. This reflects different advisory sources and DB ingestion timelines rather than actual patch availability differences.
+
+11. **Trivy is categorically faster:** Benchmark means show Trivy completes in 56–558ms across all images regardless of size. Grype and OSV-Scanner scale linearly with image size (r≈0.9), taking 1.5s–25.5s. Trivy performs a direct DB index lookup; Grype runs a full Syft filesystem traversal; OSV-Scanner exports the entire image to disk before scanning.
+
 ---
 
 ## 11. Cumulative Dataset Tables
@@ -712,26 +741,75 @@ OSV-Scanner rejects image references without an explicit tag. The `reproduce.sh`
 
 ---
 
-## 13. Raw File Manifest
+## 13. File Manifest
 
-| File | Size | Description |
-|------|------|-------------|
-| `results/trivy/alpine_3.19_trivy.json` | — | Trivy raw output |
-| `results/trivy/nginx_latest_trivy.json` | — | Trivy raw output |
-| `results/trivy/node_20_trivy.json` | — | Trivy raw output |
-| `results/trivy/python_3.12_trivy.json` | — | Trivy raw output |
-| `results/trivy/nginx_1.19_trivy.json` | — | Trivy raw output |
-| `results/trivy/node_14_trivy.json` | — | Trivy raw output |
-| `results/trivy/python_3.8_trivy.json` | — | Trivy raw output |
-| `results/trivy/vulnerables_web-dvwa_trivy.json` | — | Trivy raw output |
-| `results/trivy/bkimminich_juice-shop_trivy.json` | — | Trivy raw output |
-| `results/grype/*.json` | — | Grype raw outputs (9 files) |
-| `results/osv/*.json` | — | OSV-Scanner raw outputs (9 files) |
-| `sbom/*.json` | — | Syft SBOM outputs (9 files) |
-| `logs/digests.log` | — | Image digest registry |
-| `logs/timing.log` | — | Per-tool execution times |
-| `logs/tool_versions.txt` | — | Tool version metadata |
-| `logs/parsed_results.json` | — | Structured JSON of all extracted results |
+### Raw scan outputs
+| File | Description |
+|------|-------------|
+| `results/trivy/<name>_trivy.json` | Trivy raw output (9 files) |
+| `results/grype/<name>_grype.json` | Grype raw output (9 files) |
+| `results/osv/<name>_osv.json` | OSV-Scanner raw output (9 files) |
+| `sbom/<name>_syft.json` | Syft SBOM (9 files, gitignored) |
+
+### Logs and structured data
+| File | Description |
+|------|-------------|
+| `logs/digests.log` | Image digest registry |
+| `logs/timing.log` | Per-tool single-run execution times (initial scans) |
+| `logs/tool_versions.txt` | Tool version metadata |
+| `logs/environment.txt` | Full environment snapshot (binary checksums, DB versions) |
+| `logs/parsed_results.json` | Raw finding counts extracted by `parse_results.py` |
+| `logs/analysis_tables.json` | Structured analysis outputs from `analysis.py --save` |
+| `logs/analysis_results.txt` | Human-readable 6-table analysis output |
+| `logs/benchmark.log` | Raw benchmark timing (3 runs × 9 images × 3 tools) |
+| `logs/benchmark_summary.json` | Parsed benchmark means and std devs per image per tool |
+
+### CSV exports (`logs/csv/`)
+| File | Description |
+|------|-------------|
+| `table1_core_counts.csv` | Total findings per image per tool with fix% |
+| `table2_fix_status_trivy.csv` | Trivy fix status breakdown |
+| `table2_fix_status_grype.csv` | Grype fix state breakdown |
+| `table3_cve_overlap.csv` | CVE-level Jaccard overlap (Trivy vs Grype) |
+| `table4_severity_agreement.csv` | Severity agreement on shared CVEs |
+| `table5_cwe_pivot.csv` | Top 10 CWEs across all images |
+| `table5_cwe_per_image_trivy.csv` | Per-image CWE breakdown (Trivy) |
+| `table5_cwe_per_image_grype.csv` | Per-image CWE breakdown (Grype) |
+| `table6_performance.csv` | Benchmark means and std devs |
+| `D1_core_results.csv` | Master dataset — all images × tools × severities |
+| `D2_performance_original.csv` | Performance benchmark data |
+| `D3_sbom_baseline.csv` | SBOM package counts by ecosystem |
+| `D4_policy_evaluation.csv` | P1/P2/P3 policy outcomes per image |
+
+### Figures (`logs/graphs/`)
+| File | Description |
+|------|-------------|
+| `fig1_performance.png` | Scan time per tool per image (log scale, mean ± sd) |
+| `fig2_total_findings.png` | Total findings grouped bar with divergence ratios |
+| `fig3_cve_overlap.png` | Jaccard similarity + CVE set composition |
+| `fig4_severity_agreement.png` | Severity agreement on shared CVEs |
+| `fig5_fix_rates.png` | Fix rate % per image per tool |
+| `fig6_critical_counts.png` | CRITICAL finding counts Trivy vs Grype |
+| `fig7_cwe_top10.png` | Top 10 CWE types across all images |
+| `fig8_time_vs_size.png` | Scan time vs image size scatter with linear fit |
+
+### Scripts
+| File | Description |
+|------|-------------|
+| `scan.sh` | Scan a single image with all tools |
+| `reproduce.sh` | Re-run scans using pinned digests |
+| `benchmark.sh` | 3-run performance benchmark per image per tool |
+| `parse_results.py` | Extract raw counts from JSON outputs |
+| `analysis.py` | 6-table analysis (CVE overlap, severity agreement, CWE, policy, performance) |
+| `export_csv.py` | Export all tables and datasets to CSV |
+| `generate_graphs.py` | Generate 8 publication-ready figures |
+
+### Documentation
+| File | Description |
+|------|-------------|
+| `experiment_log.md` | This file — full experiment log |
+| `analysis_narrative.md` | Structured narrative walkthrough of all results |
+| `notes_scanner_internals.md` | Technical explanation of scanner architectures and timing differences |
 
 ---
 
