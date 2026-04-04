@@ -1,0 +1,300 @@
+[
+  {
+    "safe": "alpine_3.19",
+    "image": "alpine:3.19",
+    "group": "C",
+    "size_mb": 7.1,
+    "trivy": {
+      "runs_ms": [
+        5365,
+        56,
+        56
+      ],
+      "mean_ms": 1826,
+      "sd_ms": 3065
+    },
+    "grype": {
+      "runs_ms": [
+        33309,
+        1459,
+        1442
+      ],
+      "mean_ms": 12070,
+      "sd_ms": 18394
+    },
+    "osv": {
+      "runs_ms": [
+        2461,
+        1913,
+        1326
+      ],
+      "mean_ms": 1900,
+      "sd_ms": 568
+    }
+  },
+  {
+    "safe": "nginx_latest",
+    "image": "nginx:latest",
+    "group": "C",
+    "size_mb": 153.5,
+    "trivy": {
+      "runs_ms": [
+        90,
+        91,
+        90
+      ],
+      "mean_ms": 90,
+      "sd_ms": 1
+    },
+    "grype": {
+      "runs_ms": [
+        3039,
+        3010,
+        2999
+      ],
+      "mean_ms": 3016,
+      "sd_ms": 21
+    },
+    "osv": {
+      "runs_ms": [
+        4500,
+        4162,
+        4188
+      ],
+      "mean_ms": 4283,
+      "sd_ms": 188
+    }
+  },
+  {
+    "safe": "node_20",
+    "image": "node:20",
+    "group": "C",
+    "size_mb": 1044.7,
+    "trivy": {
+      "runs_ms": [
+        345,
+        347,
+        347
+      ],
+      "mean_ms": 346,
+      "sd_ms": 1
+    },
+    "grype": {
+      "runs_ms": [
+        18064,
+        18800,
+        18955
+      ],
+      "mean_ms": 18606,
+      "sd_ms": 476
+    },
+    "osv": {
+      "runs_ms": [
+        26121,
+        22967,
+        27431
+      ],
+      "mean_ms": 25506,
+      "sd_ms": 2295
+    }
+  },
+  {
+    "safe": "python_3.12",
+    "image": "python:3.12",
+    "group": "C",
+    "size_mb": 1055.6,
+    "trivy": {
+      "runs_ms": [
+        317,
+        316,
+        313
+      ],
+      "mean_ms": 315,
+      "sd_ms": 2
+    },
+    "grype": {
+      "runs_ms": [
+        15624,
+        15629,
+        15640
+      ],
+      "mean_ms": 15631,
+      "sd_ms": 8
+    },
+    "osv": {
+      "runs_ms": [
+        26107,
+        24693,
+        23030
+      ],
+      "mean_ms": 24610,
+      "sd_ms": 1540
+    }
+  },
+  {
+    "safe": "nginx_1.19",
+    "image": "nginx:1.19",
+    "group": "B",
+    "size_mb": 127.0,
+    "trivy": {
+      "runs_ms": [
+        93,
+        91,
+        96
+      ],
+      "mean_ms": 93,
+      "sd_ms": 3
+    },
+    "grype": {
+      "runs_ms": [
+        3153,
+        3135,
+        3121
+      ],
+      "mean_ms": 3136,
+      "sd_ms": 16
+    },
+    "osv": {
+      "runs_ms": [
+        4961,
+        7297,
+        3728
+      ],
+      "mean_ms": 5329,
+      "sd_ms": 1813
+    }
+  },
+  {
+    "safe": "node_14",
+    "image": "node:14",
+    "group": "B",
+    "size_mb": 869.5,
+    "trivy": {
+      "runs_ms": [
+        231,
+        232,
+        229
+      ],
+      "mean_ms": 231,
+      "sd_ms": 2
+    },
+    "grype": {
+      "runs_ms": [
+        19701,
+        16794,
+        16833
+      ],
+      "mean_ms": 17776,
+      "sd_ms": 1667
+    },
+    "osv": {
+      "runs_ms": [
+        15216,
+        14481,
+        20145
+      ],
+      "mean_ms": 16614,
+      "sd_ms": 3080
+    }
+  },
+  {
+    "safe": "python_3.8",
+    "image": "python:3.8",
+    "group": "B",
+    "size_mb": 949.3,
+    "trivy": {
+      "runs_ms": [
+        571,
+        560,
+        542
+      ],
+      "mean_ms": 558,
+      "sd_ms": 15
+    },
+    "grype": {
+      "runs_ms": [
+        19032,
+        17969,
+        17752
+      ],
+      "mean_ms": 18251,
+      "sd_ms": 685
+    },
+    "osv": {
+      "runs_ms": [
+        20552,
+        22684,
+        24890
+      ],
+      "mean_ms": 22709,
+      "sd_ms": 2169
+    }
+  },
+  {
+    "safe": "vulnerables_web-dvwa",
+    "image": "vulnerables/web-dvwa:latest",
+    "group": "A",
+    "size_mb": 678.8,
+    "trivy": {
+      "runs_ms": [
+        180,
+        183,
+        189
+      ],
+      "mean_ms": 184,
+      "sd_ms": 5
+    },
+    "grype": {
+      "runs_ms": [
+        10691,
+        10674,
+        12109
+      ],
+      "mean_ms": 11158,
+      "sd_ms": 824
+    },
+    "osv": {
+      "runs_ms": [
+        11120,
+        11298,
+        10078
+      ],
+      "mean_ms": 10832,
+      "sd_ms": 659
+    }
+  },
+  {
+    "safe": "bkimminich_juice-shop",
+    "image": "bkimminich/juice-shop:latest",
+    "group": "A",
+    "size_mb": 467.3,
+    "trivy": {
+      "runs_ms": [
+        105,
+        106,
+        110,
+        120
+      ],
+      "mean_ms": 110,
+      "sd_ms": 7
+    },
+    "grype": {
+      "runs_ms": [
+        12250,
+        10034,
+        12045
+      ],
+      "mean_ms": 11443,
+      "sd_ms": 1225
+    },
+    "osv": {
+      "runs_ms": [
+        13818,
+        11956,
+        11876
+      ],
+      "mean_ms": 12550,
+      "sd_ms": 1099
+    }
+  }
+]
