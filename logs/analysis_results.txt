@@ -1,0 +1,161 @@
+
+===========================================================================================================================================================
+TABLE 1: CORE VULNERABILITY COUNTS (with group, image size, fix %)
+===========================================================================================================================================================
+Grp Image                             Size MB   T-tot   T-C   T-H   T-M   T-L  T-fix%   G-tot   G-C   G-H   G-M   G-L  G-fix%   OSV-adv EOSL
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+C   alpine:3.19                           7.1       2     0     0     1     1    100%       4     0     0     2     2     50%         2 YES
+C   nginx:latest                        153.5      96     0     9    21    66      0%     100     0    17    22     7      0%       102 no
+C   node:20                            1044.7    1127     6   158   658   285      1%     333     6    51    70    26      4%       317 no
+C   python:3.12                        1055.6     630     0    67   280   259      3%     282     0    32    68    15      9%       286 no
+B   nginx:1.19                          127.0     279    34    93   122    21     80%     353    32    96   125    18     59%        81 YES
+B   node:14                             869.5     709     9   255   405    36     83%     529     8   114   111    31     31%        57 YES
+B   python:3.8                          949.3    3684    25   870  2428   332     69%     537    25   130   151    39     38%       567 no
+A   vulnerables/web-dvwa:latest         678.8     439    65   169   152    42     85%     590    84   209   179    33     61%       129 YES
+A   bkimminich/juice-shop:latest        467.3      83     9    36    25    13     82%      79     9    36    24     3     81%        80 no
+
+  OSV-adv = unique advisory IDs (DSA/DLA/GHSA); not directly comparable to CVE-level totals.
+
+===================================================================================================================
+TABLE 2: FIX STATUS BREAKDOWN
+  FIXED     = a newer package version resolves this CVE (remediation available)
+  AFFECTED  = no fix published yet
+  WILL_NOT  = vendor explicitly declined to fix (Debian 'ignored')
+  DEFERRED  = fix exists upstream but not yet backported to this OS version
+===================================================================================================================
+
+  Trivy fix statuses:
+  Grp Image                               fixed  affected  will_not  deferred   %fixed
+  --------------------------------------------------------------------------------
+  C   alpine:3.19                             6         0         0         0     100%
+  C   nginx:latest                            0       165         0         4       0%
+  C   node:20                                14      2168        61        25       1%
+  C   python:3.12                           238      1475         5        33      14%
+  B   nginx:1.19                            337        44        32        11      79%
+  B   node:14                              1112        99       190        38      77%
+  B   python:3.8                           3371      2191        61        37      60%
+  A   vulnerables/web-dvwa:latest          1380        89        74        32      88%
+  A   bkimminich/juice-shop:latest           83        15         0         0      85%
+
+  Grype fix states:
+  Grp Image                               fixed  not-fixed  wont-fix  unknown   %fixed
+  --------------------------------------------------------------------------------
+  C   alpine:3.19                             6          0         0        1      60%
+  C   nginx:latest                            0        115        57        0       0%
+  C   node:20                                14       1140       320        0       1%
+  C   python:3.12                           249        903       259        0      18%
+  B   nginx:1.19                            320        124       106        0      58%
+  B   node:14                               681        963       351        0      34%
+  B   python:3.8                           1030       1163       332        0      41%
+  A   vulnerables/web-dvwa:latest          1362        467       268        0      65%
+  A   bkimminich/juice-shop:latest           78         11         4        0      84%
+
+========================================================================================================================
+TABLE 3: CVE-LEVEL OVERLAP BETWEEN TRIVY AND GRYPE
+  Jaccard = |T ∩ G| / |T ∪ G|  (1.0 = identical CVE sets, 0.0 = no overlap)
+  T-only  = CVEs in Trivy not found by Grype (false positive candidates for Trivy,
+            or false negatives for Grype — indeterminate without ground truth)
+  G-only  = CVEs in Grype not found by Trivy (same caveat reversed)
+========================================================================================================================
+
+  Grp Image                              T CVEs  G CVEs  T-only    Both  G-only   Jaccard
+  -------------------------------------------------------------------------------------
+  C   alpine:3.19                             2       4       0       2       2     0.500
+  C   nginx:latest                           96     100       4      92       8     0.885
+  C   node:20                              1127     347     798     329      18     0.287
+  C   python:3.12                           630     284     348     282       2     0.446
+  B   nginx:1.19                            279     353      10     269      84     0.741
+  B   node:14                               709     553     469     240     313     0.235
+  B   python:3.8                           3684     544    3154     530      14     0.143
+  A   vulnerables/web-dvwa:latest           439     590      14     425     165     0.704
+  A   bkimminich/juice-shop:latest           83     143       4      79      64     0.537
+
+  Note: Grype sometimes uses GHSA IDs as primary; related CVE aliases are expanded before comparison.
+
+====================================================================================================
+TABLE 4: SEVERITY AGREEMENT ON SHARED CVEs ONLY
+  Agreement % = fraction of shared CVEs where both tools assign the same severity
+  T-higher = Trivy assigned a higher severity than Grype for the same CVE
+  G-higher = Grype assigned a higher severity than Trivy for the same CVE
+====================================================================================================
+
+  Grp Image                              Shared   Agree   Agree%   T-higher   G-higher
+  --------------------------------------------------------------------------------
+  C   alpine:3.19                             2       1      50%          1          0
+  C   nginx:latest                           92      30      33%         54          8
+  C   node:20                               329     111      34%        203         15
+  C   python:3.12                           282      95      34%        174         13
+  B   nginx:1.19                            269     259      96%          4          6
+  B   node:14                               240     196      82%         37          7
+  B   python:3.8                            530     291      55%        213         26
+  A   vulnerables/web-dvwa:latest           425     406      96%          1         18
+  A   bkimminich/juice-shop:latest           79       6       8%         71          2
+
+  Key finding: severity agreement on shared CVEs ranges from 8% (juice-shop) to 96% (nginx:1.19,
+  web-dvwa). nginx:latest, node:20, and python:3.12 agree on only ~33% of shared CVEs,
+  with Trivy consistently assigning higher severity than Grype.
+
+================================================================================
+TABLE 5: CWE PIVOT — TOP 10 CWEs ACROSS ALL IMAGES
+================================================================================
+  CWE             Trivy    Grype    Total
+  ----------------------------------------
+  CWE-476           855      225     1080
+  CWE-416           601      137      738
+  CWE-125           396      336      732
+  CWE-787           354      328      682
+  CWE-190           199      224      423
+  CWE-119           182      221      403
+  CWE-401           245      107      352
+  CWE-400           118      137      255
+  CWE-362           206       28      234
+  CWE-122            99      104      203
+
+  Per-image breakdown (Trivy, top 10 CWEs):
+  Grp Image                           CWE-476   CWE-416   CWE-125   CWE-787   CWE-190   CWE-119   CWE-401   CWE-400   CWE-362   CWE-122  
+  ---------------------------------------------------------------------------------------------------------------------------------------
+  [C] alpine:3.19                     0         0         0         0         0         0         0         0         0         0        
+  [C] nginx:latest                    7         3         6         4         4         9         3         2         1         4        
+  [C] node:20                         135       79        38        39        23        44        45        24        43        23       
+  [C] python:3.12                     47        26        36        22        12        45        20        16        20        22       
+  [B] nginx:1.19                      17        24        35        46        25        5         1         9         0         2        
+  [B] node:14                         82        95        30        58        27        11        21        25        29        6        
+  [B] python:3.8                      537       352       185       135       65        55        151       27        111       41       
+  [A] vulnerables/web-dvwa:latest     29        22        65        50        43        12        3         10        2         1        
+  [A] bkimminich/juice-shop:latest    1         0         1         0         0         1         1         5         0         0        
+
+  Per-image breakdown (Grype, top 10 CWEs):
+  Grp Image                           CWE-476   CWE-416   CWE-125   CWE-787   CWE-190   CWE-119   CWE-401   CWE-400   CWE-362   CWE-122  
+  ---------------------------------------------------------------------------------------------------------------------------------------
+  [C] alpine:3.19                     0         0         0         0         0         0         0         0         0         0        
+  [C] nginx:latest                    9         3         7         4         5         10        3         2         2         5        
+  [C] node:20                         30        6         28        30        17        44        18        23        4         23       
+  [C] python:3.12                     24        6         34        19        12        46        16        15        2         22       
+  [B] nginx:1.19                      30        41        65        77        42        15        9         13        3         3        
+  [B] node:14                         44        22        36        69        47        28        24        39        8         9        
+  [B] python:3.8                      43        17        60        53        32        54        24        26        4         41       
+  [A] vulnerables/web-dvwa:latest     44        42        105       76        69        23        12        14        5         1        
+  [A] bkimminich/juice-shop:latest    1         0         1         0         0         1         1         5         0         0        
+
+========================================================================================================================
+TABLE 6: SCAN PERFORMANCE (3 runs, mean ± std dev)
+  All images already present locally; no pull time included.
+  alpine:3.19 run1 anomaly (first-time image export) excluded from mean.
+========================================================================================================================
+
+  Grp Image                             Size MB   Trivy mean      ±   Grype mean      ±     OSV mean      ±
+  ---------------------------------------------------------------------------------------------------------
+  C   alpine:3.19                           7.1        0.06s  0.00s        1.45s  0.01s        1.90s  0.57s
+  C   nginx:latest                        153.5        0.09s  0.00s        3.02s  0.02s        4.28s  0.19s
+  C   node:20                            1044.7        0.35s  0.00s       18.61s  0.48s       25.51s  2.29s
+  C   python:3.12                        1055.6        0.32s  0.00s       15.63s  0.01s       24.61s  1.54s
+  B   nginx:1.19                          127.0        0.09s  0.00s        3.14s  0.02s        5.33s  1.81s
+  B   node:14                             869.5        0.23s  0.00s       17.78s  1.67s       16.61s  3.08s
+  B   python:3.8                          949.3        0.56s  0.01s       18.25s  0.69s       22.71s  2.17s
+  A   vulnerables/web-dvwa:latest         678.8        0.18s  0.00s       11.16s  0.82s       10.83s  0.66s
+  A   bkimminich/juice-shop:latest        467.3        0.11s  0.01s       11.44s  1.22s       12.55s  1.10s
+
+  Key finding: Trivy is significantly faster than Grype and OSV-Scanner across all images.
+  Grype and OSV-Scanner scale with image size (r≈0.9 correlation with compressed size).
+  Trivy's speed advantage likely reflects its direct DB index lookup vs Grype/OSV's
+  image-layer extraction and traversal approach.
