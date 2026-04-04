@@ -1,0 +1,10 @@
+group,image,trivy_cves,grype_cves,trivy_only,both,grype_only,jaccard
+C,alpine:3.19,2,4,0,2,2,0.5
+C,nginx:latest,96,100,4,92,8,0.885
+C,node:20,1127,347,798,329,18,0.287
+C,python:3.12,630,284,348,282,2,0.446
+B,nginx:1.19,279,353,10,269,84,0.741
+B,node:14,709,553,469,240,313,0.235
+B,python:3.8,3684,544,3154,530,14,0.143
+A,vulnerables/web-dvwa:latest,439,590,14,425,165,0.704
+A,bkimminich/juice-shop:latest,83,143,4,79,64,0.537

@@ -1,0 +1,10 @@
+group,image,trivy_critical,grype_critical,trivy_fixed_total,grype_fixed_total,P1_trivy,P1_grype,P2_trivy,P2_grype,P3_consensus
+C,alpine:3.19,0,0,2,2,PASS,PASS,PASS,PASS,PASS
+C,nginx:latest,0,0,0,0,PASS,PASS,PASS,PASS,PASS
+C,node:20,6,6,14,14,REJECT,REJECT,REJECT,REJECT,REJECT
+C,python:3.12,0,0,21,24,PASS,PASS,PASS,PASS,PASS
+B,nginx:1.19,34,32,224,210,REJECT,REJECT,REJECT,REJECT,REJECT
+B,node:14,9,8,585,165,REJECT,REJECT,REJECT,REJECT,REJECT
+B,python:3.8,25,25,2554,203,REJECT,REJECT,REJECT,REJECT,REJECT
+A,vulnerables/web-dvwa:latest,65,84,374,360,REJECT,REJECT,REJECT,REJECT,REJECT
+A,bkimminich/juice-shop:latest,9,9,68,64,REJECT,REJECT,REJECT,REJECT,REJECT

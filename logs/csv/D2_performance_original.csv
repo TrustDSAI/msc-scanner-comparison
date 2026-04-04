@@ -1,0 +1,10 @@
+group,image,size_mb,syft_ms,trivy_ms,grype_ms,osv_ms
+C,alpine:3.19,7.1,1671,55,32970,2376
+C,nginx:latest,153.5,3075,31639,3840,5003
+C,node:20,1044.7,16793,9476,17824,21142
+C,python:3.12,1055.6,14461,10216,15652,21076
+B,nginx:1.19,127.0,3317,1253,3125,8375
+B,node:14,869.5,16458,8483,16882,16565
+B,python:3.8,949.3,16572,9991,17587,27032
+A,vulnerables/web-dvwa:latest,678.8,10979,6012,11667,29
+A,bkimminich/juice-shop:latest,467.3,10492,8015,10012,29

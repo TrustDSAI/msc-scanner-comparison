@@ -1,0 +1,10 @@
+group,image,fixed,not_fixed,wont_fix,unknown,fix_pct
+C,alpine:3.19,6,0,0,1,60.0
+C,nginx:latest,0,115,57,0,0.0
+C,node:20,14,1140,320,0,0.9
+C,python:3.12,249,903,259,0,17.6
+B,nginx:1.19,320,124,106,0,58.2
+B,node:14,681,963,351,0,34.1
+B,python:3.8,1030,1163,332,0,40.7
+A,vulnerables/web-dvwa:latest,1362,467,268,0,64.9
+A,bkimminich/juice-shop:latest,78,11,4,0,83.9

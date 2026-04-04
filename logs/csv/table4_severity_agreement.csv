@@ -1,0 +1,10 @@
+group,image,shared_cves,same_severity,agree_pct,trivy_higher,grype_higher
+C,alpine:3.19,2,1,50.0,1,0
+C,nginx:latest,92,30,32.6,54,8
+C,node:20,329,111,33.7,203,15
+C,python:3.12,282,95,33.7,174,13
+B,nginx:1.19,269,259,96.3,4,6
+B,node:14,240,196,81.7,37,7
+B,python:3.8,530,291,54.9,213,26
+A,vulnerables/web-dvwa:latest,425,406,95.5,1,18
+A,bkimminich/juice-shop:latest,79,6,7.6,71,2

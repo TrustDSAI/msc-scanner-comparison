@@ -1,0 +1,10 @@
+group,image,total_packages
+C,alpine:3.19,
+C,nginx:latest,
+C,node:20,
+C,python:3.12,
+B,nginx:1.19,
+B,node:14,
+B,python:3.8,
+A,vulnerables/web-dvwa:latest,
+A,bkimminich/juice-shop:latest,

@@ -1,0 +1,10 @@
+group,image,trivy_total,trivy_critical,trivy_high,trivy_medium,trivy_low,trivy_fixed,grype_total,grype_critical,grype_high,grype_medium,grype_low,grype_fixed,osv_advisories,eosl
+C,alpine:3.19,2,0,0,1,1,2,4,0,0,2,2,2,2,True
+C,nginx:latest,96,0,9,21,66,0,100,0,17,22,7,0,102,False
+C,node:20,1127,6,158,658,285,14,333,6,51,70,26,14,317,False
+C,python:3.12,630,0,67,280,259,21,282,0,32,68,15,24,286,False
+B,nginx:1.19,279,34,93,122,21,224,353,32,96,125,18,210,81,True
+B,node:14,709,9,255,405,36,585,529,8,114,111,31,165,57,True
+B,python:3.8,3684,25,870,2428,332,2554,537,25,130,151,39,203,567,False
+A,vulnerables/web-dvwa:latest,439,65,169,152,42,374,590,84,209,179,33,360,129,True
+A,bkimminich/juice-shop:latest,83,9,36,25,13,68,79,9,36,24,3,64,80,False
