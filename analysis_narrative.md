@@ -19,7 +19,81 @@ Nine container images spanning three risk groups were scanned with Trivy (0.69.3
 
 ---
 
-## 2. Total Finding Counts — Tools Rarely Agree
+## 2. Methodology Notes
+
+### 2.1 What "Fixed" Means
+
+The fix status attached to each finding is **reported by the scanner itself**, not computed by this analysis. Each scanner reads fix metadata directly from its vulnerability database, which in turn pulls from OS vendor security trackers (Debian Security Tracker, Alpine SecDB, GitHub Advisory Database, etc.).
+
+**Trivy** exposes two fields per finding:
+```
+Status:       "fixed" | "affected" | "will_not_fix" | "fix_deferred"
+FixedVersion: "1.2.3-4"   (empty string if no fix)
+```
+
+**Grype** exposes a `fix` object per match:
+```
+fix.state:    "fixed" | "not-fixed" | "wont-fix" | "unknown"
+fix.versions: ["1.2.3-4"]
+```
+
+The four status values mean:
+
+| Status | Trivy | Grype | Meaning |
+|--------|-------|-------|---------|
+| Fixed | `fixed` | `fixed` | A patched package version exists in the distro repository |
+| Not fixed | `affected` | `not-fixed` | Vulnerability confirmed; no patch released yet |
+| Won't fix | `will_not_fix` | `wont-fix` | Vendor explicitly declined to patch (e.g. Debian "ignored") |
+| Deferred | `fix_deferred` | — | Fix exists upstream but not yet backported to this OS version |
+| Unknown | — | `unknown` | Fix state not recorded in the advisory database |
+
+**Critical distinction: "fixed" does not mean the image is patched.** It means a newer version of the affected package exists in the repository that resolves the CVE. The image still has the vulnerable version installed. "Fixed" signals that remediation is available — i.e., rebuilding the image with an updated base or upgrading the package would resolve the finding.
+
+### 2.2 How Fix% Is Computed
+
+Fix% in all tables and graphs is:
+
+```
+fix% = findings where status == "fixed"
+       ─────────────────────────────────  × 100
+              total findings
+```
+
+Counted at the **findings level**: one CVE affecting three packages in the same image counts as three findings, and three fixable findings. The scanner assigns fix status independently per (CVE, package) pair.
+
+### 2.3 Why Trivy and Grype Fix Counts Diverge
+
+The same image can show substantially different fix rates between tools:
+
+| Image | Trivy fix% | Grype fix% | Gap |
+|-------|-----------|-----------|-----|
+| node:14 | 77% | 34% | 43 pp |
+| python:3.8 | 60% | 41% | 19 pp |
+| nginx:1.19 | 79% | 58% | 21 pp |
+
+Two structural causes:
+
+1. **Different advisory sources per ecosystem.** Grype weights the GitHub Advisory Database more heavily for npm packages, which may mark an advisory as `not-fixed` if the GitHub advisory record has not confirmed a fix version, even if NVD has. Trivy uses its own DB with NVD as primary source, which may carry a `FixedVersion` field that Grype's source does not.
+
+2. **DB ingestion timing and completeness.** Both databases are updated independently. A fix released by a distro may appear in one tool's DB before the other, creating a transient divergence that can persist across scans if DB versions differ.
+
+**Policy implication:** fix availability is a tool-dependent signal. A policy using "CRITICAL with fix available" (P2) will gate differently depending on which scanner's fix state you trust. This is one of the empirical arguments for multi-scanner consensus in policy design.
+
+### 2.4 Findings vs Unique CVEs
+
+Throughout this document, "findings" (used in total counts and fix%) refers to raw scanner output entries — one entry per (CVE, affected package) pair. A single CVE affecting five packages in the same image produces five findings.
+
+"Unique CVEs" (used in the Jaccard overlap analysis, Section 4) refers to deduplicated CVE IDs. The same CVE affecting five packages counts as one unique CVE. These two measures are not interchangeable and are used for different analytical purposes:
+
+| Measure | Used for | Source |
+|---------|----------|--------|
+| Findings (raw) | Total counts, fix rates, severity distributions | `parse_results.py` |
+| Unique CVEs | Cross-tool overlap (Jaccard), severity agreement | `analysis.py` deduplication |
+
+---
+
+## 3. Total Finding Counts — Tools Rarely Agree
+
 
 The first observation is that Trivy and Grype frequently disagree on total vulnerability counts for the same image.
 
@@ -45,7 +119,7 @@ Two structural causes explain the divergence:
 
 ---
 
-## 3. CVE-Level Overlap — The Real Agreement Story
+## 4. CVE-Level Overlap — The Real Agreement Story
 
 Comparing totals is misleading. What matters is whether the tools identify the *same vulnerabilities*. Table D5 applies Jaccard similarity over deduplicated CVE ID sets:
 
@@ -76,7 +150,7 @@ Grype GHSA IDs are expanded to CVE aliases before comparison.
 
 ---
 
-## 4. Severity Agreement on Shared CVEs
+## 5. Severity Agreement on Shared CVEs
 
 For CVEs found by both tools, the question becomes: do they agree on how severe it is? Table D6 measures this on shared CVEs only, eliminating the confound of different discovery scope.
 
@@ -103,7 +177,7 @@ For CVEs found by both tools, the question becomes: do they agree on how severe 
 
 ---
 
-## 5. CRITICAL Findings — Where Tools Converge
+## 6. CRITICAL Findings — Where Tools Converge
 
 Despite disagreement on totals and severity classification, **CRITICAL counts correlate well** across tools:
 
@@ -125,9 +199,9 @@ Seven of nine images show a CRITICAL delta of 3 or fewer. The exception is web-d
 
 ---
 
-## 6. Fix Availability — Not All Risk Is Actionable
+## 7. Fix Availability — Not All Risk Is Actionable
 
-Fix rate (percentage of findings where a patched version exists) varies significantly across images and between tools for the same image:
+Fix rate is reported directly by the scanners from their vulnerability databases (see Section 2.1 for the full definition and caveat on inter-tool divergence). It varies significantly across images and between tools for the same image:
 
 | Image | Grp | T-fix% | G-fix% | Character |
 |-------|-----|--------|--------|-----------|
@@ -149,7 +223,7 @@ Fix rate (percentage of findings where a patched version exists) varies signific
 
 ---
 
-## 7. Policy Evaluation
+## 8. Policy Evaluation
 
 Three policies were evaluated against all nine images using Trivy and Grype independently, and as a consensus:
 
@@ -188,7 +262,7 @@ Three policies were evaluated against all nine images using Trivy and Grype inde
 
 ---
 
-## 8. Performance
+## 9. Performance
 
 Scan times measured over 3 independent runs per image per tool (images locally cached; no pull time included).
 
@@ -214,7 +288,7 @@ Scan times measured over 3 independent runs per image per tool (images locally c
 
 ---
 
-## 9. Weakness Profile (CWE Analysis)
+## 10. Weakness Profile (CWE Analysis)
 
 The top 10 CWE types across all images and both tools reveal the dominant weakness classes in the dataset:
 
@@ -235,7 +309,7 @@ The top 10 CWE types across all images and both tools reveal the dominant weakne
 
 ---
 
-## 10. Summary of Key Findings
+## 11. Summary of Key Findings
 
 | # | Finding | Implication |
 |---|---------|-------------|
@@ -250,7 +324,7 @@ The top 10 CWE types across all images and both tools reveal the dominant weakne
 
 ---
 
-## 11. Connection to Research Direction
+## 12. Connection to Research Direction
 
 These findings provide the empirical foundation for the policy-as-code contribution:
 
