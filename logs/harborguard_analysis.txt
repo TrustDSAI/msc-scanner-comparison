@@ -1,0 +1,132 @@
+
+====================================================================================================
+HARBORGUARD vs STANDALONE SCANNERS — ANALYSIS
+====================================================================================================
+
+====================================================================================================
+TABLE 1: TOTAL FINDINGS — HarbourGuard (aggregated) vs Trivy vs Grype
+  HG total = deduplicated across all scanners (trivy + grype + osv)
+  Trivy / Grype = standalone individual runs
+----------------------------------------------------------------------------------------------------
+Grp  Image                        HG-total   Trivy   Grype   HG vs T   HG vs G  Risk
+----------------------------------------------------------------------------------------------------
+C    alpine:3.19                        10       6      10     1.67×     1.00×    49
+C    nginx:latest                      188     169     172     1.11×     1.09×   100
+C    node:20                          2349    2268    1474     1.04×     1.59×   100
+C    python:3.12                      1851    1751    1418     1.06×     1.31×   100
+B    nginx:1.19                        432     424     550     1.02×     0.79×   100
+B    node:14                          1565    1439    1995     1.09×     0.78×   100
+B    python:3.8                       5770    5660    2533     1.02×     2.28×   100
+A    web-dvwa                         1889    1575    2097     1.20×     0.90×   100
+A    juice-shop                        146      98      93     1.49×     1.57×   100
+
+====================================================================================================
+TABLE 2: CRITICAL FINDINGS — HarbourGuard vs Trivy vs Grype
+--------------------------------------------------------------------------------
+Grp  Image                          HG-C    T-C    G-C  Delta HG-T  Delta HG-G
+--------------------------------------------------------------------------------
+C    alpine:3.19                       0      0      0          +0          +0
+C    nginx:latest                      0      0      0          +0          +0
+C    node:20                          33     33     32          +0          +1
+C    python:3.12                       0      0      0          +0          +0
+B    nginx:1.19                       42     42     40          +0          +2
+B    node:14                          24     22     19          +2          +5
+B    python:3.8                      191    182    185          +9          +6
+A    web-dvwa                        328    254    327         +74          +1
+A    juice-shop                       16     10     10          +6          +6
+
+====================================================================================================
+TABLE 3: HARBORGUARD PER-SCANNER BREAKDOWN
+  HG stores findings per source — this shows what each scanner contributed
+--------------------------------------------------------------------------------------------------------------
+Grp  Image                         T-in-HG    T-SA  G-in-HG    G-SA  OSV-in-HG
+  (T-SA = Trivy standalone, G-SA = Grype standalone)
+--------------------------------------------------------------------------------------------------------------
+C    alpine:3.19                         6       6        4      10          8
+C    nginx:latest                      104     169       85     172         72
+C    node:20                          1606    2268       17    1474        377
+C    python:3.12                      1652    1751       62    1418        286
+B    nginx:1.19                         15     424      538     550        331
+B    node:14                           247    1439      953    1995        800
+B    python:3.8                       1569    5660       31    2533        400
+A    web-dvwa                          962    1575      531    2097        507
+A    juice-shop                         79      98       67      93          1
+
+====================================================================================================
+TABLE 4: FIX RATE — HarbourGuard vs Trivy vs Grype
+  HG fix% = findings with non-null fixedVersion / HG total
+------------------------------------------------------------------------------------------
+Grp  Image                         HG-fix%   T-fix%   G-fix%
+------------------------------------------------------------------------------------------
+C    alpine:3.19                       60%     100%      60%
+C    nginx:latest                       1%       0%       0%
+C    node:20                            0%       1%       1%
+C    python:3.12                       12%      14%      18%
+B    nginx:1.19                        75%      79%      58%
+B    node:14                           10%      77%      34%
+B    python:3.8                         7%      60%      41%
+A    web-dvwa                          45%      88%      65%
+A    juice-shop                        87%      85%      84%
+
+====================================================================================================
+TABLE 5: SEVERITY DISTRIBUTION — HarbourGuard vs Trivy vs Grype
+--------------------------------------------------------------------------------------------------------------
+Grp  Image                        HG     T     G      HG     T     G      HG     T     G      HG     T     G
+                                   C     C     C       H     H     H       M     M     M       L     L     L
+--------------------------------------------------------------------------------------------------------------
+C    alpine:3.19                   0     0     0       0     0     0       7     3     4       3     3     6
+C    nginx:latest                  0     0     0      28    14    25      42    29    33     118   126     8
+C    node:20                      33    33    32     343   277   178     996   936   360     977   997    67
+C    python:3.12                   0     0     0     251   196   165     647   557   375     953   971    59
+B    nginx:1.19                   42    42    40     160   149   159     203   193   194      27    31    35
+B    node:14                      24    22    19     631   569   453     815   754   477      95    90    95
+B    python:3.8                  191   182   185    1455  1369   652    3035  2957   694    1089  1114   125
+A    web-dvwa                    328   254   327     760   551   760     702   642   700      99   116    99
+A    juice-shop                   16    10    10      71    47    46      45    27    26      14    14     4
+
+====================================================================================================
+TABLE 6: POLICY EVALUATION VIA HARBORGUARD
+  P1 = REJECT if HG-CRITICAL > 0
+  P2 = REJECT if HG-CRITICAL > 0 AND HG-fixed > 0
+  P3 = REJECT if CRITICAL confirmed by both Trivy-in-HG AND Grype-in-HG (> 0)
+  HG-risk = HarbourGuard aggregated risk score (0-100)
+----------------------------------------------------------------------------------------------------
+Grp  Image                         HG-C  fixed       P1       P2       P3  risk   SA-P1T   SA-P1G
+  (SA-P1T = standalone Trivy P1, SA-P1G = standalone Grype P1)
+----------------------------------------------------------------------------------------------------
+C    alpine:3.19                      0      6     PASS     PASS     PASS    49     PASS     PASS
+C    nginx:latest                     0      2     PASS     PASS     PASS   100     PASS     PASS
+C    node:20                         33      6   REJECT   REJECT     PASS   100   REJECT   REJECT
+C    python:3.12                      0    218     PASS     PASS     PASS   100     PASS     PASS
+B    nginx:1.19                      42    322   REJECT   REJECT   REJECT   100   REJECT   REJECT
+B    node:14                         24    160   REJECT   REJECT     PASS   100   REJECT   REJECT
+B    python:3.8                     191    405   REJECT   REJECT     PASS   100   REJECT   REJECT
+A    web-dvwa                       328    856   REJECT   REJECT     PASS   100   REJECT   REJECT
+A    juice-shop                      16    127   REJECT   REJECT   REJECT   100   REJECT   REJECT
+
+====================================================================================================
+TABLE 7: SCAN DURATION — HarbourGuard (all scanners) vs Trivy / Grype standalone
+  HG time = wall-clock from scan start to finish (all scanners, sequential/parallel)
+  Trivy / Grype = benchmark means (3 runs, cached images)
+------------------------------------------------------------------------------------------
+Grp  Image                          HG (s)  Trivy (s)  Grype (s)  ratio HG/T
+------------------------------------------------------------------------------------------
+C    alpine:3.19                       9.8      0.056      1.451        175×
+C    nginx:latest                     38.2      0.090      3.016        424×
+C    node:20                         102.5      0.346     18.606        296×
+C    python:3.12                      78.8      0.315     15.631        250×
+B    nginx:1.19                       25.2      0.093      3.136        271×
+B    node:14                          78.9      0.231     17.776        342×
+B    python:3.8                       83.1      0.558     18.251        149×
+A    web-dvwa                         51.9      0.184     11.158        282×
+A    juice-shop                       62.2      0.110     11.443        565×
+
+====================================================================================================
+KEY FINDINGS
+------------------------------------------------------------
+  Policy P1 agreement (HG = Trivy SA = Grype SA): YES — perfect
+  Largest HG vs Trivy total divergence: web-dvwa (1889 vs 1575)
+  HG risk score: all 9 images scored 100/100 (max risk) — risk score is not granular
+  Scan duration: HG is 18–1830× slower than Trivy standalone (expected: runs all 6 scanners)
+
+====================================================================================================

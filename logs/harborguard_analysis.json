@@ -1,0 +1,795 @@
+{
+  "table1_totals": [
+    {
+      "safe": "alpine_3.19",
+      "image": "alpine:3.19",
+      "group": "C",
+      "hg_total": 10,
+      "trivy_total": 6,
+      "grype_total": 10,
+      "hg_vs_trivy": "1.67\u00d7",
+      "hg_vs_grype": "1.00\u00d7",
+      "risk_score": 49
+    },
+    {
+      "safe": "nginx_latest",
+      "image": "nginx:latest",
+      "group": "C",
+      "hg_total": 188,
+      "trivy_total": 169,
+      "grype_total": 172,
+      "hg_vs_trivy": "1.11\u00d7",
+      "hg_vs_grype": "1.09\u00d7",
+      "risk_score": 100
+    },
+    {
+      "safe": "node_20",
+      "image": "node:20",
+      "group": "C",
+      "hg_total": 2349,
+      "trivy_total": 2268,
+      "grype_total": 1474,
+      "hg_vs_trivy": "1.04\u00d7",
+      "hg_vs_grype": "1.59\u00d7",
+      "risk_score": 100
+    },
+    {
+      "safe": "python_3.12",
+      "image": "python:3.12",
+      "group": "C",
+      "hg_total": 1851,
+      "trivy_total": 1751,
+      "grype_total": 1418,
+      "hg_vs_trivy": "1.06\u00d7",
+      "hg_vs_grype": "1.31\u00d7",
+      "risk_score": 100
+    },
+    {
+      "safe": "nginx_1.19",
+      "image": "nginx:1.19",
+      "group": "B",
+      "hg_total": 432,
+      "trivy_total": 424,
+      "grype_total": 550,
+      "hg_vs_trivy": "1.02\u00d7",
+      "hg_vs_grype": "0.79\u00d7",
+      "risk_score": 100
+    },
+    {
+      "safe": "node_14",
+      "image": "node:14",
+      "group": "B",
+      "hg_total": 1565,
+      "trivy_total": 1439,
+      "grype_total": 1995,
+      "hg_vs_trivy": "1.09\u00d7",
+      "hg_vs_grype": "0.78\u00d7",
+      "risk_score": 100
+    },
+    {
+      "safe": "python_3.8",
+      "image": "python:3.8",
+      "group": "B",
+      "hg_total": 5770,
+      "trivy_total": 5660,
+      "grype_total": 2533,
+      "hg_vs_trivy": "1.02\u00d7",
+      "hg_vs_grype": "2.28\u00d7",
+      "risk_score": 100
+    },
+    {
+      "safe": "vulnerables_web-dvwa",
+      "image": "web-dvwa",
+      "group": "A",
+      "hg_total": 1889,
+      "trivy_total": 1575,
+      "grype_total": 2097,
+      "hg_vs_trivy": "1.20\u00d7",
+      "hg_vs_grype": "0.90\u00d7",
+      "risk_score": 100
+    },
+    {
+      "safe": "bkimminich_juice-shop",
+      "image": "juice-shop",
+      "group": "A",
+      "hg_total": 146,
+      "trivy_total": 98,
+      "grype_total": 93,
+      "hg_vs_trivy": "1.49\u00d7",
+      "hg_vs_grype": "1.57\u00d7",
+      "risk_score": 100
+    }
+  ],
+  "table2_critical": [
+    {
+      "safe": "alpine_3.19",
+      "image": "alpine:3.19",
+      "group": "C",
+      "hg_critical": 0,
+      "trivy_critical": 0,
+      "grype_critical": 0,
+      "delta_hg_trivy": 0,
+      "delta_hg_grype": 0
+    },
+    {
+      "safe": "nginx_latest",
+      "image": "nginx:latest",
+      "group": "C",
+      "hg_critical": 0,
+      "trivy_critical": 0,
+      "grype_critical": 0,
+      "delta_hg_trivy": 0,
+      "delta_hg_grype": 0
+    },
+    {
+      "safe": "node_20",
+      "image": "node:20",
+      "group": "C",
+      "hg_critical": 33,
+      "trivy_critical": 33,
+      "grype_critical": 32,
+      "delta_hg_trivy": 0,
+      "delta_hg_grype": 1
+    },
+    {
+      "safe": "python_3.12",
+      "image": "python:3.12",
+      "group": "C",
+      "hg_critical": 0,
+      "trivy_critical": 0,
+      "grype_critical": 0,
+      "delta_hg_trivy": 0,
+      "delta_hg_grype": 0
+    },
+    {
+      "safe": "nginx_1.19",
+      "image": "nginx:1.19",
+      "group": "B",
+      "hg_critical": 42,
+      "trivy_critical": 42,
+      "grype_critical": 40,
+      "delta_hg_trivy": 0,
+      "delta_hg_grype": 2
+    },
+    {
+      "safe": "node_14",
+      "image": "node:14",
+      "group": "B",
+      "hg_critical": 24,
+      "trivy_critical": 22,
+      "grype_critical": 19,
+      "delta_hg_trivy": 2,
+      "delta_hg_grype": 5
+    },
+    {
+      "safe": "python_3.8",
+      "image": "python:3.8",
+      "group": "B",
+      "hg_critical": 191,
+      "trivy_critical": 182,
+      "grype_critical": 185,
+      "delta_hg_trivy": 9,
+      "delta_hg_grype": 6
+    },
+    {
+      "safe": "vulnerables_web-dvwa",
+      "image": "web-dvwa",
+      "group": "A",
+      "hg_critical": 328,
+      "trivy_critical": 254,
+      "grype_critical": 327,
+      "delta_hg_trivy": 74,
+      "delta_hg_grype": 1
+    },
+    {
+      "safe": "bkimminich_juice-shop",
+      "image": "juice-shop",
+      "group": "A",
+      "hg_critical": 16,
+      "trivy_critical": 10,
+      "grype_critical": 10,
+      "delta_hg_trivy": 6,
+      "delta_hg_grype": 6
+    }
+  ],
+  "table3_per_scanner": [
+    {
+      "safe": "alpine_3.19",
+      "image": "alpine:3.19",
+      "group": "C",
+      "trivy_in_hg": 6,
+      "trivy_standalone": 6,
+      "grype_in_hg": 4,
+      "grype_standalone": 10,
+      "osv_in_hg": 8
+    },
+    {
+      "safe": "nginx_latest",
+      "image": "nginx:latest",
+      "group": "C",
+      "trivy_in_hg": 104,
+      "trivy_standalone": 169,
+      "grype_in_hg": 85,
+      "grype_standalone": 172,
+      "osv_in_hg": 72
+    },
+    {
+      "safe": "node_20",
+      "image": "node:20",
+      "group": "C",
+      "trivy_in_hg": 1606,
+      "trivy_standalone": 2268,
+      "grype_in_hg": 17,
+      "grype_standalone": 1474,
+      "osv_in_hg": 377
+    },
+    {
+      "safe": "python_3.12",
+      "image": "python:3.12",
+      "group": "C",
+      "trivy_in_hg": 1652,
+      "trivy_standalone": 1751,
+      "grype_in_hg": 62,
+      "grype_standalone": 1418,
+      "osv_in_hg": 286
+    },
+    {
+      "safe": "nginx_1.19",
+      "image": "nginx:1.19",
+      "group": "B",
+      "trivy_in_hg": 15,
+      "trivy_standalone": 424,
+      "grype_in_hg": 538,
+      "grype_standalone": 550,
+      "osv_in_hg": 331
+    },
+    {
+      "safe": "node_14",
+      "image": "node:14",
+      "group": "B",
+      "trivy_in_hg": 247,
+      "trivy_standalone": 1439,
+      "grype_in_hg": 953,
+      "grype_standalone": 1995,
+      "osv_in_hg": 800
+    },
+    {
+      "safe": "python_3.8",
+      "image": "python:3.8",
+      "group": "B",
+      "trivy_in_hg": 1569,
+      "trivy_standalone": 5660,
+      "grype_in_hg": 31,
+      "grype_standalone": 2533,
+      "osv_in_hg": 400
+    },
+    {
+      "safe": "vulnerables_web-dvwa",
+      "image": "web-dvwa",
+      "group": "A",
+      "trivy_in_hg": 962,
+      "trivy_standalone": 1575,
+      "grype_in_hg": 531,
+      "grype_standalone": 2097,
+      "osv_in_hg": 507
+    },
+    {
+      "safe": "bkimminich_juice-shop",
+      "image": "juice-shop",
+      "group": "A",
+      "trivy_in_hg": 79,
+      "trivy_standalone": 98,
+      "grype_in_hg": 67,
+      "grype_standalone": 93,
+      "osv_in_hg": 1
+    }
+  ],
+  "table4_fix_rates": [
+    {
+      "safe": "alpine_3.19",
+      "image": "alpine:3.19",
+      "group": "C",
+      "hg_fix_pct": 60,
+      "trivy_fix_pct": 100,
+      "grype_fix_pct": 60
+    },
+    {
+      "safe": "nginx_latest",
+      "image": "nginx:latest",
+      "group": "C",
+      "hg_fix_pct": 1,
+      "trivy_fix_pct": 0,
+      "grype_fix_pct": 0
+    },
+    {
+      "safe": "node_20",
+      "image": "node:20",
+      "group": "C",
+      "hg_fix_pct": 0,
+      "trivy_fix_pct": 1,
+      "grype_fix_pct": 1
+    },
+    {
+      "safe": "python_3.12",
+      "image": "python:3.12",
+      "group": "C",
+      "hg_fix_pct": 12,
+      "trivy_fix_pct": 14,
+      "grype_fix_pct": 18
+    },
+    {
+      "safe": "nginx_1.19",
+      "image": "nginx:1.19",
+      "group": "B",
+      "hg_fix_pct": 75,
+      "trivy_fix_pct": 79,
+      "grype_fix_pct": 58
+    },
+    {
+      "safe": "node_14",
+      "image": "node:14",
+      "group": "B",
+      "hg_fix_pct": 10,
+      "trivy_fix_pct": 77,
+      "grype_fix_pct": 34
+    },
+    {
+      "safe": "python_3.8",
+      "image": "python:3.8",
+      "group": "B",
+      "hg_fix_pct": 7,
+      "trivy_fix_pct": 60,
+      "grype_fix_pct": 41
+    },
+    {
+      "safe": "vulnerables_web-dvwa",
+      "image": "web-dvwa",
+      "group": "A",
+      "hg_fix_pct": 45,
+      "trivy_fix_pct": 88,
+      "grype_fix_pct": 65
+    },
+    {
+      "safe": "bkimminich_juice-shop",
+      "image": "juice-shop",
+      "group": "A",
+      "hg_fix_pct": 87,
+      "trivy_fix_pct": 85,
+      "grype_fix_pct": 84
+    }
+  ],
+  "table5_severity": [
+    {
+      "safe": "alpine_3.19",
+      "image": "alpine:3.19",
+      "group": "C",
+      "hg": {
+        "c": 0,
+        "h": 0,
+        "m": 7,
+        "l": 3
+      },
+      "trivy": {
+        "c": 0,
+        "h": 0,
+        "m": 3,
+        "l": 3
+      },
+      "grype": {
+        "c": 0,
+        "h": 0,
+        "m": 4,
+        "l": 6
+      }
+    },
+    {
+      "safe": "nginx_latest",
+      "image": "nginx:latest",
+      "group": "C",
+      "hg": {
+        "c": 0,
+        "h": 28,
+        "m": 42,
+        "l": 118
+      },
+      "trivy": {
+        "c": 0,
+        "h": 14,
+        "m": 29,
+        "l": 126
+      },
+      "grype": {
+        "c": 0,
+        "h": 25,
+        "m": 33,
+        "l": 8
+      }
+    },
+    {
+      "safe": "node_20",
+      "image": "node:20",
+      "group": "C",
+      "hg": {
+        "c": 33,
+        "h": 343,
+        "m": 996,
+        "l": 977
+      },
+      "trivy": {
+        "c": 33,
+        "h": 277,
+        "m": 936,
+        "l": 997
+      },
+      "grype": {
+        "c": 32,
+        "h": 178,
+        "m": 360,
+        "l": 67
+      }
+    },
+    {
+      "safe": "python_3.12",
+      "image": "python:3.12",
+      "group": "C",
+      "hg": {
+        "c": 0,
+        "h": 251,
+        "m": 647,
+        "l": 953
+      },
+      "trivy": {
+        "c": 0,
+        "h": 196,
+        "m": 557,
+        "l": 971
+      },
+      "grype": {
+        "c": 0,
+        "h": 165,
+        "m": 375,
+        "l": 59
+      }
+    },
+    {
+      "safe": "nginx_1.19",
+      "image": "nginx:1.19",
+      "group": "B",
+      "hg": {
+        "c": 42,
+        "h": 160,
+        "m": 203,
+        "l": 27
+      },
+      "trivy": {
+        "c": 42,
+        "h": 149,
+        "m": 193,
+        "l": 31
+      },
+      "grype": {
+        "c": 40,
+        "h": 159,
+        "m": 194,
+        "l": 35
+      }
+    },
+    {
+      "safe": "node_14",
+      "image": "node:14",
+      "group": "B",
+      "hg": {
+        "c": 24,
+        "h": 631,
+        "m": 815,
+        "l": 95
+      },
+      "trivy": {
+        "c": 22,
+        "h": 569,
+        "m": 754,
+        "l": 90
+      },
+      "grype": {
+        "c": 19,
+        "h": 453,
+        "m": 477,
+        "l": 95
+      }
+    },
+    {
+      "safe": "python_3.8",
+      "image": "python:3.8",
+      "group": "B",
+      "hg": {
+        "c": 191,
+        "h": 1455,
+        "m": 3035,
+        "l": 1089
+      },
+      "trivy": {
+        "c": 182,
+        "h": 1369,
+        "m": 2957,
+        "l": 1114
+      },
+      "grype": {
+        "c": 185,
+        "h": 652,
+        "m": 694,
+        "l": 125
+      }
+    },
+    {
+      "safe": "vulnerables_web-dvwa",
+      "image": "web-dvwa",
+      "group": "A",
+      "hg": {
+        "c": 328,
+        "h": 760,
+        "m": 702,
+        "l": 99
+      },
+      "trivy": {
+        "c": 254,
+        "h": 551,
+        "m": 642,
+        "l": 116
+      },
+      "grype": {
+        "c": 327,
+        "h": 760,
+        "m": 700,
+        "l": 99
+      }
+    },
+    {
+      "safe": "bkimminich_juice-shop",
+      "image": "juice-shop",
+      "group": "A",
+      "hg": {
+        "c": 16,
+        "h": 71,
+        "m": 45,
+        "l": 14
+      },
+      "trivy": {
+        "c": 10,
+        "h": 47,
+        "m": 27,
+        "l": 14
+      },
+      "grype": {
+        "c": 10,
+        "h": 46,
+        "m": 26,
+        "l": 4
+      }
+    }
+  ],
+  "table6_policy": [
+    {
+      "safe": "alpine_3.19",
+      "image": "alpine:3.19",
+      "group": "C",
+      "hg_critical": 0,
+      "hg_fixed": 6,
+      "risk_score": 49,
+      "p1": "PASS",
+      "p2": "PASS",
+      "p3": "PASS",
+      "sa_p1_trivy": "PASS",
+      "sa_p1_grype": "PASS",
+      "trivy_in_hg_critical": 0,
+      "grype_in_hg_critical": 0
+    },
+    {
+      "safe": "nginx_latest",
+      "image": "nginx:latest",
+      "group": "C",
+      "hg_critical": 0,
+      "hg_fixed": 2,
+      "risk_score": 100,
+      "p1": "PASS",
+      "p2": "PASS",
+      "p3": "PASS",
+      "sa_p1_trivy": "PASS",
+      "sa_p1_grype": "PASS",
+      "trivy_in_hg_critical": 0,
+      "grype_in_hg_critical": 0
+    },
+    {
+      "safe": "node_20",
+      "image": "node:20",
+      "group": "C",
+      "hg_critical": 33,
+      "hg_fixed": 6,
+      "risk_score": 100,
+      "p1": "REJECT",
+      "p2": "REJECT",
+      "p3": "PASS",
+      "sa_p1_trivy": "REJECT",
+      "sa_p1_grype": "REJECT",
+      "trivy_in_hg_critical": 0,
+      "grype_in_hg_critical": 0
+    },
+    {
+      "safe": "python_3.12",
+      "image": "python:3.12",
+      "group": "C",
+      "hg_critical": 0,
+      "hg_fixed": 218,
+      "risk_score": 100,
+      "p1": "PASS",
+      "p2": "PASS",
+      "p3": "PASS",
+      "sa_p1_trivy": "PASS",
+      "sa_p1_grype": "PASS",
+      "trivy_in_hg_critical": 0,
+      "grype_in_hg_critical": 0
+    },
+    {
+      "safe": "nginx_1.19",
+      "image": "nginx:1.19",
+      "group": "B",
+      "hg_critical": 42,
+      "hg_fixed": 322,
+      "risk_score": 100,
+      "p1": "REJECT",
+      "p2": "REJECT",
+      "p3": "REJECT",
+      "sa_p1_trivy": "REJECT",
+      "sa_p1_grype": "REJECT",
+      "trivy_in_hg_critical": 2,
+      "grype_in_hg_critical": 40
+    },
+    {
+      "safe": "node_14",
+      "image": "node:14",
+      "group": "B",
+      "hg_critical": 24,
+      "hg_fixed": 160,
+      "risk_score": 100,
+      "p1": "REJECT",
+      "p2": "REJECT",
+      "p3": "PASS",
+      "sa_p1_trivy": "REJECT",
+      "sa_p1_grype": "REJECT",
+      "trivy_in_hg_critical": 0,
+      "grype_in_hg_critical": 0
+    },
+    {
+      "safe": "python_3.8",
+      "image": "python:3.8",
+      "group": "B",
+      "hg_critical": 191,
+      "hg_fixed": 405,
+      "risk_score": 100,
+      "p1": "REJECT",
+      "p2": "REJECT",
+      "p3": "PASS",
+      "sa_p1_trivy": "REJECT",
+      "sa_p1_grype": "REJECT",
+      "trivy_in_hg_critical": 0,
+      "grype_in_hg_critical": 0
+    },
+    {
+      "safe": "vulnerables_web-dvwa",
+      "image": "web-dvwa",
+      "group": "A",
+      "hg_critical": 328,
+      "hg_fixed": 856,
+      "risk_score": 100,
+      "p1": "REJECT",
+      "p2": "REJECT",
+      "p3": "PASS",
+      "sa_p1_trivy": "REJECT",
+      "sa_p1_grype": "REJECT",
+      "trivy_in_hg_critical": 0,
+      "grype_in_hg_critical": 0
+    },
+    {
+      "safe": "bkimminich_juice-shop",
+      "image": "juice-shop",
+      "group": "A",
+      "hg_critical": 16,
+      "hg_fixed": 127,
+      "risk_score": 100,
+      "p1": "REJECT",
+      "p2": "REJECT",
+      "p3": "REJECT",
+      "sa_p1_trivy": "REJECT",
+      "sa_p1_grype": "REJECT",
+      "trivy_in_hg_critical": 8,
+      "grype_in_hg_critical": 8
+    }
+  ],
+  "table7_duration": [
+    {
+      "safe": "alpine_3.19",
+      "image": "alpine:3.19",
+      "group": "C",
+      "hg_duration_s": 9.8,
+      "trivy_mean_s": 0.056,
+      "grype_mean_s": 1.451,
+      "ratio_hg_vs_trivy": "175\u00d7"
+    },
+    {
+      "safe": "nginx_latest",
+      "image": "nginx:latest",
+      "group": "C",
+      "hg_duration_s": 38.2,
+      "trivy_mean_s": 0.09,
+      "grype_mean_s": 3.016,
+      "ratio_hg_vs_trivy": "424\u00d7"
+    },
+    {
+      "safe": "node_20",
+      "image": "node:20",
+      "group": "C",
+      "hg_duration_s": 102.5,
+      "trivy_mean_s": 0.346,
+      "grype_mean_s": 18.606,
+      "ratio_hg_vs_trivy": "296\u00d7"
+    },
+    {
+      "safe": "python_3.12",
+      "image": "python:3.12",
+      "group": "C",
+      "hg_duration_s": 78.8,
+      "trivy_mean_s": 0.315,
+      "grype_mean_s": 15.631,
+      "ratio_hg_vs_trivy": "250\u00d7"
+    },
+    {
+      "safe": "nginx_1.19",
+      "image": "nginx:1.19",
+      "group": "B",
+      "hg_duration_s": 25.2,
+      "trivy_mean_s": 0.093,
+      "grype_mean_s": 3.136,
+      "ratio_hg_vs_trivy": "271\u00d7"
+    },
+    {
+      "safe": "node_14",
+      "image": "node:14",
+      "group": "B",
+      "hg_duration_s": 78.9,
+      "trivy_mean_s": 0.231,
+      "grype_mean_s": 17.776,
+      "ratio_hg_vs_trivy": "342\u00d7"
+    },
+    {
+      "safe": "python_3.8",
+      "image": "python:3.8",
+      "group": "B",
+      "hg_duration_s": 83.1,
+      "trivy_mean_s": 0.558,
+      "grype_mean_s": 18.251,
+      "ratio_hg_vs_trivy": "149\u00d7"
+    },
+    {
+      "safe": "vulnerables_web-dvwa",
+      "image": "web-dvwa",
+      "group": "A",
+      "hg_duration_s": 51.9,
+      "trivy_mean_s": 0.184,
+      "grype_mean_s": 11.158,
+      "ratio_hg_vs_trivy": "282\u00d7"
+    },
+    {
+      "safe": "bkimminich_juice-shop",
+      "image": "juice-shop",
+      "group": "A",
+      "hg_duration_s": 62.2,
+      "trivy_mean_s": 0.11,
+      "grype_mean_s": 11.443,
+      "ratio_hg_vs_trivy": "565\u00d7"
+    }
+  ],
+  "key_findings": {
+    "p1_policy_agreement": true,
+    "hg_risk_score_all_max": true,
+    "note": "HG aggregates Trivy+Grype+OSV; totals are NOT sum (findings deduplicated by CVE)"
+  }
+}

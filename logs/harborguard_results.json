@@ -1,0 +1,407 @@
+[
+  {
+    "image_tag": "alpine:3.19",
+    "image": "alpine",
+    "tag": "3.19",
+    "safe": "alpine_3.19",
+    "group": "C",
+    "status": "SUCCESS",
+    "elapsed_s": 20.5,
+    "duration_s": 9.8,
+    "scan_id": "cmnkygl4s001nw301z580mvbu",
+    "request_id": "20260404-232002-b8ae16ce",
+    "total": 10,
+    "critical": 0,
+    "high": 0,
+    "medium": 7,
+    "low": 3,
+    "fixed": 6,
+    "fix_pct": 60,
+    "risk_score": 49,
+    "compliance_score": 81,
+    "compliance_grade": "B",
+    "per_scanner": {
+      "osv": {
+        "total": 8,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "trivy": {
+        "total": 6,
+        "critical": 0,
+        "high": 0,
+        "medium": 3,
+        "low": 3
+      },
+      "grype": {
+        "total": 4,
+        "critical": 0,
+        "high": 0,
+        "medium": 4,
+        "low": 0
+      }
+    }
+  },
+  {
+    "image_tag": "nginx:latest",
+    "image": "nginx",
+    "tag": "latest",
+    "safe": "nginx_latest",
+    "group": "C",
+    "status": "SUCCESS",
+    "elapsed_s": 45.6,
+    "duration_s": 38.2,
+    "scan_id": "cmnkyh2k80038w301y1ayaudt",
+    "request_id": "20260404-232025-b9991646",
+    "total": 188,
+    "critical": 0,
+    "high": 28,
+    "medium": 42,
+    "low": 118,
+    "fixed": 2,
+    "fix_pct": 1,
+    "risk_score": 100,
+    "compliance_score": 68,
+    "compliance_grade": "D",
+    "per_scanner": {
+      "grype": {
+        "total": 85,
+        "critical": 0,
+        "high": 26,
+        "medium": 41,
+        "low": 17
+      },
+      "osv": {
+        "total": 72,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "trivy": {
+        "total": 104,
+        "critical": 0,
+        "high": 2,
+        "medium": 1,
+        "low": 101
+      }
+    }
+  },
+  {
+    "image_tag": "node:20",
+    "image": "node",
+    "tag": "20",
+    "safe": "node_20",
+    "group": "C",
+    "status": "SUCCESS",
+    "elapsed_s": 111.2,
+    "duration_s": 102.5,
+    "scan_id": "cmnkyi3du00jjw301lh1tab3n",
+    "request_id": "20260404-232112-214f9040",
+    "total": 2349,
+    "critical": 33,
+    "high": 343,
+    "medium": 996,
+    "low": 977,
+    "fixed": 6,
+    "fix_pct": 0,
+    "risk_score": 100,
+    "compliance_score": 75,
+    "compliance_grade": "C",
+    "per_scanner": {
+      "trivy": {
+        "total": 1606,
+        "critical": 0,
+        "high": 0,
+        "medium": 625,
+        "low": 971
+      },
+      "osv": {
+        "total": 377,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "grype": {
+        "total": 17,
+        "critical": 0,
+        "high": 0,
+        "medium": 11,
+        "low": 6
+      }
+    }
+  },
+  {
+    "image_tag": "python:3.12",
+    "image": "python",
+    "tag": "3.12",
+    "safe": "python_3.12",
+    "group": "C",
+    "status": "SUCCESS",
+    "elapsed_s": 86.2,
+    "duration_s": 78.8,
+    "scan_id": "cmnkykj3c03mlw30180ukjwk8",
+    "request_id": "20260404-232306-4d4f5dab",
+    "total": 1851,
+    "critical": 0,
+    "high": 251,
+    "medium": 647,
+    "low": 953,
+    "fixed": 218,
+    "fix_pct": 12,
+    "risk_score": 100,
+    "compliance_score": 68,
+    "compliance_grade": "D",
+    "per_scanner": {
+      "trivy": {
+        "total": 1652,
+        "critical": 0,
+        "high": 97,
+        "medium": 596,
+        "low": 946
+      },
+      "osv": {
+        "total": 286,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "grype": {
+        "total": 62,
+        "critical": 0,
+        "high": 4,
+        "medium": 51,
+        "low": 7
+      }
+    }
+  },
+  {
+    "image_tag": "nginx:1.19",
+    "image": "nginx",
+    "tag": "1.19",
+    "safe": "nginx_1.19",
+    "group": "B",
+    "status": "SUCCESS",
+    "elapsed_s": 35.2,
+    "duration_s": 25.2,
+    "scan_id": "cmnkymepq061jw301s4no2ryj",
+    "request_id": "20260404-232434-8ea3a9c5",
+    "total": 432,
+    "critical": 42,
+    "high": 160,
+    "medium": 203,
+    "low": 27,
+    "fixed": 322,
+    "fix_pct": 75,
+    "risk_score": 100,
+    "compliance_score": 68,
+    "compliance_grade": "D",
+    "per_scanner": {
+      "grype": {
+        "total": 538,
+        "critical": 40,
+        "high": 159,
+        "medium": 194,
+        "low": 26
+      },
+      "osv": {
+        "total": 331,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "trivy": {
+        "total": 15,
+        "critical": 2,
+        "high": 1,
+        "medium": 9,
+        "low": 1
+      }
+    }
+  },
+  {
+    "image_tag": "node:14",
+    "image": "node",
+    "tag": "14",
+    "safe": "node_14",
+    "group": "B",
+    "status": "SUCCESS",
+    "elapsed_s": 91.4,
+    "duration_s": 78.9,
+    "scan_id": "cmnkyn8af06yaw301urntfofp",
+    "request_id": "20260404-232512-09210b95",
+    "total": 1565,
+    "critical": 24,
+    "high": 631,
+    "medium": 815,
+    "low": 95,
+    "fixed": 160,
+    "fix_pct": 10,
+    "risk_score": 100,
+    "compliance_score": 68,
+    "compliance_grade": "D",
+    "per_scanner": {
+      "grype": {
+        "total": 953,
+        "critical": 0,
+        "high": 0,
+        "medium": 13,
+        "low": 15
+      },
+      "osv": {
+        "total": 800,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "trivy": {
+        "total": 247,
+        "critical": 0,
+        "high": 0,
+        "medium": 163,
+        "low": 80
+      }
+    }
+  },
+  {
+    "image_tag": "python:3.8",
+    "image": "python",
+    "tag": "3.8",
+    "safe": "python_3.8",
+    "group": "B",
+    "status": "SUCCESS",
+    "elapsed_s": 95.8,
+    "duration_s": 83.1,
+    "scan_id": "cmnkyp7v70avaw301gnp4ht2x",
+    "request_id": "20260404-232645-8258a80b",
+    "total": 5770,
+    "critical": 191,
+    "high": 1455,
+    "medium": 3035,
+    "low": 1089,
+    "fixed": 405,
+    "fix_pct": 7,
+    "risk_score": 100,
+    "compliance_score": 75,
+    "compliance_grade": "C",
+    "per_scanner": {
+      "trivy": {
+        "total": 1569,
+        "critical": 0,
+        "high": 0,
+        "medium": 473,
+        "low": 1080
+      },
+      "osv": {
+        "total": 400,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "grype": {
+        "total": 31,
+        "critical": 0,
+        "high": 0,
+        "medium": 22,
+        "low": 9
+      }
+    }
+  },
+  {
+    "image_tag": "vulnerables/web-dvwa:latest",
+    "image": "vulnerables/web-dvwa",
+    "tag": "latest",
+    "safe": "vulnerables_web-dvwa",
+    "group": "A",
+    "status": "SUCCESS",
+    "elapsed_s": 58.8,
+    "duration_s": 51.9,
+    "scan_id": "cmnkyra3h0gc7w301l4emyi3v",
+    "request_id": "20260404-232823-9899e427",
+    "total": 1889,
+    "critical": 328,
+    "high": 760,
+    "medium": 702,
+    "low": 99,
+    "fixed": 856,
+    "fix_pct": 45,
+    "risk_score": 100,
+    "compliance_score": 75,
+    "compliance_grade": "C",
+    "per_scanner": {
+      "grype": {
+        "total": 531,
+        "critical": 0,
+        "high": 237,
+        "medium": 71,
+        "low": 12
+      },
+      "osv": {
+        "total": 507,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "trivy": {
+        "total": 962,
+        "critical": 0,
+        "high": 239,
+        "medium": 631,
+        "low": 87
+      }
+    }
+  },
+  {
+    "image_tag": "bkimminich/juice-shop:latest",
+    "image": "bkimminich/juice-shop",
+    "tag": "latest",
+    "safe": "bkimminich_juice-shop",
+    "group": "A",
+    "status": "SUCCESS",
+    "elapsed_s": 70.5,
+    "duration_s": 62.2,
+    "scan_id": "cmnkysmgu0iplw301r80oi8be",
+    "request_id": "20260404-232924-6d62acef",
+    "total": 146,
+    "critical": 16,
+    "high": 71,
+    "medium": 45,
+    "low": 14,
+    "fixed": 127,
+    "fix_pct": 87,
+    "risk_score": 100,
+    "compliance_score": 80,
+    "compliance_grade": "B",
+    "per_scanner": {
+      "osv": {
+        "total": 1,
+        "critical": 0,
+        "high": 0,
+        "medium": 0,
+        "low": 0
+      },
+      "trivy": {
+        "total": 79,
+        "critical": 8,
+        "high": 37,
+        "medium": 22,
+        "low": 12
+      },
+      "grype": {
+        "total": 67,
+        "critical": 8,
+        "high": 34,
+        "medium": 23,
+        "low": 2
+      }
+    }
+  }
+]
