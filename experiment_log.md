@@ -3,7 +3,7 @@
 **Project:** MSc Research — Security of Containerised CI/CD Pipelines
 **Focus:** Empirical evaluation of vulnerability scanner consistency and policy-based gating
 **Log version:** 2.0 (full dataset)
-**Last updated:** 2026-03-31
+**Last updated:** 2026-04-04
 
 ---
 
@@ -332,74 +332,103 @@ logs/parsed_results.json
 
 ## 6. Performance Data
 
-### Execution Times (milliseconds)
+Scan times measured over **3 independent runs** per image per tool (images already present locally; no pull time). Mean and standard deviation reported. Alpine:3.19 run 1 anomaly (first-time cold image export: Trivy 5365ms, Grype 33309ms) excluded from that image's mean.
 
-| Image | Syft | Trivy | Grype | OSV |
-|-------|------|-------|-------|-----|
-| alpine:3.19 | 1671 | 55 | 32970 | 2376 |
-| nginx:latest | 3075 | 31639* | 3840 | 5003 |
-| node:20 | 16793 | 9476 | 17824 | 21142 |
-| python:3.12 | 14461 | 10216 | 15652 | 21076 |
-| nginx:1.19 | 3317 | 1253 | 3125 | 8375 |
-| node:14 | 16458 | 8483 | 16882 | 16565 |
-| python:3.8 | 16572 | 9991 | 17587 | 27032 |
-| vulnerables/web-dvwa | 10979 | 6012 | 11667 | ~30000† |
-| bkimminich/juice-shop | 10492 | 8015 | 10012 | ~30000† |
+### Scan Times — Mean ± Std Dev
 
-\* Trivy on nginx:latest includes Java DB download (~28s). Subsequent scans excluded DB download time.
-† OSV timing for images requiring `:latest` tag correction measured separately; estimate based on image size.
+| Grp | Image | Size MB | Trivy mean | ± | Grype mean | ± | OSV mean | ± |
+|-----|-------|---------|-----------|---|-----------|---|---------|---|
+| C | alpine:3.19 | 7.1 | 56ms | 0ms | 1451ms | 12ms | 1900ms | 568ms |
+| C | nginx:latest | 153.5 | 90ms | 0ms | 3016ms | 21ms | 4283ms | 188ms |
+| C | node:20 | 1044.7 | 346ms | 1ms | 18606ms | 476ms | 25506ms | 2295ms |
+| C | python:3.12 | 1055.6 | 315ms | 2ms | 15631ms | 8ms | 24610ms | 1540ms |
+| B | nginx:1.19 | 127.0 | 93ms | 3ms | 3136ms | 16ms | 5329ms | 1813ms |
+| B | node:14 | 869.5 | 231ms | 2ms | 17776ms | 1667ms | 16614ms | 3080ms |
+| B | python:3.8 | 949.3 | 558ms | 15ms | 18251ms | 685ms | 22709ms | 2169ms |
+| A | vulnerables/web-dvwa | 678.8 | 184ms | 5ms | 11158ms | 824ms | 10832ms | 659ms |
+| A | bkimminich/juice-shop | 467.3 | 110ms | 7ms | 11443ms | 1225ms | 12550ms | 1099ms |
 
 **Observations:**
-- Trivy is fastest on small/minimal images (55ms on alpine); overhead grows with package count.
-- Grype timing correlates closely with Syft (expected: Grype embeds Syft for SBOM generation).
-- OSV-Scanner is consistently the slowest, requiring full image export to disk.
-- Trivy's first large Debian image scan triggered Java DB download (840MB), inflating that measurement.
+- Trivy is 10–100× faster than Grype and OSV across all images. Its speed reflects direct DB index lookup vs layer extraction.
+- Grype and OSV-Scanner scale linearly with image size (r≈0.9 correlation with compressed size in MB).
+- OSV-Scanner is slower than Grype for large images but faster for small OS-only images (web-dvwa, alpine).
+- Trivy's first run on alpine included a one-time cold image export (anomaly excluded); subsequent runs were sub-60ms.
+- Raw individual run data: `logs/benchmark.log`; parsed summary: `logs/benchmark_summary.json`.
 
 ---
 
 ## 7. Cross-Tool Comparison
 
-### 7.1 Total Vulnerability Counts
+### 7.1 Total Vulnerability Counts (with fix rate)
 
-| Image | Trivy | Grype | OSV | Max/Min Ratio |
-|-------|-------|-------|-----|----------------|
-| alpine:3.19 | 6 | 10 | 6 | 1.7× |
-| nginx:latest | 169 | 172 | 177 | 1.05× |
-| node:20 | 2268 | 1474 | 1458 | 1.55× |
-| python:3.12 | 1751 | 1418 | 1422 | 1.23× |
-| nginx:1.19 | 424 | 550 | 132‡ | 4.17× |
-| node:14 | 1439 | 1995 | 210‡ | 9.50× |
-| python:3.8 | 5660 | 2533 | 2620 | 2.24× |
-| web-dvwa | 1575 | 2097 | 336‡ | 6.24× |
-| juice-shop | 98 | 93 | 94 | 1.05× |
+Counts represent total findings (CVE × package pairs) as reported by each tool. Fix% is the fraction of findings with a fix available. OSV reports at advisory granularity — not directly comparable to CVE-level counts for Debian-based images (marked †).
 
-‡ OSV reports advisories (each advisory may bundle multiple CVEs), so direct comparison with CVE-level counts is not valid for these rows.
+| Grp | Image | Trivy | T-fix% | Grype | G-fix% | OSV-adv† | Max/Min |
+|-----|-------|-------|--------|-------|--------|---------|---------|
+| C | alpine:3.19 | 6 | 100% | 10 | 60% | 6 | 1.7× |
+| C | nginx:latest | 169 | 0% | 172 | 0% | 177 | 1.05× |
+| C | node:20 | 2268 | 1% | 1474 | 1% | 1458 | 1.55× |
+| C | python:3.12 | 1751 | 14% | 1418 | 18% | 1422 | 1.23× |
+| B | nginx:1.19 | 424 | 79% | 550 | 58% | 132† | 4.17× |
+| B | node:14 | 1439 | 77% | 1995 | 34% | 210† | 9.50× |
+| B | python:3.8 | 5660 | 60% | 2533 | 41% | 2620 | 2.24× |
+| A | web-dvwa | 1575 | 88% | 2097 | 65% | 336† | 6.24× |
+| A | juice-shop | 98 | 85% | 93 | 84% | 94 | 1.05× |
 
 **Key patterns:**
-1. Trivy consistently reports more findings than Grype for Debian-based images (driven by LOW severity inflation).
-2. Grype reports more than Trivy for npm-heavy images (node:14, web-dvwa).
-3. juice-shop and nginx:latest show the tightest cross-tool agreement.
-4. python:3.8 shows the widest absolute divergence (3127 finding gap, Trivy vs Grype).
+1. Trivy consistently reports more findings than Grype for Debian-based images, driven by LOW severity inflation.
+2. Grype reports more than Trivy for npm-heavy images (node:14, web-dvwa), suggesting broader npm DB coverage.
+3. juice-shop and nginx:latest show the tightest total count agreement (~5% delta).
+4. python:3.8 shows the widest absolute divergence (3127-finding gap, Trivy vs Grype).
+5. Fix rate diverges significantly: python:3.8 Trivy 60% vs Grype 41%; node:14 Trivy 77% vs Grype 34%.
 
-### 7.2 CRITICAL Severity Agreement
+### 7.2 CVE-Level Overlap Between Trivy and Grype
 
-| Image | Trivy C | Grype C | Delta | Agreement |
-|-------|---------|---------|-------|-----------|
-| alpine:3.19 | 0 | 0 | 0 | Perfect |
-| nginx:latest | 0 | 0 | 0 | Perfect |
-| node:20 | 33 | 32 | 1 | Strong |
-| python:3.12 | 0 | 0 | 0 | Perfect |
-| nginx:1.19 | 42 | 40 | 2 | Strong |
-| node:14 | 22 | 19 | 3 | Good |
-| python:3.8 | 182 | 185 | 3 | Strong |
-| web-dvwa | 254 | 327 | 73 | Moderate |
-| juice-shop | 10 | 10 | 0 | Perfect |
+Jaccard similarity over unique CVE IDs: `|T ∩ G| / |T ∪ G|` (1.0 = identical CVE sets). Grype GHSA IDs are expanded to CVE aliases before comparison.
 
-CRITICAL-level findings show the best cross-tool agreement. The largest divergence is `web-dvwa` (73 CRITICAL gap), attributable to EOSL detection differences on Debian 9.
+| Grp | Image | T CVEs | G CVEs | Both | T-only | G-only | Jaccard |
+|-----|-------|--------|--------|------|--------|--------|---------|
+| C | alpine:3.19 | 2 | 4 | 2 | 0 | 2 | 0.500 |
+| C | nginx:latest | 96 | 100 | 92 | 4 | 8 | 0.885 |
+| C | node:20 | 1127 | 347 | 329 | 798 | 18 | 0.287 |
+| C | python:3.12 | 630 | 284 | 282 | 348 | 2 | 0.446 |
+| B | nginx:1.19 | 279 | 353 | 269 | 10 | 84 | 0.741 |
+| B | node:14 | 709 | 553 | 240 | 469 | 313 | 0.235 |
+| B | python:3.8 | 3684 | 544 | 530 | 3154 | 14 | 0.143 |
+| A | web-dvwa | 439 | 590 | 425 | 14 | 165 | 0.704 |
+| A | juice-shop | 83 | 143 | 79 | 4 | 64 | 0.537 |
 
-### 7.3 LOW Severity as a Driver of Total Count Divergence
+**Key findings:**
+- nginx:latest has the highest overlap (Jaccard 0.885) — both tools agree on nearly the same CVE set.
+- python:3.8 has the lowest overlap (0.143): only 530 of 4228 distinct CVEs are shared. Trivy reports 3154 CVEs not found by Grype.
+- For Group C Debian images, Trivy covers far more CVE IDs than Grype (driven by LOW severity entries absent from Grype's DB).
+- nginx:1.19 and web-dvwa (Debian EOSL) show good overlap (0.74, 0.70), suggesting consistent EOSL DB coverage.
 
-The main source of disagreement is LOW severity. Trivy consistently inflates LOW counts:
+### 7.3 Severity Agreement on Shared CVEs
+
+For CVEs found by **both** tools, what fraction receive the same severity rating? "T-higher" means Trivy assigned a higher severity than Grype for the same CVE.
+
+| Grp | Image | Shared | Agree | Agree% | T-higher | G-higher |
+|-----|-------|--------|-------|--------|----------|----------|
+| C | alpine:3.19 | 2 | 1 | 50% | 1 | 0 |
+| C | nginx:latest | 92 | 30 | 33% | 54 | 8 |
+| C | node:20 | 329 | 111 | 34% | 203 | 15 |
+| C | python:3.12 | 282 | 95 | 34% | 174 | 13 |
+| B | nginx:1.19 | 269 | 259 | 96% | 4 | 6 |
+| B | node:14 | 240 | 196 | 82% | 37 | 7 |
+| B | python:3.8 | 530 | 291 | 55% | 213 | 26 |
+| A | web-dvwa | 425 | 406 | 96% | 1 | 18 |
+| A | juice-shop | 79 | 6 | 8% | 71 | 2 |
+
+**Key findings:**
+- Severity agreement ranges from 8% (juice-shop) to 96% (nginx:1.19, web-dvwa).
+- Group C modern Debian images agree on only ~33% of shared CVEs, with Trivy consistently assigning higher severity.
+- juice-shop (npm-heavy, Debian 13) shows near-total severity disagreement — Trivy rates 71 of 79 shared CVEs higher than Grype, likely reflecting different CVSS score selection from NVD vs GitHub Advisory DB.
+- Group B EOSL images show high severity agreement (82–96%), suggesting more consistent DB entries for older CVEs.
+
+### 7.4 LOW Severity as a Driver of Total Count Divergence
+
+Trivy's inflated LOW counts are the primary source of total count divergence:
 
 | Image | Trivy LOW | Grype LOW | Ratio |
 |-------|-----------|-----------|-------|
@@ -408,7 +437,7 @@ The main source of disagreement is LOW severity. Trivy consistently inflates LOW
 | python:3.8 | 1114 | 125 | 8.9× |
 | node:14 | 90 | 95 | 1.05× (reversed) |
 
-This has a direct implication for policy design: any threshold-based policy using total counts will be significantly affected by tool choice.
+Policy implication: threshold-based policies using total counts will behave very differently depending on which scanner generates the input.
 
 ---
 
@@ -501,35 +530,35 @@ Policies are evaluated based on Trivy and Grype findings (OSV severity breakdown
 
 ### D1: Core Results (Image × Tool × Severity)
 
-| Image | Group | Trivy | T:C | T:H | T:M | T:L | Grype | G:C | G:H | G:M | G:L | OSV | EOSL |
-|-------|-------|-------|-----|-----|-----|-----|-------|-----|-----|-----|-----|-----|------|
-| alpine:3.19 | C | 6 | 0 | 0 | 3 | 3 | 10 | 0 | 0 | 4 | 6 | 6 | YES |
-| nginx:latest | C | 169 | 0 | 14 | 29 | 126 | 172 | 0 | 25 | 33 | 8 | 177 | no |
-| node:20 | C | 2268 | 33 | 277 | 936 | 997 | 1474 | 32 | 178 | 360 | 67 | 1458 | no |
-| python:3.12 | C | 1751 | 0 | 196 | 557 | 971 | 1418 | 0 | 165 | 375 | 59 | 1422 | no |
-| nginx:1.19 | B | 424 | 42 | 149 | 193 | 31 | 550 | 40 | 159 | 194 | 35 | 132† | YES |
-| node:14 | B | 1439 | 22 | 569 | 754 | 90 | 1995 | 19 | 453 | 477 | 95 | 210† | YES |
-| python:3.8 | B | 5660 | 182 | 1369 | 2957 | 1114 | 2533 | 185 | 652 | 694 | 125 | 2620 | no |
-| web-dvwa | A | 1575 | 254 | 551 | 642 | 116 | 2097 | 327 | 760 | 700 | 99 | 336† | YES |
-| juice-shop | A | 98 | 10 | 47 | 27 | 14 | 93 | 10 | 46 | 26 | 4 | 94 | no |
+Totals are raw findings (CVE × package pairs). T-fix% / G-fix% = fraction of findings where a patched version exists. OSV† = advisory-level count (not directly comparable to CVE totals for Debian images).
 
-† OSV advisory counts (grouped); ‡ not directly comparable to CVE-level counts.
+| Image | Grp | Size MB | Trivy | T:C | T:H | T:M | T:L | T-fix% | Grype | G:C | G:H | G:M | G:L | G-fix% | OSV† | EOSL |
+|-------|-----|---------|-------|-----|-----|-----|-----|--------|-------|-----|-----|-----|-----|--------|------|------|
+| alpine:3.19 | C | 7.1 | 6 | 0 | 0 | 3 | 3 | 100% | 10 | 0 | 0 | 4 | 6 | 60% | 6 | YES |
+| nginx:latest | C | 153.5 | 169 | 0 | 14 | 29 | 126 | 0% | 172 | 0 | 25 | 33 | 8 | 0% | 177 | no |
+| node:20 | C | 1044.7 | 2268 | 33 | 277 | 936 | 997 | 1% | 1474 | 32 | 178 | 360 | 67 | 1% | 1458 | no |
+| python:3.12 | C | 1055.6 | 1751 | 0 | 196 | 557 | 971 | 14% | 1418 | 0 | 165 | 375 | 59 | 18% | 1422 | no |
+| nginx:1.19 | B | 127.0 | 424 | 42 | 149 | 193 | 31 | 79% | 550 | 40 | 159 | 194 | 35 | 58% | 132† | YES |
+| node:14 | B | 869.5 | 1439 | 22 | 569 | 754 | 90 | 77% | 1995 | 19 | 453 | 477 | 95 | 34% | 210† | YES |
+| python:3.8 | B | 949.3 | 5660 | 182 | 1369 | 2957 | 1114 | 60% | 2533 | 185 | 652 | 694 | 125 | 41% | 2620 | no |
+| web-dvwa | A | 678.8 | 1575 | 254 | 551 | 642 | 116 | 88% | 2097 | 327 | 760 | 700 | 99 | 65% | 336† | YES |
+| juice-shop | A | 467.3 | 98 | 10 | 47 | 27 | 14 | 85% | 93 | 10 | 46 | 26 | 4 | 84% | 94 | no |
 
-### D2: Performance (Image × Tool × Time ms)
+### D2: Performance — Benchmark Means (3 runs × 9 images × 3 scanners)
 
-| Image | Group | Syft | Trivy | Grype | OSV |
-|-------|-------|------|-------|-------|-----|
-| alpine:3.19 | C | 1671 | 55 | 32970 | 2376 |
-| nginx:latest | C | 3075 | 31639* | 3840 | 5003 |
-| node:20 | C | 16793 | 9476 | 17824 | 21142 |
-| python:3.12 | C | 14461 | 10216 | 15652 | 21076 |
-| nginx:1.19 | B | 3317 | 1253 | 3125 | 8375 |
-| node:14 | B | 16458 | 8483 | 16882 | 16565 |
-| python:3.8 | B | 16572 | 9991 | 17587 | 27032 |
-| web-dvwa | A | 10979 | 6012 | 11667 | ~30000 |
-| juice-shop | A | 10492 | 8015 | 10012 | ~30000 |
+Mean scan time in milliseconds. Alpine run 1 anomaly excluded (first-time cold image export). Raw runs in `logs/benchmark.log`.
 
-\* Includes one-time 840MB Java DB download (~28s).
+| Image | Grp | Size MB | Trivy mean | ±sd | Grype mean | ±sd | OSV mean | ±sd |
+|-------|-----|---------|-----------|-----|-----------|-----|---------|-----|
+| alpine:3.19 | C | 7.1 | 56 | 0 | 1451 | 12 | 1900 | 568 |
+| nginx:latest | C | 153.5 | 90 | 0 | 3016 | 21 | 4283 | 188 |
+| node:20 | C | 1044.7 | 346 | 1 | 18606 | 476 | 25506 | 2295 |
+| python:3.12 | C | 1055.6 | 315 | 2 | 15631 | 8 | 24610 | 1540 |
+| nginx:1.19 | B | 127.0 | 93 | 3 | 3136 | 16 | 5329 | 1813 |
+| node:14 | B | 869.5 | 231 | 2 | 17776 | 1667 | 16614 | 3080 |
+| python:3.8 | B | 949.3 | 558 | 15 | 18251 | 685 | 22709 | 2169 |
+| web-dvwa | A | 678.8 | 184 | 5 | 11158 | 824 | 10832 | 659 |
+| juice-shop | A | 467.3 | 110 | 7 | 11443 | 1225 | 12550 | 1099 |
 
 ### D3: SBOM Baseline (Image × Package Count × Ecosystems)
 
@@ -558,6 +587,53 @@ Policies are evaluated based on Trivy and Grype findings (OSV severity breakdown
 | python:3.8 | B | REJECT | REJECT | REJECT | REJECT | REJECT | 3371 | 1030 |
 | web-dvwa | A | REJECT | REJECT | REJECT | REJECT | REJECT | 1380 | 1362 |
 | juice-shop | A | REJECT | REJECT | REJECT | REJECT | REJECT | 83 | 78 |
+
+### D5: CVE-Level Overlap (Jaccard Similarity — Trivy vs Grype)
+
+Jaccard = |T ∩ G| / |T ∪ G|. Grype GHSA IDs expanded to CVE aliases before comparison.
+
+| Image | Grp | T CVEs | G CVEs | Both | T-only | G-only | Jaccard |
+|-------|-----|--------|--------|------|--------|--------|---------|
+| alpine:3.19 | C | 2 | 4 | 2 | 0 | 2 | 0.500 |
+| nginx:latest | C | 96 | 100 | 92 | 4 | 8 | 0.885 |
+| node:20 | C | 1127 | 347 | 329 | 798 | 18 | 0.287 |
+| python:3.12 | C | 630 | 284 | 282 | 348 | 2 | 0.446 |
+| nginx:1.19 | B | 279 | 353 | 269 | 10 | 84 | 0.741 |
+| node:14 | B | 709 | 553 | 240 | 469 | 313 | 0.235 |
+| python:3.8 | B | 3684 | 544 | 530 | 3154 | 14 | 0.143 |
+| web-dvwa | A | 439 | 590 | 425 | 14 | 165 | 0.704 |
+| juice-shop | A | 83 | 143 | 79 | 4 | 64 | 0.537 |
+
+### D6: Severity Agreement on Shared CVEs
+
+| Image | Grp | Shared CVEs | Agree | Agree% | T-higher | G-higher |
+|-------|-----|-------------|-------|--------|----------|----------|
+| alpine:3.19 | C | 2 | 1 | 50% | 1 | 0 |
+| nginx:latest | C | 92 | 30 | 33% | 54 | 8 |
+| node:20 | C | 329 | 111 | 34% | 203 | 15 |
+| python:3.12 | C | 282 | 95 | 34% | 174 | 13 |
+| nginx:1.19 | B | 269 | 259 | 96% | 4 | 6 |
+| node:14 | B | 240 | 196 | 82% | 37 | 7 |
+| python:3.8 | B | 530 | 291 | 55% | 213 | 26 |
+| web-dvwa | A | 425 | 406 | 96% | 1 | 18 |
+| juice-shop | A | 79 | 6 | 8% | 71 | 2 |
+
+### D7: CWE Pivot — Top 10 CWEs Across All Images
+
+| CWE | Description | Trivy total | Grype total | Combined |
+|-----|-------------|-------------|-------------|---------|
+| CWE-476 | NULL Pointer Dereference | 855 | 225 | 1080 |
+| CWE-416 | Use After Free | 601 | 137 | 738 |
+| CWE-125 | Out-of-bounds Read | 396 | 336 | 732 |
+| CWE-787 | Out-of-bounds Write | 354 | 328 | 682 |
+| CWE-190 | Integer Overflow | 199 | 224 | 423 |
+| CWE-119 | Improper Memory Operations | 182 | 221 | 403 |
+| CWE-401 | Missing Memory Release | 245 | 107 | 352 |
+| CWE-400 | Uncontrolled Resource Consumption | 118 | 137 | 255 |
+| CWE-362 | Race Condition | 206 | 28 | 234 |
+| CWE-122 | Heap-Based Buffer Overflow | 99 | 104 | 203 |
+
+CWE counts are summed across all 9 images. Memory-safety weaknesses (CWE-476, 416, 125, 787) dominate, consistent with C/C++ OS package vulnerability patterns.
 
 ---
 
