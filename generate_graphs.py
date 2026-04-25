@@ -30,7 +30,8 @@ ORDER = [
     "vulnerables_web-dvwa", "bkimminich_juice-shop",
 ]
 LABEL = {
-    "alpine_3.19": "alpine:3.19", "nginx_latest": "nginx:latest",
+    "alpine_3.19": "alpine:3.19",
+    "nginx_latest": "nginx:1.29.7",   # nginx:latest @sha256:7150b3a3 (2026-03-31)
     "node_20": "node:20", "python_3.12": "python:3.12",
     "nginx_1.19": "nginx:1.19", "node_14": "node:14",
     "python_3.8": "python:3.8",
@@ -422,3 +423,173 @@ ax.set_axisbelow(True)
 save(fig, "fig8_time_vs_size.png")
 
 print(f"\nDone — 8 graphs saved to {OUT}/")
+
+# ── Fig 9: Box plot of ALL benchmark runs per image ───────────────────────────
+print("Fig 9: Scan-time box plots…")
+
+tools_cfg = [("trivy", C_TRIVY, "Trivy"),
+             ("grype",  C_GRYPE, "Grype"),
+             ("osv",    C_OSV,   "OSV-Scanner")]
+
+n_tools  = len(tools_cfg)
+n_images = len(ORDER)
+gap      = 1        # gap between image groups
+pos_step = n_tools + gap
+
+fig, ax = plt.subplots(figsize=(18, 7))
+
+bp_handles = []
+for j, (tool, col, lbl) in enumerate(tools_cfg):
+    positions = [i * pos_step + j for i in range(n_images)]
+    run_lists = []
+    for s in ORDER:
+        b    = bb[s]
+        runs = b[tool]["runs_ms"]
+        if s == "alpine_3.19" and tool in ("trivy", "grype"):
+            runs = runs[1:]
+        run_lists.append([r / 1000 for r in runs])
+
+    bp = ax.boxplot(
+        run_lists,
+        positions=positions,
+        widths=0.65,
+        patch_artist=True,
+        boxprops=dict(facecolor=col, alpha=0.55),
+        medianprops=dict(color="black", linewidth=2),
+        whiskerprops=dict(color=col, linewidth=1.2),
+        capprops=dict(color=col, linewidth=1.2),
+        flierprops=dict(markerfacecolor=col, marker=".", markersize=5, alpha=0.7),
+        zorder=3,
+    )
+    # overlay individual points for small N
+    for i, runs in enumerate(run_lists):
+        xs = [positions[i]] * len(runs)
+        ax.scatter(xs, runs, color=col, s=18, zorder=4, alpha=0.8)
+    bp_handles.append(mpatches.Patch(color=col, label=lbl))
+
+xtick_pos = [i * pos_step + (n_tools - 1) / 2 for i in range(n_images)]
+ax.set_xticks(xtick_pos)
+ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
+ax.set_yscale("log")
+ax.set_ylabel("Scan time (seconds, log scale)", fontsize=11)
+ax.set_title(
+    "Fig 9 — Scan Time Distribution: All Benchmark Runs per Image\n"
+    "(dots = individual runs; alpine run 1 excluded from Trivy/Grype — cold image-export anomaly)",
+    fontsize=12, fontweight="bold",
+)
+ax.legend(handles=bp_handles, fontsize=10)
+ax.yaxis.grid(True, which="both", linestyle="--", alpha=0.4, zorder=0)
+ax.set_axisbelow(True)
+
+# group background shading
+for grp, (lo, hi) in SPANS.items():
+    ax.axvspan(lo * pos_step - 0.6, hi * pos_step + n_tools - 0.4,
+               alpha=0.06, color=GROUP_COLOUR[grp], zorder=0)
+
+save(fig, "fig9_scan_boxplot.png")
+
+# ── Fig 10: Package breakdown driving Jaccard divergence ─────────────────────
+print("Fig 10: Package breakdown for Jaccard divergence…")
+
+import collections as _col
+
+BASE_RESULTS = os.path.join(SCRIPT_DIR, "results")
+
+
+def _pkg_breakdown(safe):
+    """Return (t_only_pkgs, g_only_pkgs) as Counters."""
+    with open(os.path.join(BASE_RESULTS, "trivy", f"{safe}_trivy.json")) as f:
+        tj = json.load(f)
+    with open(os.path.join(BASE_RESULTS, "grype", f"{safe}_grype.json")) as f:
+        gj = json.load(f)
+
+    t_vulns = {}
+    for r in tj.get("Results", []):
+        for v in (r.get("Vulnerabilities") or []):
+            vid = v.get("VulnerabilityID", "")
+            if vid:
+                t_vulns[vid] = v.get("PkgName", "unknown")
+
+    g_ids_exp = set()
+    g_vulns   = {}
+    for m in gj.get("matches", []):
+        v   = m.get("vulnerability", {})
+        vid = v.get("id", "")
+        if vid:
+            related = [r.get("id", "") for r in m.get("relatedVulnerabilities", [])
+                       if r.get("id", "").startswith("CVE-")]
+            g_vulns[vid] = m.get("artifact", {}).get("name", "unknown")
+            g_ids_exp.add(vid)
+            g_ids_exp.update(related)
+
+    t_ids   = set(t_vulns.keys())
+    t_only  = t_ids - g_ids_exp
+    g_ponly = {vid for vid in g_vulns if vid not in t_ids}
+
+    t_pkgs = _col.Counter(t_vulns[c] for c in t_only if c in t_vulns)
+    g_pkgs = _col.Counter(g_vulns[c] for c in g_ponly)
+    return t_pkgs, g_pkgs
+
+
+pkg_data = {s: _pkg_breakdown(s) for s in ORDER}
+
+all_t_pkgs = _col.Counter()
+all_g_pkgs = _col.Counter()
+for s in ORDER:
+    all_t_pkgs.update(pkg_data[s][0])
+    all_g_pkgs.update(pkg_data[s][1])
+
+TOP_N      = 5
+top_t_pkgs = [p for p, _ in all_t_pkgs.most_common(TOP_N)]
+top_g_pkgs = [p for p, _ in all_g_pkgs.most_common(TOP_N)]
+
+# Colour palettes for each direction
+COLORS_T = ["#DC2626", "#EA580C", "#D97706", "#65A30D", "#0891B2", "#9CA3AF"]
+COLORS_G = ["#1D4ED8", "#7C3AED", "#DB2777", "#059669", "#B45309", "#9CA3AF"]
+
+fig, axes = plt.subplots(2, 1, figsize=(16, 11), sharex=True)
+
+panels = [
+    (axes[0], top_t_pkgs, COLORS_T, 0, "T-only CVE count",
+     "Trivy-exclusive CVEs by source package (T-only)"),
+    (axes[1], top_g_pkgs, COLORS_G, 1, "G-only CVE count",
+     "Grype-exclusive CVEs by source package (G-only)"),
+]
+x = np.arange(n_images)
+
+for ax, top_pkgs, colors, side, ylabel_lbl, ax_title in panels:
+    bottoms = np.zeros(n_images)
+    for pkg, col in zip(top_pkgs + ["other"], colors):
+        vals = []
+        for s in ORDER:
+            counter = pkg_data[s][side]
+            if pkg == "other":
+                known = sum(counter.get(p, 0) for p in top_pkgs)
+                vals.append(max(0, sum(counter.values()) - known))
+            else:
+                vals.append(counter.get(pkg, 0))
+        vals = np.array(vals, dtype=float)
+        ax.bar(x, vals, bottom=bottoms, color=col, alpha=0.85,
+               label=pkg if pkg != "other" else "other", zorder=3)
+        bottoms += vals
+
+    ax.set_ylabel(ylabel_lbl, fontsize=10)
+    ax.set_title(ax_title, fontsize=11, fontweight="bold")
+    ax.legend(fontsize=8, loc="upper right", ncol=2)
+    ax.yaxis.grid(True, linestyle="--", alpha=0.4)
+    ax.set_axisbelow(True)
+    for grp, (lo, hi) in SPANS.items():
+        ax.axvspan(lo - 0.5, hi + 0.5, alpha=0.06, color=GROUP_COLOUR[grp], zorder=0)
+
+axes[1].set_xticks(x)
+axes[1].set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
+
+fig.suptitle(
+    "Fig 10 — Packages Driving CVE-Set Divergence (Trivy vs Grype)\n"
+    "linux-libc-dev (Debian kernel headers) accounts for the bulk of Trivy-exclusive findings",
+    fontsize=12, fontweight="bold",
+)
+fig.tight_layout()
+save(fig, "fig10_jaccard_packages.png")
+
+print(f"\nDone — 10 graphs saved to {OUT}/")

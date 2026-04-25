@@ -14,6 +14,8 @@
     "trivy_statuses": {
       "fixed": 6
     },
+    "trivy_fixed_with_version": 2,
+    "trivy_sample_fix_version": "1.36.1-r21",
     "grype_counts": {
       "MEDIUM": 2,
       "LOW": 2,
@@ -25,6 +27,8 @@
       "fixed": 6,
       "unknown": 1
     },
+    "grype_fixed_with_version": 2,
+    "grype_sample_fix_version": "1.36.1-r21",
     "osv": {
       "advisories": 2,
       "total": 6
@@ -56,7 +60,7 @@
   },
   {
     "safe": "nginx_latest",
-    "image": "nginx:latest",
+    "image": "nginx:1.29.7",
     "group": "C",
     "size_mb": 153.5,
     "eosl": false,
@@ -71,6 +75,8 @@
       "affected": 165,
       "fix_deferred": 4
     },
+    "trivy_fixed_with_version": 0,
+    "trivy_sample_fix_version": "\u2014",
     "grype_counts": {
       "LOW": 7,
       "NEGLIGIBLE": 53,
@@ -84,6 +90,8 @@
       "wont-fix": 57,
       "not-fixed": 115
     },
+    "grype_fixed_with_version": 0,
+    "grype_sample_fix_version": "\u2014",
     "osv": {
       "advisories": 102,
       "total": 177
@@ -229,6 +237,8 @@
       "fix_deferred": 25,
       "fixed": 14
     },
+    "trivy_fixed_with_version": 14,
+    "trivy_sample_fix_version": "5.0.5, 3.0.2, 2.0.3, 1.1.13",
     "grype_counts": {
       "HIGH": 51,
       "MEDIUM": 70,
@@ -244,6 +254,8 @@
       "not-fixed": 1140,
       "fixed": 14
     },
+    "grype_fixed_with_version": 14,
+    "grype_sample_fix_version": "7.0.5",
     "osv": {
       "advisories": 317,
       "total": 1458
@@ -478,6 +490,8 @@
       "fix_deferred": 33,
       "will_not_fix": 5
     },
+    "trivy_fixed_with_version": 21,
+    "trivy_sample_fix_version": "8:7.1.1.43+dfsg1-1+deb13u7",
     "grype_counts": {
       "MEDIUM": 68,
       "NEGLIGIBLE": 166,
@@ -493,6 +507,8 @@
       "fixed": 249,
       "": 7
     },
+    "grype_fixed_with_version": 24,
+    "grype_sample_fix_version": "3.13.11",
     "osv": {
       "advisories": 286,
       "total": 1422
@@ -706,6 +722,8 @@
       "fix_deferred": 11,
       "affected": 44
     },
+    "trivy_fixed_with_version": 224,
+    "trivy_sample_fix_version": "2.33.1-0.1+deb10u1",
     "grype_counts": {
       "CRITICAL": 32,
       "HIGH": 96,
@@ -721,6 +739,8 @@
       "not-fixed": 124,
       "wont-fix": 106
     },
+    "grype_fixed_with_version": 210,
+    "grype_sample_fix_version": "1:1.2.11.dfsg-1+deb10u2",
     "osv": {
       "advisories": 81,
       "total": 132
@@ -943,6 +963,8 @@
       "will_not_fix": 190,
       "fix_deferred": 38
     },
+    "trivy_fixed_with_version": 585,
+    "trivy_sample_fix_version": "2.33.1-0.1+deb10u1",
     "grype_counts": {
       "HIGH": 114,
       "CRITICAL": 8,
@@ -958,6 +980,8 @@
       "not-fixed": 963,
       "wont-fix": 351
     },
+    "grype_fixed_with_version": 165,
+    "grype_sample_fix_version": "0.6.1-2+deb10u3",
     "osv": {
       "advisories": 57,
       "total": 210
@@ -1232,6 +1256,8 @@
       "fixed": 3371,
       "fix_deferred": 37
     },
+    "trivy_fixed_with_version": 2554,
+    "trivy_sample_fix_version": "12.2.0-14+deb12u1",
     "grype_counts": {
       "HIGH": 130,
       "MEDIUM": 151,
@@ -1248,6 +1274,8 @@
       "not-fixed": 1163,
       "": 8
     },
+    "grype_fixed_with_version": 203,
+    "grype_sample_fix_version": "2.12.1+dfsg-5+deb12u4",
     "osv": {
       "advisories": 567,
       "total": 2620
@@ -1562,6 +1590,8 @@
       "fix_deferred": 32,
       "affected": 89
     },
+    "trivy_fixed_with_version": 374,
+    "trivy_sample_fix_version": "2.4.25-3+deb9u8",
     "grype_counts": {
       "CRITICAL": 84,
       "HIGH": 209,
@@ -1577,6 +1607,8 @@
       "not-fixed": 467,
       "wont-fix": 268
     },
+    "grype_fixed_with_version": 360,
+    "grype_sample_fix_version": "7.0.33-0+deb9u6",
     "osv": {
       "advisories": 129,
       "total": 336
@@ -1814,6 +1846,8 @@
       "affected": 15,
       "fixed": 83
     },
+    "trivy_fixed_with_version": 68,
+    "trivy_sample_fix_version": "3.0.1",
     "grype_counts": {
       "CRITICAL": 9,
       "HIGH": 36,
@@ -1828,6 +1862,8 @@
       "not-fixed": 11,
       "wont-fix": 4
     },
+    "grype_fixed_with_version": 64,
+    "grype_sample_fix_version": "3.9.18",
     "osv": {
       "advisories": 80,
       "total": 94

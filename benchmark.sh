@@ -4,10 +4,10 @@
 # Output appended to logs/benchmark.log
 
 set -euo pipefail
-REPO_DIR="$(cd "$(dirname "$0")/scanner-comparison" && pwd)"
+REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 LOGS="${REPO_DIR}/logs"
 OUT="${LOGS}/benchmark.log"
-RUNS="${1:-3}"
+RUNS="${1:-30}"
 
 declare -A IMAGES=(
     ["alpine_3.19"]="alpine@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1"
