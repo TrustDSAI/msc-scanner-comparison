@@ -39,7 +39,7 @@
 
 set -euo pipefail
 
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
 declare -A DIGESTS=(
     ["alpine_3.19"]="alpine@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1"
@@ -85,11 +85,11 @@ scan_image() {
     docker tag "${IMAGE}" "${OSV_TAG}"
 
     # Run all four tools via the main scan script, passing the digest reference
-    bash "${REPO_DIR}/scan.sh" "${IMAGE}" "${SAFE}" "reproduce"
+    bash "${REPO_DIR}/scripts/scan.sh" "${IMAGE}" "${SAFE}" "reproduce"
 
     # OSV-Scanner needs the tagged name — overwrite the OSV output
     osv-scanner scan image --format json \
-        --output-file "${REPO_DIR}/results/osv/${SAFE}_osv.json" \
+        --output-file "${REPO_DIR}/data/raw/osv/${SAFE}_osv.json" \
         "${OSV_TAG}" || true
 
     echo "Done: ${SAFE} at $(date -u +%Y-%m-%dT%H:%M:%SZ)"

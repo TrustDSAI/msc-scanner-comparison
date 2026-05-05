@@ -29,10 +29,8 @@
       "advisories": 2,
       "total": 6
     },
-    "sbom_total": 15,
-    "sbom_ecosystems": {
-      "apk": 15
-    }
+    "sbom_total": null,
+    "sbom_ecosystems": {}
   },
   {
     "safe": "nginx_latest",
@@ -64,11 +62,8 @@
       "advisories": 102,
       "total": 177
     },
-    "sbom_total": 152,
-    "sbom_ecosystems": {
-      "deb": 151,
-      "java-archive": 1
-    }
+    "sbom_total": null,
+    "sbom_ecosystems": {}
   },
   {
     "safe": "node_20",
@@ -100,13 +95,8 @@
       "advisories": 317,
       "total": 1458
     },
-    "sbom_total": 619,
-    "sbom_ecosystems": {
-      "npm": 204,
-      "deb": 413,
-      "python": 1,
-      "binary": 1
-    }
+    "sbom_total": null,
+    "sbom_ecosystems": {}
   },
   {
     "safe": "python_3.12",
@@ -138,12 +128,8 @@
       "advisories": 286,
       "total": 1422
     },
-    "sbom_total": 479,
-    "sbom_ecosystems": {
-      "binary": 7,
-      "deb": 469,
-      "python": 3
-    }
+    "sbom_total": null,
+    "sbom_ecosystems": {}
   },
   {
     "safe": "nginx_1.19",
@@ -175,11 +161,8 @@
       "advisories": 81,
       "total": 132
     },
-    "sbom_total": 136,
-    "sbom_ecosystems": {
-      "deb": 135,
-      "java-archive": 1
-    }
+    "sbom_total": null,
+    "sbom_ecosystems": {}
   },
   {
     "safe": "node_14",
@@ -211,13 +194,8 @@
       "advisories": 57,
       "total": 210
     },
-    "sbom_total": 879,
-    "sbom_ecosystems": {
-      "npm": 461,
-      "deb": 413,
-      "python": 3,
-      "binary": 2
-    }
+    "sbom_total": null,
+    "sbom_ecosystems": {}
   },
   {
     "safe": "python_3.8",
@@ -249,12 +227,8 @@
       "advisories": 567,
       "total": 2620
     },
-    "sbom_total": 446,
-    "sbom_ecosystems": {
-      "binary": 13,
-      "deb": 429,
-      "python": 4
-    }
+    "sbom_total": null,
+    "sbom_ecosystems": {}
   },
   {
     "safe": "vulnerables_web-dvwa",
@@ -286,11 +260,8 @@
       "advisories": 129,
       "total": 336
     },
-    "sbom_total": 221,
-    "sbom_ecosystems": {
-      "php-pear": 6,
-      "deb": 215
-    }
+    "sbom_total": null,
+    "sbom_ecosystems": {}
   },
   {
     "safe": "bkimminich_juice-shop",
@@ -322,11 +293,7 @@
       "advisories": 80,
       "total": 94
     },
-    "sbom_total": 1125,
-    "sbom_ecosystems": {
-      "npm": 1111,
-      "deb": 13,
-      "binary": 1
-    }
+    "sbom_total": null,
+    "sbom_ecosystems": {}
   }
 ]

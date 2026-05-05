@@ -11,10 +11,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-BENCH  = os.path.join(SCRIPT_DIR, "logs", "benchmark_summary.json")
-TABLES = os.path.join(SCRIPT_DIR, "logs", "analysis_tables.json")
-OUT    = os.path.join(SCRIPT_DIR, "logs", "graphs")
+ROOT   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BENCH  = os.path.join(ROOT, "data", "derived", "benchmark_summary.json")
+TABLES = os.path.join(ROOT, "data", "derived", "analysis_tables.json")
+OUT    = os.path.join(ROOT, "figures")
 os.makedirs(OUT, exist_ok=True)
 
 # ── colour palette ───────────────────────────────────────────────────────────
@@ -140,7 +140,7 @@ for grp, (lo, hi) in SPANS.items():
 
 ax.set_yscale("log")
 ax.set_ylabel("Scan time (seconds, log scale)", fontsize=11)
-ax.set_title("Fig 1 — Scan Performance: Mean ± Std Dev (3 runs, images cached locally)",
+ax.set_title("Fig 1 — Scan Performance (mean ± SD, 30 runs)",
              fontsize=12, fontweight="bold")
 ax.set_xticks(x + width)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
@@ -175,8 +175,7 @@ for i, s in enumerate(ORDER):
                     ha="center", va="bottom", fontsize=8, fontweight="bold")
 
 ax.set_ylabel("Total vulnerability findings", fontsize=11)
-ax.set_title("Fig 2 — Total Findings per Image per Tool\n"
-             "† OSV reports advisories, not CVEs — not directly comparable for Debian images",
+ax.set_title("Fig 2 — Total Findings per Image  († OSV reports advisories, not CVEs)",
              fontsize=12, fontweight="bold")
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
@@ -234,7 +233,7 @@ ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=40, ha="right", fontsize=
 ax.set_ylim(0, 110); ax.legend(fontsize=9)
 ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
 
-fig.suptitle("Fig 3 — CVE-Level Agreement: Trivy vs Grype",
+fig.suptitle("Fig 3 — CVE-Level Overlap: Trivy vs Grype",
              fontsize=13, fontweight="bold", y=1.01)
 save(fig, "fig3_cve_overlap.png")
 
@@ -268,8 +267,7 @@ for i, (v, n) in enumerate(zip(ag_pct, shared_n)):
 
 ax.set_ylabel("% of shared CVEs", fontsize=11)
 ax.set_ylim(0, 115)
-ax.set_title("Fig 4 — Severity Agreement on Shared CVEs (Trivy vs Grype)\n"
-             "Agree% shown above bars; n = number of shared CVEs",
+ax.set_title("Fig 4 — Severity Agreement on Shared CVEs",
              fontsize=12, fontweight="bold")
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
@@ -298,8 +296,7 @@ for i, s in enumerate(ORDER):
 
 ax.set_ylabel("% of findings with a fix available", fontsize=11)
 ax.set_ylim(0, 115)
-ax.set_title("Fig 5 — Fix Rate: Fraction of Findings Where a Patched Version Exists\n"
-             "FIXED = a newer package version resolves this CVE",
+ax.set_title("Fig 5 — Fix Rate per Image",
              fontsize=12, fontweight="bold")
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
@@ -327,8 +324,7 @@ for i, s in enumerate(ORDER):
     if gv > 0: ax.text(i + width/2, gv + 3, str(gv), ha="center", va="bottom", fontsize=8)
 
 ax.set_ylabel("CRITICAL vulnerability count", fontsize=11)
-ax.set_title("Fig 6 — CRITICAL Findings: Trivy vs Grype\n"
-             "CRITICAL is the most reliable cross-tool agreement band (delta ≤3 in 7/9 images)",
+ax.set_title("Fig 6 — CRITICAL Findings: Trivy vs Grype",
              fontsize=12, fontweight="bold")
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
@@ -371,8 +367,7 @@ for i, (tv, gv) in enumerate(zip(t_vals, g_vals)):
             ha="center", va="bottom", fontsize=8, fontweight="bold")
 
 ax.set_ylabel("Occurrence count (all 9 images)", fontsize=11)
-ax.set_title("Fig 7 — Top 10 CWE Types Across All Images (Trivy + Grype)\n"
-             "Memory-safety weaknesses dominate — driven by OS-layer C/C++ packages",
+ax.set_title("Fig 7 — Top 10 CWE Types (Trivy + Grype, all images)",
              fontsize=12, fontweight="bold")
 ax.set_xticks(x)
 ax.set_xticklabels(xlabels, fontsize=9)
@@ -413,8 +408,7 @@ for i, s in enumerate(ORDER):
 
 ax.set_xlabel("Compressed image size (MB)", fontsize=11)
 ax.set_ylabel("Mean scan time (seconds)", fontsize=11)
-ax.set_title("Fig 8 — Scan Time vs Image Size\n"
-             "Grype and OSV scale linearly (r≈0.9); Trivy is size-independent",
+ax.set_title("Fig 8 — Scan Time vs Image Size",
              fontsize=12, fontweight="bold")
 ax.legend(fontsize=10)
 ax.yaxis.grid(True, linestyle="--", alpha=0.4)
@@ -424,76 +418,79 @@ save(fig, "fig8_time_vs_size.png")
 
 print(f"\nDone — 8 graphs saved to {OUT}/")
 
-# ── Fig 9: Box plot of ALL benchmark runs per image ───────────────────────────
+# ── Fig 9: Box plots — one subplot per scanner, images on x-axis ──────────────
 print("Fig 9: Scan-time box plots…")
 
 tools_cfg = [("trivy", C_TRIVY, "Trivy"),
              ("grype",  C_GRYPE, "Grype"),
              ("osv",    C_OSV,   "OSV-Scanner")]
+IMG_GROUPS = ["C","C","C","C","B","B","B","A","A"]
 
-n_tools  = len(tools_cfg)
-n_images = len(ORDER)
-gap      = 1        # gap between image groups
-pos_step = n_tools + gap
+fig, axes = plt.subplots(3, 1, figsize=(16, 12), sharex=True)
+fig.subplots_adjust(hspace=0.12)
 
-fig, ax = plt.subplots(figsize=(18, 7))
+fmt9 = matplotlib.ticker.FuncFormatter(
+    lambda v, _: f"{v:.0f}s" if v >= 1 else f"{v:.2f}s"
+)
 
-bp_handles = []
-for j, (tool, col, lbl) in enumerate(tools_cfg):
-    positions = [i * pos_step + j for i in range(n_images)]
-    run_lists = []
-    for s in ORDER:
-        b    = bb[s]
-        runs = b[tool]["runs_ms"]
-        if s == "alpine_3.19" and tool in ("trivy", "grype"):
-            runs = runs[1:]
-        run_lists.append([r / 1000 for r in runs])
+xs = np.arange(len(ORDER))
 
+for ax, (tool, col_hex, tool_lbl) in zip(axes, tools_cfg):
+    run_lists = [[r / 1000 for r in bb[s][tool]["runs_ms"]] for s in ORDER]
     bp = ax.boxplot(
         run_lists,
-        positions=positions,
-        widths=0.65,
+        positions=xs,
+        widths=0.55,
         patch_artist=True,
-        boxprops=dict(facecolor=col, alpha=0.55),
-        medianprops=dict(color="black", linewidth=2),
-        whiskerprops=dict(color=col, linewidth=1.2),
-        capprops=dict(color=col, linewidth=1.2),
-        flierprops=dict(markerfacecolor=col, marker=".", markersize=5, alpha=0.7),
+        whis=[5, 95],
+        boxprops=dict(facecolor=col_hex, alpha=0.65),
+        medianprops=dict(color="black", linewidth=2.2),
+        whiskerprops=dict(color=col_hex, linewidth=1.3),
+        capprops=dict(color=col_hex, linewidth=1.3),
+        flierprops=dict(markerfacecolor=col_hex, marker=".", markersize=4, alpha=0.5),
         zorder=3,
     )
-    # overlay individual points for small N
-    for i, runs in enumerate(run_lists):
-        xs = [positions[i]] * len(runs)
-        ax.scatter(xs, runs, color=col, s=18, zorder=4, alpha=0.8)
-    bp_handles.append(mpatches.Patch(color=col, label=lbl))
+    ax.set_yscale("log")
+    ax.set_ylabel("Scan time", fontsize=10)
+    ax.yaxis.set_major_formatter(fmt9)
+    ax.yaxis.grid(True, which="both", linestyle="--", alpha=0.4, zorder=0)
+    ax.set_axisbelow(True)
 
-xtick_pos = [i * pos_step + (n_tools - 1) / 2 for i in range(n_images)]
-ax.set_xticks(xtick_pos)
-ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
-ax.set_yscale("log")
-ax.set_ylabel("Scan time (seconds, log scale)", fontsize=11)
-ax.set_title(
-    "Fig 9 — Scan Time Distribution: All Benchmark Runs per Image\n"
-    "(dots = individual runs; alpine run 1 excluded from Trivy/Grype — cold image-export anomaly)",
-    fontsize=12, fontweight="bold",
-)
-ax.legend(handles=bp_handles, fontsize=10)
-ax.yaxis.grid(True, which="both", linestyle="--", alpha=0.4, zorder=0)
-ax.set_axisbelow(True)
+    # group background bands
+    for grp, lo_i, hi_i in [("C", 0, 3), ("B", 4, 6), ("A", 7, 8)]:
+        ax.axvspan(lo_i - 0.5, hi_i + 0.5,
+                   alpha=0.08, color=GROUP_COLOUR[grp], zorder=0)
 
-# group background shading
-for grp, (lo, hi) in SPANS.items():
-    ax.axvspan(lo * pos_step - 0.6, hi * pos_step + n_tools - 0.4,
-               alpha=0.06, color=GROUP_COLOUR[grp], zorder=0)
+    # scanner label inside the panel
+    ax.text(0.01, 0.97, tool_lbl, transform=ax.transAxes,
+            fontsize=12, fontweight="bold", color=col_hex,
+            va="top", ha="left")
+
+# x-axis labels only on bottom panel
+axes[-1].set_xticks(xs)
+axes[-1].set_xticklabels([LABEL[s] for s in ORDER], rotation=30, ha="right", fontsize=10)
+
+# group labels above the top panel
+for grp, lo_i, hi_i in [("C", 0, 3), ("B", 4, 6), ("A", 7, 8)]:
+    mid_x = (lo_i + hi_i) / 2
+    axes[0].text(mid_x, 1.02, f"Group {grp}",
+                 transform=axes[0].get_xaxis_transform(),
+                 ha="center", va="bottom", fontsize=10,
+                 fontweight="bold", color=GROUP_COLOUR[grp])
+
+fig.suptitle("Fig 9 — Scan Time Distribution (30 runs per image)",
+             fontsize=12, fontweight="bold")
 
 save(fig, "fig9_scan_boxplot.png")
+
+n_images = len(ORDER)
 
 # ── Fig 10: Package breakdown driving Jaccard divergence ─────────────────────
 print("Fig 10: Package breakdown for Jaccard divergence…")
 
 import collections as _col
 
-BASE_RESULTS = os.path.join(SCRIPT_DIR, "results")
+BASE_RESULTS = os.path.join(ROOT, "data", "raw")
 
 
 def _pkg_breakdown(safe):
@@ -547,49 +544,74 @@ top_g_pkgs = [p for p, _ in all_g_pkgs.most_common(TOP_N)]
 COLORS_T = ["#DC2626", "#EA580C", "#D97706", "#65A30D", "#0891B2", "#9CA3AF"]
 COLORS_G = ["#1D4ED8", "#7C3AED", "#DB2777", "#059669", "#B45309", "#9CA3AF"]
 
-fig, axes = plt.subplots(2, 1, figsize=(16, 11), sharex=True)
+from matplotlib.colors import LogNorm as _LogNorm
 
-panels = [
-    (axes[0], top_t_pkgs, COLORS_T, 0, "T-only CVE count",
-     "Trivy-exclusive CVEs by source package (T-only)"),
-    (axes[1], top_g_pkgs, COLORS_G, 1, "G-only CVE count",
-     "Grype-exclusive CVEs by source package (G-only)"),
-]
-x = np.arange(n_images)
-
-for ax, top_pkgs, colors, side, ylabel_lbl, ax_title in panels:
-    bottoms = np.zeros(n_images)
-    for pkg, col in zip(top_pkgs + ["other"], colors):
-        vals = []
-        for s in ORDER:
-            counter = pkg_data[s][side]
+def _build_matrix(pkg_list, side):
+    cols = pkg_list + ["other"]
+    data = np.zeros((len(ORDER), len(cols)))
+    for i, s in enumerate(ORDER):
+        ctr = pkg_data[s][side]
+        for j, pkg in enumerate(cols):
             if pkg == "other":
-                known = sum(counter.get(p, 0) for p in top_pkgs)
-                vals.append(max(0, sum(counter.values()) - known))
+                known = sum(ctr.get(p, 0) for p in pkg_list)
+                data[i, j] = max(0, sum(ctr.values()) - known)
             else:
-                vals.append(counter.get(pkg, 0))
-        vals = np.array(vals, dtype=float)
-        ax.bar(x, vals, bottom=bottoms, color=col, alpha=0.85,
-               label=pkg if pkg != "other" else "other", zorder=3)
-        bottoms += vals
+                data[i, j] = ctr.get(pkg, 0)
+    return data, cols
 
-    ax.set_ylabel(ylabel_lbl, fontsize=10)
-    ax.set_title(ax_title, fontsize=11, fontweight="bold")
-    ax.legend(fontsize=8, loc="upper right", ncol=2)
-    ax.yaxis.grid(True, linestyle="--", alpha=0.4)
-    ax.set_axisbelow(True)
-    for grp, (lo, hi) in SPANS.items():
-        ax.axvspan(lo - 0.5, hi + 0.5, alpha=0.06, color=GROUP_COLOUR[grp], zorder=0)
+t_mat, t_cols = _build_matrix(top_t_pkgs, 0)
+g_mat, g_cols = _build_matrix(top_g_pkgs, 1)
 
-axes[1].set_xticks(x)
-axes[1].set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
+fig, (ax_t, ax_g) = plt.subplots(1, 2, figsize=(18, 7))
+fig.subplots_adjust(wspace=0.35)
 
-fig.suptitle(
-    "Fig 10 — Packages Driving CVE-Set Divergence (Trivy vs Grype)\n"
-    "linux-libc-dev (Debian kernel headers) accounts for the bulk of Trivy-exclusive findings",
-    fontsize=12, fontweight="bold",
-)
-fig.tight_layout()
+ylabels = [LABEL[s] for s in ORDER]
+
+for ax, mat, cols, cmap_name, title in [
+    (ax_t, t_mat, t_cols, "Reds",  "Trivy-exclusive CVEs (T-only)\nby source package"),
+    (ax_g, g_mat, g_cols, "Blues", "Grype-exclusive CVEs (G-only)\nby source package"),
+]:
+    masked = np.where(mat == 0, np.nan, mat)
+    pos_vals = mat[mat > 0]
+    norm = _LogNorm(vmin=max(1, pos_vals.min()), vmax=pos_vals.max()) if len(pos_vals) else None
+
+    cmap = matplotlib.cm.get_cmap(cmap_name).copy()
+    cmap.set_bad("white")
+
+    im = ax.imshow(masked, cmap=cmap, norm=norm, aspect="auto")
+    plt.colorbar(im, ax=ax, label="CVE count (log scale)", shrink=0.85)
+
+    ax.set_xticks(range(len(cols)))
+    ax.set_xticklabels(cols, rotation=35, ha="right", fontsize=9)
+    ax.set_yticks(range(len(ORDER)))
+    ax.set_yticklabels(ylabels, fontsize=9)
+    ax.set_title(title, fontsize=11, fontweight="bold", pad=10)
+
+    # colour y-tick labels by group
+    for i, tick in enumerate(ax.get_yticklabels()):
+        tick.set_color(GROUP_COLOUR[IMG_GROUPS[i]])
+        tick.set_fontweight("bold")
+
+    # group separators (horizontal lines between groups)
+    for boundary in [3.5, 6.5]:
+        ax.axhline(boundary, color="black", linewidth=1.5, zorder=5)
+
+    # cell annotations
+    vmax = pos_vals.max() if len(pos_vals) else 1
+    vmin_log = np.log(max(1, pos_vals.min())) if len(pos_vals) else 0
+    vmax_log = np.log(vmax) if vmax > 0 else 1
+    for i in range(len(ORDER)):
+        for j in range(len(cols)):
+            val = int(mat[i, j])
+            if val == 0:
+                continue
+            norm_v = (np.log(val) - vmin_log) / (vmax_log - vmin_log) if vmax_log != vmin_log else 0.5
+            txt_col = "white" if norm_v > 0.55 else "black"
+            ax.text(j, i, f"{val:,}", ha="center", va="center",
+                    fontsize=8, color=txt_col)
+
+fig.suptitle("Fig 10 — Source Packages Driving CVE-Set Divergence (Trivy vs Grype)",
+             fontsize=12, fontweight="bold")
 save(fig, "fig10_jaccard_packages.png")
 
 print(f"\nDone — 10 graphs saved to {OUT}/")

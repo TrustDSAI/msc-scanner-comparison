@@ -27,9 +27,10 @@ import os
 import statistics
 import sys
 
-SCRIPT_DIR  = os.path.dirname(os.path.abspath(__file__))
-BASE        = os.path.join(SCRIPT_DIR, "results")
-LOGS        = os.path.join(SCRIPT_DIR, "logs")
+ROOT        = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE        = os.path.join(ROOT, "data", "raw")
+DERIVED     = os.path.join(ROOT, "data", "derived")
+LOGS        = os.path.join(ROOT, "logs")
 
 IMAGES = [
     ("alpine_3.19",           "alpine:3.19",                "C"),
@@ -287,7 +288,7 @@ def table_cwe_pivot(data, export_csv=False):
         print(row)
 
     if export_csv:
-        csv_dir = os.path.join(LOGS, "csv")
+        csv_dir = os.path.join(DERIVED, "tables")
         os.makedirs(csv_dir, exist_ok=True)
         csv_path = os.path.join(csv_dir, "cwe_pivot.csv")
         with open(csv_path, "w", newline="") as f:
@@ -305,7 +306,7 @@ def table_cwe_pivot(data, export_csv=False):
 # ---------------------------------------------------------------------------
 
 def table_performance(data):
-    bench_path = os.path.join(LOGS, "benchmark_summary.json")
+    bench_path = os.path.join(DERIVED, "benchmark_summary.json")
     if not os.path.exists(bench_path):
         print("\n[SKIP] benchmark_summary.json not found — run benchmark.sh first")
         return
@@ -578,7 +579,7 @@ def main():
     table_attack_mapping(data)
 
     if args.save:
-        out = os.path.join(LOGS, "analysis_tables.json")
+        out = os.path.join(DERIVED, "analysis_tables.json")
         # t_only_cves / g_only_cves are large — strip before serialising
         slim = [{k: v for k, v in d.items()
                  if k not in ("t_only_cves", "g_only_cves")} for d in data]

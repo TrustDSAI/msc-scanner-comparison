@@ -19,10 +19,10 @@ import sys
 # ---------------------------------------------------------------------------
 # Resolve base paths relative to this script, not the working directory
 # ---------------------------------------------------------------------------
-SCRIPT_DIR  = os.path.dirname(os.path.abspath(__file__))
-BASE        = os.path.join(SCRIPT_DIR, "results")
-SBOM_BASE   = os.path.join(SCRIPT_DIR, "sbom")
-OUTPUT_FILE = os.path.join(SCRIPT_DIR, "logs", "parsed_results.json")
+ROOT        = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE        = os.path.join(ROOT, "data", "raw")
+SBOM_BASE   = os.path.join(ROOT, "data", "sbom")
+OUTPUT_FILE = os.path.join(ROOT, "data", "derived", "parsed_results.json")
 
 # ---------------------------------------------------------------------------
 # Image dataset

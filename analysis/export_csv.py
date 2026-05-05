@@ -27,10 +27,11 @@ import json
 import os
 import statistics
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-BASE       = os.path.join(SCRIPT_DIR, "results")
-LOGS       = os.path.join(SCRIPT_DIR, "logs")
-CSV_DIR    = os.path.join(LOGS, "csv")
+ROOT    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE    = os.path.join(ROOT, "data", "raw")
+DERIVED = os.path.join(ROOT, "data", "derived")
+LOGS    = os.path.join(ROOT, "logs")
+CSV_DIR = os.path.join(DERIVED, "tables")
 os.makedirs(CSV_DIR, exist_ok=True)
 
 IMAGES = [
@@ -116,7 +117,7 @@ def load_osv(safe):
 
 
 def load_sbom(safe):
-    path = os.path.join(SCRIPT_DIR, "sbom", f"{safe}_syft.json")
+    path = os.path.join(ROOT, "data", "sbom", f"{safe}_syft.json")
     if not os.path.exists(path):
         return None, {}
     with open(path) as f:
@@ -309,7 +310,7 @@ with w("table5_cwe_per_image_grype.csv") as f:
 # ---------------------------------------------------------------------------
 # TABLE 6 — Performance benchmark
 # ---------------------------------------------------------------------------
-bench_path = os.path.join(LOGS, "benchmark_summary.json")
+bench_path = os.path.join(DERIVED, "benchmark_summary.json")
 if os.path.exists(bench_path):
     with open(bench_path) as f:
         bench = {b["safe"]: b for b in json.load(f)}

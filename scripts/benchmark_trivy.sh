@@ -1,12 +1,11 @@
 #!/bin/bash
-# benchmark.sh — Re-run each scanner N times per image and record execution times.
-# Images must already be present locally (no pull step).
-# Output appended to logs/benchmark.log
+# benchmark_trivy.sh — Re-run Trivy only, N times per image, with a pre-warmed DB.
+# Output written to logs/benchmark_trivy.log (separate from benchmark.log).
 
 set -euo pipefail
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 LOGS="${REPO_DIR}/logs"
-OUT="${LOGS}/benchmark.log"
+OUT="${LOGS}/benchmark_trivy.log"
 RUNS="${1:-30}"
 
 declare -A IMAGES=(
@@ -20,52 +19,29 @@ declare -A IMAGES=(
     ["vulnerables_web-dvwa"]="vulnerables/web-dvwa@sha256:dae203fe11646a86937bf04db0079adef295f426da68a92b40e3b181f337daa7"
     ["bkimminich_juice-shop"]="bkimminich/juice-shop@sha256:5539448a1d3fa88d932d3f80a8d3f69a16cde6253c1d4256b28a38ef910e4114"
 )
-declare -A OSV_TAGS=(
-    ["alpine_3.19"]="alpine:3.19"
-    ["nginx_latest"]="nginx:latest"
-    ["node_20"]="node:20"
-    ["python_3.12"]="python:3.12"
-    ["nginx_1.19"]="nginx:1.19"
-    ["node_14"]="node:14"
-    ["python_3.8"]="python:3.8"
-    ["vulnerables_web-dvwa"]="vulnerables/web-dvwa:latest"
-    ["bkimminich_juice-shop"]="bkimminich/juice-shop:latest"
-)
 
 SCAN_ORDER=(alpine_3.19 nginx_1.19 nginx_latest node_14 node_20 python_3.8 python_3.12 vulnerables_web-dvwa bkimminich_juice-shop)
 
-echo "benchmark_start $(date -u +%Y-%m-%dT%H:%M:%SZ) runs=${RUNS}" >> "${OUT}"
+echo "Updating Trivy DB..."
+trivy image --download-db-only 2>/dev/null
+echo "Trivy DB ready."
+
+echo "benchmark_trivy_start $(date -u +%Y-%m-%dT%H:%M:%SZ) runs=${RUNS}" > "${OUT}"
 
 for SAFE in "${SCAN_ORDER[@]}"; do
     IMAGE="${IMAGES[$SAFE]}"
-    OSV_TAG="${OSV_TAGS[$SAFE]}"
     SIZE_BYTES=$(docker inspect --format '{{.Size}}' "${IMAGE}" 2>/dev/null || echo 0)
     SIZE_MB=$(echo "scale=1; ${SIZE_BYTES}/1048576" | bc)
     echo "  image=${SAFE} size=${SIZE_MB}MB"
 
     for RUN in $(seq 1 "${RUNS}"); do
-        # Trivy
         T_START=$(date +%s%N)
-        trivy image --format json --scanners vuln --output /dev/null "${IMAGE}" 2>/dev/null
+        trivy image --format json --scanners vuln --skip-db-update --output /dev/null "${IMAGE}" 2>/dev/null
         T_END=$(date +%s%N)
         echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) ${SAFE} trivy run${RUN} $(( (T_END-T_START)/1000000 ))ms ${SIZE_MB}MB" >> "${OUT}"
         echo "    trivy run${RUN}: $(( (T_END-T_START)/1000000 ))ms"
-
-        # Grype
-        T_START=$(date +%s%N)
-        grype "${IMAGE}" -o json > /dev/null 2>&1
-        T_END=$(date +%s%N)
-        echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) ${SAFE} grype run${RUN} $(( (T_END-T_START)/1000000 ))ms ${SIZE_MB}MB" >> "${OUT}"
-        echo "    grype run${RUN}: $(( (T_END-T_START)/1000000 ))ms"
-
-        # OSV-Scanner
-        T_START=$(date +%s%N)
-        osv-scanner scan image --format json --output-file /dev/null "${OSV_TAG}" 2>/dev/null || true
-        T_END=$(date +%s%N)
-        echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) ${SAFE} osv run${RUN} $(( (T_END-T_START)/1000000 ))ms ${SIZE_MB}MB" >> "${OUT}"
-        echo "    osv run${RUN}: $(( (T_END-T_START)/1000000 ))ms"
     done
 done
 
-echo "benchmark_end $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "${OUT}"
+echo "benchmark_trivy_end $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "${OUT}"
 echo "Done. Results in ${OUT}"

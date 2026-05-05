@@ -8,8 +8,8 @@ import json, time, os, requests
 from datetime import datetime
 
 BASE = "http://localhost:3000"
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-OUT = os.path.join(SCRIPT_DIR, "logs", "harborguard_results.json")
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+OUT = os.path.join(ROOT, "logs", "harborguard", "harborguard_results.json")
 
 IMAGES = [
     {"image": "alpine",                "tag": "3.19",   "safe": "alpine_3.19",          "group": "C"},

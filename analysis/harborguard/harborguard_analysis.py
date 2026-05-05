@@ -12,11 +12,11 @@ Produces:
 
 import json, os, sys
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-HG_FILE   = os.path.join(SCRIPT_DIR, "logs", "harborguard_results.json")
-RAW_FILE  = os.path.join(SCRIPT_DIR, "logs", "parsed_results.json")
-OUT_TXT   = os.path.join(SCRIPT_DIR, "logs", "harborguard_analysis.txt")
-OUT_JSON  = os.path.join(SCRIPT_DIR, "logs", "harborguard_analysis.json")
+ROOT      = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+HG_FILE   = os.path.join(ROOT, "logs", "harborguard", "harborguard_results.json")
+RAW_FILE  = os.path.join(ROOT, "data", "derived", "parsed_results.json")
+OUT_TXT   = os.path.join(ROOT, "logs", "harborguard", "harborguard_analysis.txt")
+OUT_JSON  = os.path.join(ROOT, "logs", "harborguard", "harborguard_analysis.json")
 
 ORDER = [
     "alpine_3.19", "nginx_latest", "node_20", "python_3.12",
