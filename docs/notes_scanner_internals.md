@@ -39,6 +39,12 @@ Trivy uses a **pre-built inverted index** — its vulnerability database is stru
 
 Trivy includes CVEs from NVD that OS vendor trackers may classify as "negligible" or not assign a fix to. The NVD assigns CVSS scores independently; Debian may accept a CVE as low-risk and not backport a fix, but Trivy still includes it with the NVD CVSS score. Grype's DB, which weights vendor scores, tends to exclude or downgrade these.
 
+### Why `--scanners vuln` was used
+
+From Trivy 0.51 onwards, `trivy image` runs multiple scanners by default: vulnerability (`vuln`), secret detection, and misconfiguration checks. Without explicitly passing `--scanners vuln`, the output JSON includes `SECRET` and `MISCONFIG` result types alongside vulnerability results. These result types do not carry a `VulnerabilityID` field, so they would be silently skipped or cause errors in any parser that iterates `Results` expecting CVE entries.
+
+More importantly, Grype and OSV-Scanner are vulnerability-only tools — they have no equivalent secret or misconfiguration scanning capability. Using `--scanners vuln` scopes Trivy to the same detection surface as the other two tools, making the comparison valid. Without this flag, Trivy finding counts would include non-CVE results and the cross-tool analysis would be measuring different things.
+
 ---
 
 ## 3. Grype
