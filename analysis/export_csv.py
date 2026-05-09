@@ -308,23 +308,29 @@ with w("table5_cwe_per_image_grype.csv") as f:
                         [d["g_cwes"].get(c, 0) for c in top10])
 
 # ---------------------------------------------------------------------------
-# TABLE 6 — Performance benchmark
+# TABLE 6 — Performance benchmark (30-run summary)
 # ---------------------------------------------------------------------------
 bench_path = os.path.join(DERIVED, "benchmark_summary.json")
 if os.path.exists(bench_path):
     with open(bench_path) as f:
         bench = {b["safe"]: b for b in json.load(f)}
 
+    def bstat(runs):
+        return (
+            round(statistics.mean(runs)),
+            round(statistics.stdev(runs)) if len(runs) > 1 else 0,
+            min(runs),
+            round(statistics.median(runs)),
+            max(runs),
+        )
+
     with w("table6_performance.csv") as f:
         writer = csv.writer(f)
         writer.writerow([
-            "group", "image", "size_mb",
-            "trivy_run1_ms", "trivy_run2_ms", "trivy_run3_ms",
-            "trivy_mean_ms", "trivy_sd_ms",
-            "grype_run1_ms", "grype_run2_ms", "grype_run3_ms",
-            "grype_mean_ms", "grype_sd_ms",
-            "osv_run1_ms",   "osv_run2_ms",   "osv_run3_ms",
-            "osv_mean_ms",   "osv_sd_ms",
+            "group", "image", "size_mb", "n_runs",
+            "trivy_mean_ms", "trivy_sd_ms", "trivy_min_ms", "trivy_median_ms", "trivy_max_ms",
+            "grype_mean_ms", "grype_sd_ms", "grype_min_ms", "grype_median_ms", "grype_max_ms",
+            "osv_mean_ms",   "osv_sd_ms",   "osv_min_ms",   "osv_median_ms",   "osv_max_ms",
         ])
         for d in dataset:
             b = bench.get(d["safe"])
@@ -333,36 +339,21 @@ if os.path.exists(bench_path):
             t_r = b["trivy"]["runs_ms"]
             g_r = b["grype"]["runs_ms"]
             o_r = b["osv"]["runs_ms"]
-            # Exclude run1 from alpine cold-export anomaly
+            # Exclude run1 from alpine cold-export anomaly (grype 80s outlier)
             t_calc = t_r[1:] if d["safe"] == "alpine_3.19" else t_r
             g_calc = g_r[1:] if d["safe"] == "alpine_3.19" else g_r
-
-            def ms(runs): return round(statistics.mean(runs)) if runs else 0
-            def sd(runs): return round(statistics.stdev(runs)) if len(runs) > 1 else 0
-
-            row = [d["group"], d["image"], d["size_mb"]]
-            row += t_r + [ms(t_calc), sd(t_calc)]
-            row += g_r + [ms(g_calc), sd(g_calc)]
-            row += o_r + [ms(o_r),    sd(o_r)]
+            n = len(t_r)
+            row = [d["group"], d["image"], d["size_mb"], n]
+            row += list(bstat(t_calc))
+            row += list(bstat(g_calc))
+            row += list(bstat(o_r))
             writer.writerow(row)
 
 # ---------------------------------------------------------------------------
 # EXPERIMENT LOG DATASETS
 # ---------------------------------------------------------------------------
 
-# D1 — Core results (same as Table 1 but with original first-run timing)
-with open(os.path.join(LOGS, "timing.log")) as f:
-    timing_raw = f.readlines()
-
-timing = collections.defaultdict(dict)
-for line in timing_raw:
-    parts = line.strip().split()
-    if len(parts) >= 4:
-        _, safe, tool, ms_str, *_ = parts
-        ms = ms_str.replace("ms","").replace("retry_ok","")
-        if ms.isdigit():
-            timing[safe][tool] = int(ms)
-
+# D1 — Core results
 with w("D1_core_results.csv") as f:
     writer = csv.writer(f)
     writer.writerow([
@@ -382,16 +373,29 @@ with w("D1_core_results.csv") as f:
             d["osv_adv"], d["eosl"],
         ])
 
-# D2 — Original single-run performance (from timing.log)
-with w("D2_performance_original.csv") as f:
-    writer = csv.writer(f)
-    writer.writerow(["group", "image", "size_mb",
-                     "syft_ms", "trivy_ms", "grype_ms", "osv_ms"])
-    for safe, image, group in IMAGES:
-        t = timing.get(safe, {})
-        writer.writerow([group, image, IMAGE_SIZES_MB.get(safe, 0),
-            t.get("syft", ""), t.get("trivy", ""),
-            t.get("grype", ""), t.get("osv", "")])
+# D2 — 30-run performance summary (sourced from benchmark_summary.json)
+if os.path.exists(bench_path):
+    with w("D2_performance_30run.csv") as f:
+        writer = csv.writer(f)
+        writer.writerow(["group", "image", "size_mb", "n_runs",
+                         "trivy_mean_ms", "trivy_sd_ms",
+                         "grype_mean_ms", "grype_sd_ms",
+                         "osv_mean_ms",   "osv_sd_ms"])
+        for d in dataset:
+            b = bench.get(d["safe"])
+            if not b:
+                continue
+            t_r = b["trivy"]["runs_ms"]
+            g_r = b["grype"]["runs_ms"]
+            o_r = b["osv"]["runs_ms"]
+            t_calc = t_r[1:] if d["safe"] == "alpine_3.19" else t_r
+            g_calc = g_r[1:] if d["safe"] == "alpine_3.19" else g_r
+            writer.writerow([
+                d["group"], d["image"], d["size_mb"], len(t_r),
+                round(statistics.mean(t_calc)), round(statistics.stdev(t_calc)) if len(t_calc) > 1 else 0,
+                round(statistics.mean(g_calc)), round(statistics.stdev(g_calc)) if len(g_calc) > 1 else 0,
+                round(statistics.mean(o_r)),    round(statistics.stdev(o_r))    if len(o_r) > 1 else 0,
+            ])
 
 # D3 — SBOM baseline
 with w("D3_sbom_baseline.csv") as f:
