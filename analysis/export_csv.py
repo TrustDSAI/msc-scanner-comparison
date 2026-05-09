@@ -36,7 +36,7 @@ os.makedirs(CSV_DIR, exist_ok=True)
 
 IMAGES = [
     ("alpine_3.19",           "alpine:3.19",                "C"),
-    ("nginx_latest",          "nginx:latest",               "C"),
+    ("nginx_1.29.7",          "nginx:1.29.7",               "C"),
     ("node_20",               "node:20",                    "C"),
     ("python_3.12",           "python:3.12",                "C"),
     ("nginx_1.19",            "nginx:1.19",                 "B"),
@@ -47,7 +47,7 @@ IMAGES = [
 ]
 
 IMAGE_SIZES_MB = {
-    "alpine_3.19": 7.1,   "nginx_latest": 153.5, "node_20": 1044.7,
+    "alpine_3.19": 7.1,   "nginx_1.29.7": 153.5, "node_20": 1044.7,
     "python_3.12": 1055.6, "nginx_1.19": 127.0,  "node_14": 869.5,
     "python_3.8": 949.3,  "vulnerables_web-dvwa": 678.8,
     "bkimminich_juice-shop": 467.3,

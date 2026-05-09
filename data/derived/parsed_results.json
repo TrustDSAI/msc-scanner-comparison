@@ -33,8 +33,8 @@
     "sbom_ecosystems": {}
   },
   {
-    "safe": "nginx_latest",
-    "image": "nginx:latest",
+    "safe": "nginx_1.29.7",
+    "image": "nginx:1.29.7",
     "group": "C",
     "trivy": {
       "CRITICAL": 0,

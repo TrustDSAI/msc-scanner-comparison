@@ -66,7 +66,7 @@ All images pulled and pinned by digest on **2026-03-31**.
 | Image | Group | OS | EOSL |
 |-------|-------|----|------|
 | `alpine:3.19` | C — Modern baseline | Alpine 3.19.9 | YES |
-| `nginx:latest` | C — Modern baseline | Debian 13.4 | no |
+| `nginx:1.29.7` | C — Modern baseline | Debian 13.4 | no |
 | `node:20` | C — Modern baseline | Debian 12.13 | no |
 | `python:3.12` | C — Modern baseline | Debian 13.4 | no |
 | `nginx:1.19` | B — Outdated real-world | Debian 10.9 | YES |
@@ -101,7 +101,7 @@ Full experiment log: [`docs/experiment_log.md`](docs/experiment_log.md)
 | # | Finding |
 |---|---------|
 | 1 | Trivy reports 1.2–2.2× more total findings than Grype for Debian images, driven by LOW severity inflation |
-| 2 | CVE-level overlap (Jaccard) ranges from **0.14** (python:3.8) to **0.89** (nginx:latest) |
+| 2 | CVE-level overlap (Jaccard) ranges from **0.14** (python:3.8) to **0.89** (nginx:1.29.7) |
 | 3 | Severity agreement on shared CVEs ranges from **8%** (juice-shop) to **96%** (nginx:1.19) — Trivy almost always rates higher |
 | 4 | CRITICAL counts converge across tools (delta ≤3 in 7/9 images) — the most reliable cross-tool signal |
 | 5 | Fix rates diverge significantly between tools for the same image (node:14: Trivy 77% vs Grype 34%) |

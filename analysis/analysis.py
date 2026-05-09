@@ -34,7 +34,7 @@ LOGS        = os.path.join(ROOT, "logs")
 
 IMAGES = [
     ("alpine_3.19",           "alpine:3.19",                "C"),
-    ("nginx_latest",          "nginx:1.29.7",               "C"),  # nginx:latest @sha256:7150b3a3 (2026-03-31)
+    ("nginx_1.29.7",          "nginx:1.29.7",               "C"),  # nginx:1.29.7 @sha256:7150b3a3 (2026-03-31)
     ("node_20",               "node:20",                    "C"),
     ("python_3.12",           "python:3.12",                "C"),
     ("nginx_1.19",            "nginx:1.19",                 "B"),
@@ -45,7 +45,7 @@ IMAGES = [
 ]
 
 IMAGE_SIZES_MB = {
-    "alpine_3.19": 7.1,   "nginx_latest": 153.5, "node_20": 1044.7,
+    "alpine_3.19": 7.1,   "nginx_1.29.7": 153.5, "node_20": 1044.7,
     "python_3.12": 1055.6, "nginx_1.19": 127.0,  "node_14": 869.5,
     "python_3.8": 949.3,  "vulnerables_web-dvwa": 678.8,
     "bkimminich_juice-shop": 467.3,
@@ -230,7 +230,7 @@ def table_severity_agreement(data):
               f"{sa['t_higher']:>10} {sa['g_higher']:>10}")
     print()
     print("  Key finding: severity agreement on shared CVEs ranges from 8% (juice-shop) to 96% (nginx:1.19,")
-    print("  web-dvwa). nginx:latest, node:20, and python:3.12 agree on only ~33% of shared CVEs,")
+    print("  web-dvwa). nginx:1.29.7, node:20, and python:3.12 agree on only ~33% of shared CVEs,")
     print("  with Trivy consistently assigning higher severity than Grype.")
 
 # ---------------------------------------------------------------------------

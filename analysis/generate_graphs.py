@@ -25,13 +25,13 @@ C_A, C_B, C_C = "#7C3AED", "#EA580C", "#0891B2"
 GROUP_COLOUR = {"A": C_A, "B": C_B, "C": C_C}
 
 ORDER = [
-    "alpine_3.19", "nginx_latest", "node_20", "python_3.12",
+    "alpine_3.19", "nginx_1.29.7", "node_20", "python_3.12",
     "nginx_1.19", "node_14", "python_3.8",
     "vulnerables_web-dvwa", "bkimminich_juice-shop",
 ]
 LABEL = {
     "alpine_3.19": "alpine:3.19",
-    "nginx_latest": "nginx:1.29.7",   # nginx:latest @sha256:7150b3a3 (2026-03-31)
+    "nginx_1.29.7": "nginx:1.29.7",   # nginx:1.29.7 @sha256:7150b3a3 (2026-03-31)
     "node_20": "node:20", "python_3.12": "python:3.12",
     "nginx_1.19": "nginx:1.19", "node_14": "node:14",
     "python_3.8": "python:3.8",
@@ -69,37 +69,37 @@ def field(safe, *keys):
 
 # raw D1 totals from experiment log (parse_results level — findings, not unique CVEs)
 RAW_TRIVY = {
-    "alpine_3.19": 6,  "nginx_latest": 169, "node_20": 2268,  "python_3.12": 1751,
+    "alpine_3.19": 6,  "nginx_1.29.7": 169, "node_20": 2268,  "python_3.12": 1751,
     "nginx_1.19":  424,"node_14": 1439,     "python_3.8": 5660,
     "vulnerables_web-dvwa": 1575, "bkimminich_juice-shop": 98,
 }
 RAW_GRYPE = {
-    "alpine_3.19": 10, "nginx_latest": 172, "node_20": 1474,  "python_3.12": 1418,
+    "alpine_3.19": 10, "nginx_1.29.7": 172, "node_20": 1474,  "python_3.12": 1418,
     "nginx_1.19":  550,"node_14": 1995,     "python_3.8": 2533,
     "vulnerables_web-dvwa": 2097, "bkimminich_juice-shop": 93,
 }
 RAW_OSV = {
-    "alpine_3.19": 6,  "nginx_latest": 177, "node_20": 1458,  "python_3.12": 1422,
+    "alpine_3.19": 6,  "nginx_1.29.7": 177, "node_20": 1458,  "python_3.12": 1422,
     "nginx_1.19":  132,"node_14": 210,      "python_3.8": 2620,
     "vulnerables_web-dvwa": 336, "bkimminich_juice-shop": 94,
 }
 RAW_TRIVY_FIX = {
-    "alpine_3.19": 100,"nginx_latest": 0,  "node_20": 1,     "python_3.12": 14,
+    "alpine_3.19": 100,"nginx_1.29.7": 0,  "node_20": 1,     "python_3.12": 14,
     "nginx_1.19":  79, "node_14": 77,      "python_3.8": 60,
     "vulnerables_web-dvwa": 88, "bkimminich_juice-shop": 85,
 }
 RAW_GRYPE_FIX = {
-    "alpine_3.19": 60, "nginx_latest": 0,  "node_20": 1,     "python_3.12": 18,
+    "alpine_3.19": 60, "nginx_1.29.7": 0,  "node_20": 1,     "python_3.12": 18,
     "nginx_1.19":  58, "node_14": 34,      "python_3.8": 41,
     "vulnerables_web-dvwa": 65, "bkimminich_juice-shop": 84,
 }
 RAW_TRIVY_CRIT = {
-    "alpine_3.19": 0, "nginx_latest": 0, "node_20": 33,  "python_3.12": 0,
+    "alpine_3.19": 0, "nginx_1.29.7": 0, "node_20": 33,  "python_3.12": 0,
     "nginx_1.19": 42, "node_14": 22,     "python_3.8": 182,
     "vulnerables_web-dvwa": 254, "bkimminich_juice-shop": 10,
 }
 RAW_GRYPE_CRIT = {
-    "alpine_3.19": 0, "nginx_latest": 0, "node_20": 32,  "python_3.12": 0,
+    "alpine_3.19": 0, "nginx_1.29.7": 0, "node_20": 32,  "python_3.12": 0,
     "nginx_1.19": 40, "node_14": 19,     "python_3.8": 185,
     "vulnerables_web-dvwa": 327, "bkimminich_juice-shop": 10,
 }

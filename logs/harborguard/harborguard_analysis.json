@@ -12,8 +12,8 @@
       "risk_score": 49
     },
     {
-      "safe": "nginx_latest",
-      "image": "nginx:latest",
+      "safe": "nginx_1.29.7",
+      "image": "nginx:1.29.7",
       "group": "C",
       "hg_total": 188,
       "trivy_total": 169,
@@ -112,8 +112,8 @@
       "delta_hg_grype": 0
     },
     {
-      "safe": "nginx_latest",
-      "image": "nginx:latest",
+      "safe": "nginx_1.29.7",
+      "image": "nginx:1.29.7",
       "group": "C",
       "hg_critical": 0,
       "trivy_critical": 0,
@@ -204,8 +204,8 @@
       "osv_in_hg": 8
     },
     {
-      "safe": "nginx_latest",
-      "image": "nginx:latest",
+      "safe": "nginx_1.29.7",
+      "image": "nginx:1.29.7",
       "group": "C",
       "trivy_in_hg": 104,
       "trivy_standalone": 169,
@@ -294,8 +294,8 @@
       "grype_fix_pct": 60
     },
     {
-      "safe": "nginx_latest",
-      "image": "nginx:latest",
+      "safe": "nginx_1.29.7",
+      "image": "nginx:1.29.7",
       "group": "C",
       "hg_fix_pct": 1,
       "trivy_fix_pct": 0,
@@ -383,8 +383,8 @@
       }
     },
     {
-      "safe": "nginx_latest",
-      "image": "nginx:latest",
+      "safe": "nginx_1.29.7",
+      "image": "nginx:1.29.7",
       "group": "C",
       "hg": {
         "c": 0,
@@ -584,8 +584,8 @@
       "grype_in_hg_critical": 0
     },
     {
-      "safe": "nginx_latest",
-      "image": "nginx:latest",
+      "safe": "nginx_1.29.7",
+      "image": "nginx:1.29.7",
       "group": "C",
       "hg_critical": 0,
       "hg_fixed": 2,
@@ -715,8 +715,8 @@
       "ratio_hg_vs_trivy": "175\u00d7"
     },
     {
-      "safe": "nginx_latest",
-      "image": "nginx:latest",
+      "safe": "nginx_1.29.7",
+      "image": "nginx:1.29.7",
       "group": "C",
       "hg_duration_s": 38.2,
       "trivy_mean_s": 0.09,

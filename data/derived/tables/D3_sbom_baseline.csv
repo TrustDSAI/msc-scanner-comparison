@@ -1,6 +1,6 @@
 group,image,total_packages
 C,alpine:3.19,
-C,nginx:latest,
+C,nginx:1.29.7,
 C,node:20,
 C,python:3.12,
 B,nginx:1.19,

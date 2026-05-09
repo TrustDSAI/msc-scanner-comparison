@@ -6,7 +6,7 @@
   "ReportID": "019d425a-f671-7cd9-85d6-0c98545fe8b1",
   "CreatedAt": "2026-03-31T06:25:50.833843234+01:00",
   "ArtifactID": "sha256:554312d647fa2a35c2622f4c121b873b2605a492b63ea231ae9c6b0257d302eb",
-  "ArtifactName": "nginx:latest",
+  "ArtifactName": "nginx:1.29.7",
   "ArtifactType": "container_image",
   "Metadata": {
     "Size": 164543488,
@@ -25,12 +25,12 @@
       "sha256:4e0a2a122e2f58db659f5b8340cfdffd565d11e03fc1865e577bdfce8666ff8e"
     ],
     "RepoTags": [
-      "nginx:latest"
+      "nginx:1.29.7"
     ],
     "RepoDigests": [
       "nginx@sha256:7150b3a39203cb5bee612ff4a9d18774f8c7caf6399d6e8985e97e28eb751c18"
     ],
-    "Reference": "nginx:latest",
+    "Reference": "nginx:1.29.7",
     "ImageConfig": {
       "architecture": "amd64",
       "created": "2026-03-24T22:12:14.449978521Z",
@@ -210,7 +210,7 @@
   },
   "Results": [
     {
-      "Target": "nginx:latest (debian 13.4)",
+      "Target": "nginx:1.29.7 (debian 13.4)",
       "Class": "os-pkgs",
       "Type": "debian",
       "Packages": [

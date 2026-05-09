@@ -1,6 +1,6 @@
 group,image,fixed,affected,will_not_fix,fix_deferred,fix_pct
 C,alpine:3.19,6,0,0,0,100.0
-C,nginx:latest,0,165,0,4,0.0
+C,nginx:1.29.7,0,165,0,4,0.0
 C,node:20,14,2168,61,25,0.6
 C,python:3.12,238,1475,5,33,13.6
 B,nginx:1.19,337,44,32,11,79.5

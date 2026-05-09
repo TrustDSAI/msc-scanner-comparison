@@ -26,7 +26,7 @@ DERIVED = os.path.join(ROOT, "data", "derived")
 
 IMAGES = [
     ("alpine_3.19",           "alpine:3.19",                "C",  7.1),
-    ("nginx_latest",          "nginx:latest",               "C",  153.5),
+    ("nginx_1.29.7",          "nginx:1.29.7",               "C",  153.5),
     ("node_20",               "node:20",                    "C",  1044.7),
     ("python_3.12",           "python:3.12",                "C",  1055.6),
     ("nginx_1.19",            "nginx:1.19",                 "B",  127.0),

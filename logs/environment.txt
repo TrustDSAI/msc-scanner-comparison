@@ -20,7 +20,7 @@ Trivy DB:
 Trivy Java DB:
   Schema:      v1
   UpdatedAt:   2026-03-19T01:17:54Z
-  (Note: Java DB is cached; expiry was 2026-03-22 — may have been refreshed during scan of nginx:latest)
+  (Note: Java DB is cached; expiry was 2026-03-22 — may have been refreshed during scan of nginx:1.29.7)
 
 Grype DB:
   Schema:      v6.1.4

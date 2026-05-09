@@ -15,7 +15,7 @@ Nine container images spanning three risk groups were scanned with Trivy (0.69.3
 |-------|--------|-----------|
 | **A — Intentionally Vulnerable** | vulnerables/web-dvwa, bkimminich/juice-shop | Ground truth for known-vulnerable detection |
 | **B — Outdated Real-World** | nginx:1.19, node:14, python:3.8 | Production-style images past EOL or upstream support |
-| **C — Modern Baseline** | alpine:3.19, nginx:latest, node:20, python:3.12 | Current, maintained images |
+| **C — Modern Baseline** | alpine:3.19, nginx:1.29.7, node:20, python:3.12 | Current, maintained images |
 
 ---
 
@@ -100,7 +100,7 @@ The first observation is that Trivy and Grype frequently disagree on total vulne
 | Image | Grp | Trivy | Grype | Ratio |
 |-------|-----|-------|-------|-------|
 | alpine:3.19 | C | 6 | 10 | 1.7× |
-| nginx:latest | C | 169 | 172 | ~1× |
+| nginx:1.29.7 | C | 169 | 172 | ~1× |
 | node:20 | C | 2268 | 1474 | 1.55× |
 | python:3.12 | C | 1751 | 1418 | 1.23× |
 | nginx:1.19 | B | 424 | 550 | Grype 1.3× |
@@ -131,7 +131,7 @@ Grype GHSA IDs are expanded to CVE aliases before comparison.
 
 | Image | Grp | T CVEs | G CVEs | Both | T-only | G-only | Jaccard |
 |-------|-----|--------|--------|------|--------|--------|---------|
-| nginx:latest | C | 96 | 100 | 92 | 4 | 8 | **0.885** |
+| nginx:1.29.7 | C | 96 | 100 | 92 | 4 | 8 | **0.885** |
 | nginx:1.19 | B | 279 | 353 | 269 | 10 | 84 | 0.741 |
 | web-dvwa | A | 439 | 590 | 425 | 14 | 165 | 0.704 |
 | juice-shop | A | 83 | 143 | 79 | 4 | 64 | 0.537 |
@@ -143,7 +143,7 @@ Grype GHSA IDs are expanded to CVE aliases before comparison.
 
 **Key findings:**
 
-- **nginx:latest** achieves the highest overlap (0.885). Both tools agree on nearly the same CVE set for this modern Debian 13 image with a moderate package surface.
+- **nginx:1.29.7** achieves the highest overlap (0.885). Both tools agree on nearly the same CVE set for this modern Debian 13 image with a moderate package surface.
 - **EOSL Debian images** (nginx:1.19, web-dvwa) show good overlap (0.70–0.74), suggesting consistent DB coverage for older CVEs accumulated before EOL.
 - **python:3.8** is the worst case (0.143): only 530 of 4228 distinct CVE IDs are shared. Trivy reports 3154 CVEs that Grype does not — virtually all are LOW-severity OS package entries absent from Grype's DB.
 - The pattern splits cleanly by ecosystem: OS-only images show moderate-to-high overlap; large multi-ecosystem images with heavy OS package counts show low overlap driven by Trivy's expanded LOW-severity DB coverage.
@@ -163,13 +163,13 @@ For CVEs found by both tools, the question becomes: do they agree on how severe 
 | alpine:3.19 | C | 2 | 1 | 50% | 1 | 0 |
 | node:20 | C | 329 | 111 | 34% | 203 | 15 |
 | python:3.12 | C | 282 | 95 | 34% | 174 | 13 |
-| nginx:latest | C | 92 | 30 | 33% | 54 | 8 |
+| nginx:1.29.7 | C | 92 | 30 | 33% | 54 | 8 |
 | juice-shop | A | 79 | 6 | **8%** | 71 | 2 |
 
 **Key findings:**
 
 - **EOSL Debian images agree strongly on severity** (nginx:1.19 96%, web-dvwa 96%). Older CVEs have settled NVD CVSS scores that both tools import consistently.
-- **Modern Debian images agree on only ~33% of shared CVEs** (nginx:latest, node:20, python:3.12). Trivy consistently assigns higher severity in these cases — likely because it preferentially uses NVD CVSS v3 base scores, while Grype weights GitHub Advisory scores which are often more conservative.
+- **Modern Debian images agree on only ~33% of shared CVEs** (nginx:1.29.7, node:20, python:3.12). Trivy consistently assigns higher severity in these cases — likely because it preferentially uses NVD CVSS v3 base scores, while Grype weights GitHub Advisory scores which are often more conservative.
 - **juice-shop is the most extreme case** (8% agreement). Trivy rates 71 of 79 shared CVEs higher than Grype. juice-shop is npm-heavy on Debian 13 — the GitHub Advisory scores that Grype uses for npm advisories diverge most from NVD scores for modern, actively-triaged packages.
 - The direction of disagreement is asymmetric: **Trivy almost always assigns higher severity**. T-higher exceeds G-higher in 8 of 9 images.
 
@@ -184,7 +184,7 @@ Despite disagreement on totals and severity classification, **CRITICAL counts co
 | Image | Grp | Trivy CRITICAL | Grype CRITICAL | Delta |
 |-------|-----|---------------|---------------|-------|
 | alpine:3.19 | C | 0 | 0 | 0 |
-| nginx:latest | C | 0 | 0 | 0 |
+| nginx:1.29.7 | C | 0 | 0 | 0 |
 | node:20 | C | 33 | 32 | 1 |
 | python:3.12 | C | 0 | 0 | 0 |
 | nginx:1.19 | B | 42 | 40 | 2 |
@@ -212,12 +212,12 @@ Fix rate is reported directly by the scanners from their vulnerability databases
 | python:3.8 | B | 60% | 41% | Moderate — Python EOL drives accumulation |
 | python:3.12 | C | 14% | 18% | Few fixes — Debian 13 accepted-unfixed |
 | node:20 | C | 1% | 1% | Almost nothing fixable |
-| nginx:latest | C | 0% | 0% | Zero fixes — all accepted-unfixed status |
+| nginx:1.29.7 | C | 0% | 0% | Zero fixes — all accepted-unfixed status |
 | alpine:3.19 | C | 100% | 60% | Small surface; all Trivy findings fixable |
 
 **Notable observations:**
 
-- **nginx:latest has 169/172 vulnerabilities with no fix available.** Debian 13 (trixie) carries hundreds of CVEs in accepted-but-not-fixed status — the distribution maintainers have acknowledged them but declined to backport fixes. Blocking this image under P1 (any CRITICAL) would be moot here since CRITICAL=0; but under any count-based policy, this image appears much worse than it operationally is.
+- **nginx:1.29.7 has 169/172 vulnerabilities with no fix available.** Debian 13 (trixie) carries hundreds of CVEs in accepted-but-not-fixed status — the distribution maintainers have acknowledged them but declined to backport fixes. Blocking this image under P1 (any CRITICAL) would be moot here since CRITICAL=0; but under any count-based policy, this image appears much worse than it operationally is.
 - **node:20 has 33 CRITICALs but only 14 fixable findings total** — the CRITICAL findings do have fixes available (1% of 2268 total). This is a strong P2 trigger.
 - **Fix rate diverges significantly between tools** (node:14: Trivy 77% vs Grype 34%). This is a secondary source of policy instability: the same image can appear more or less remediable depending on which scanner's fix state you trust.
 
@@ -238,7 +238,7 @@ Three policies were evaluated against all nine images using Trivy and Grype inde
 | Image | Grp | P1-Trivy | P1-Grype | P2-Trivy | P2-Grype | P3 | T:Fixed | G:Fixed |
 |-------|-----|---------|---------|---------|---------|-----|---------|---------|
 | alpine:3.19 | C | PASS | PASS | PASS | PASS | **PASS** | 6 | 6 |
-| nginx:latest | C | PASS | PASS | PASS | PASS | **PASS** | 0 | 0 |
+| nginx:1.29.7 | C | PASS | PASS | PASS | PASS | **PASS** | 0 | 0 |
 | node:20 | C | REJECT | REJECT | REJECT | REJECT | **REJECT** | 14 | 14 |
 | python:3.12 | C | PASS | PASS | PASS | PASS | **PASS** | 238 | 249 |
 | nginx:1.19 | B | REJECT | REJECT | REJECT | REJECT | **REJECT** | 337 | 320 |
@@ -256,8 +256,8 @@ Three policies were evaluated against all nine images using Trivy and Grype inde
 - P1 vs P3 would diverge if one tool reports CRITICAL and the other does not — the CRITICAL delta data shows this is rare but occurs (web-dvwa delta 73).
 
 **Operational interpretation:**
-- 4 of 9 images pass all policies (alpine, nginx:latest, python:3.12 + node:20 — wait: node:20 rejects). Passes: alpine:3.19, nginx:latest, python:3.12 (3 of 9).
-- All Group A and B images are rejected. Two of four Group C images are rejected (node:20, and no others — python:3.12, nginx:latest, alpine:3.19 pass).
+- 4 of 9 images pass all policies (alpine, nginx:1.29.7, python:3.12 + node:20 — wait: node:20 rejects). Passes: alpine:3.19, nginx:1.29.7, python:3.12 (3 of 9).
+- All Group A and B images are rejected. Two of four Group C images are rejected (node:20, and no others — python:3.12, nginx:1.29.7, alpine:3.19 pass).
 - The result is coherent with the group design: modern baseline images generally pass; outdated and intentionally vulnerable images are correctly blocked.
 
 ---
@@ -269,7 +269,7 @@ Scan times measured over 3 independent runs per image per tool (images locally c
 | Image | Grp | Size MB | Trivy | Grype | OSV |
 |-------|-----|---------|-------|-------|-----|
 | alpine:3.19 | C | 7.1 | 56ms ±0ms | 1451ms ±12ms | 1900ms ±568ms |
-| nginx:latest | C | 153.5 | 90ms ±0ms | 3016ms ±21ms | 4283ms ±188ms |
+| nginx:1.29.7 | C | 153.5 | 90ms ±0ms | 3016ms ±21ms | 4283ms ±188ms |
 | node:20 | C | 1044.7 | 346ms ±1ms | 18606ms ±476ms | 25506ms ±2295ms |
 | python:3.12 | C | 1055.6 | 315ms ±2ms | 15631ms ±8ms | 24610ms ±1540ms |
 | nginx:1.19 | B | 127.0 | 93ms ±3ms | 3136ms ±16ms | 5329ms ±1813ms |
@@ -314,7 +314,7 @@ The top 10 CWE types across all images and both tools reveal the dominant weakne
 | # | Finding | Implication |
 |---|---------|-------------|
 | 1 | Trivy reports 1.2–2.2× more total findings than Grype for Debian OS images, driven by LOW severity inflation | Total-count policies are tool-dependent; avoid them |
-| 2 | CVE-level overlap (Jaccard) ranges from 0.14 (python:3.8) to 0.89 (nginx:latest) | Two scanners do not see the same vulnerability universe |
+| 2 | CVE-level overlap (Jaccard) ranges from 0.14 (python:3.8) to 0.89 (nginx:1.29.7) | Two scanners do not see the same vulnerability universe |
 | 3 | Severity agreement on shared CVEs ranges from 8% (juice-shop) to 96% (nginx:1.19, web-dvwa); Trivy consistently assigns higher severity | Tool-specific severity scores are not interchangeable |
 | 4 | CRITICAL counts converge across tools (delta ≤3 in 7/9 images) | CRITICAL is the most reliable cross-tool policy anchor |
 | 5 | Fix rate diverges significantly between tools for the same image (node:14: Trivy 77% vs Grype 34%) | Fixability assessment is also tool-dependent |

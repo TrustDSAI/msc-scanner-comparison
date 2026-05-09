@@ -41,7 +41,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 | Image | OS | EOSL | Digest |
 |-------|----|------|--------|
 | alpine:3.19 | Alpine 3.19.9 | YES | `sha256:6baf4358…eb11ca1` |
-| nginx:latest | Debian 13.4 | no | `sha256:7150b3a3…51c18` |
+| nginx:1.29.7 | Debian 13.4 | no | `sha256:7150b3a3…51c18` |
 | node:20 | Debian 12.13 | no | `sha256:a4545fc6…718520` |
 | python:3.12 | Debian 13.4 | no | `sha256:c4c9e439…b3436` |
 
@@ -64,7 +64,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 
 ---
 
-### 3.2 nginx:latest (Group C)
+### 3.2 nginx:1.29.7 (Group C)
 
 | Tool | Total | CRITICAL | HIGH | MEDIUM | LOW | Fixed |
 |------|-------|----------|------|--------|-----|-------|
@@ -189,7 +189,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 | Grp | Image | Size MB | Trivy mean | ±sd | Grype mean | ±sd | OSV mean | ±sd |
 |-----|-------|---------|-----------|-----|-----------|-----|---------|-----|
 | C | alpine:3.19 | 3.2 | 189ms | 49ms | 6,915ms | 13,911ms | 2,498ms | 885ms |
-| C | nginx:latest | 60.0 | 386ms | 153ms | 14,917ms | 1,985ms | 18,047ms | 2,401ms |
+| C | nginx:1.29.7 | 60.0 | 386ms | 153ms | 14,917ms | 1,985ms | 18,047ms | 2,401ms |
 | C | node:20 | 395.6 | 877ms | 413ms | 98,954ms | 4,356ms | 99,559ms | 9,007ms |
 | C | python:3.12 | 399.0 | 861ms | 135ms | 92,428ms | 5,293ms | 101,863ms | 9,305ms |
 | B | nginx:1.19 | 47.9 | 268ms | 180ms | 13,473ms | 2,136ms | 14,338ms | 1,968ms |
@@ -217,7 +217,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 | Grp | Image | Trivy | T-fix% | Grype | G-fix% | OSV† | Trivy/Grype |
 |-----|-------|-------|--------|-------|--------|------|-------------|
 | C | alpine:3.19 | 6 | 100% | 10 | 60% | 6 | 0.6× |
-| C | nginx:latest | 169 | 0% | 172 | 0% | 177 | 1.0× |
+| C | nginx:1.29.7 | 169 | 0% | 172 | 0% | 177 | 1.0× |
 | C | node:20 | 2268 | 1% | 1474 | 1% | 1458 | 1.5× |
 | C | python:3.12 | 1751 | 14% | 1418 | 18% | 1422 | 1.2× |
 | B | nginx:1.19 | 424 | 79% | 550 | 58% | 132† | 0.8× |
@@ -232,7 +232,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 
 - Trivy inflates totals for OS-heavy images via LOW severity entries absent from Grype's DB.
 - Grype exceeds Trivy for npm-heavy images (node:14, web-dvwa) — different npm DB coverage.
-- juice-shop and nginx:latest show the tightest agreement (<5% delta); python:3.8 the widest (2.24×).
+- juice-shop and nginx:1.29.7 show the tightest agreement (<5% delta); python:3.8 the widest (2.24×).
 
 ---
 
@@ -243,7 +243,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 | Grp | Image | T CVEs | G CVEs | Shared | T-only | G-only | Jaccard |
 |-----|-------|--------|--------|--------|--------|--------|---------|
 | C | alpine:3.19 | 2 | 4 | 2 | 0 | 2 | 0.500 |
-| C | nginx:latest | 96 | 100 | 92 | 4 | 8 | **0.885** |
+| C | nginx:1.29.7 | 96 | 100 | 92 | 4 | 8 | **0.885** |
 | C | node:20 | 1127 | 347 | 329 | 798 | 18 | 0.287 |
 | C | python:3.12 | 630 | 284 | 282 | 348 | 2 | 0.446 |
 | B | nginx:1.19 | 279 | 353 | 269 | 10 | 84 | 0.741 |
@@ -254,7 +254,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 
 > **fig3_cve_overlap.png** — Jaccard similarity + CVE set composition stacked bars
 
-- Range: 0.143 (python:3.8) to 0.885 (nginx:latest).
+- Range: 0.143 (python:3.8) to 0.885 (nginx:1.29.7).
 - python:3.8: only 530 of 4228 distinct CVE IDs are shared — Trivy reports 3154 CVEs absent from Grype, virtually all LOW.
 - EOSL Debian images (nginx:1.19, web-dvwa) show good overlap (0.70–0.74) — consistent EOSL DB coverage between tools.
 
@@ -267,7 +267,7 @@ For CVEs found by **both** tools: fraction receiving the same severity rating. T
 | Grp | Image | Shared | Agree | Agree% | T-higher | G-higher |
 |-----|-------|--------|-------|--------|----------|----------|
 | C | alpine:3.19 | 2 | 1 | 50% | 1 | 0 |
-| C | nginx:latest | 92 | 30 | 33% | 54 | 8 |
+| C | nginx:1.29.7 | 92 | 30 | 33% | 54 | 8 |
 | C | node:20 | 329 | 111 | 34% | 203 | 15 |
 | C | python:3.12 | 282 | 95 | 34% | 174 | 13 |
 | B | nginx:1.19 | 269 | 259 | **96%** | 4 | 6 |
@@ -311,7 +311,7 @@ Trivy's LOW inflation is the principal driver of total count divergence. CRITICA
 | Image | Grp | P1 Trivy | P1 Grype | P2 Trivy | P2 Grype | P3 |
 |-------|-----|---------|---------|---------|---------|-----|
 | alpine:3.19 | C | PASS | PASS | PASS | PASS | PASS |
-| nginx:latest | C | PASS | PASS | PASS | PASS | PASS |
+| nginx:1.29.7 | C | PASS | PASS | PASS | PASS | PASS |
 | node:20 | C | REJECT | REJECT | REJECT | REJECT | REJECT |
 | python:3.12 | C | PASS | PASS | PASS | PASS | PASS |
 | nginx:1.19 | B | REJECT | REJECT | REJECT | REJECT | REJECT |
@@ -334,7 +334,7 @@ Trivy's LOW inflation is the principal driver of total count divergence. CRITICA
 | Image | Group | Total pkgs | deb | npm | apk | python | binary | php | java |
 |-------|-------|-----------|-----|-----|-----|--------|--------|-----|------|
 | alpine:3.19 | C | 15 | — | — | 15 | — | — | — | — |
-| nginx:latest | C | 152 | 151 | — | — | — | — | — | 1 |
+| nginx:1.29.7 | C | 152 | 151 | — | — | — | — | — | 1 |
 | node:20 | C | 619 | 413 | 204 | — | 1 | 1 | — | — |
 | python:3.12 | C | 479 | 469 | — | — | 3 | 7 | — | — |
 | nginx:1.19 | B | 136 | 135 | — | — | — | — | — | 1 |
@@ -382,7 +382,7 @@ Memory-safety weaknesses (CWE-476, 416, 125, 787) account for the top four posit
 |---|---------|
 | 1 | Trivy reports 1.2–2.2× more total findings than Grype for Debian OS-heavy images, driven by LOW severity inflation (8–16× more LOW entries). |
 | 2 | CRITICAL counts converge across tools (delta ≤3 in 7/9 images) — the most reliable cross-tool signal for policy use. |
-| 3 | CVE-level overlap (Jaccard) ranges from 0.14 (python:3.8) to 0.89 (nginx:latest) — tools do not agree on which CVEs to report. |
+| 3 | CVE-level overlap (Jaccard) ranges from 0.14 (python:3.8) to 0.89 (nginx:1.29.7) — tools do not agree on which CVEs to report. |
 | 4 | Severity agreement on shared CVEs ranges from 8% (juice-shop) to 96% (nginx:1.19). Trivy rates higher than Grype in 8 of 9 images, reflecting NVD vs vendor advisory score differences. |
 | 5 | Fix rate divergence is significant: node:14 Trivy 77% vs Grype 34%; python:3.8 60% vs 41% — same image, same CVEs, different fixability signals. |
 | 6 | Trivy is 50–130× faster than Grype and OSV at steady state (30-run benchmark, pre-warmed DB). |

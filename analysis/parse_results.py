@@ -30,7 +30,7 @@ OUTPUT_FILE = os.path.join(ROOT, "data", "derived", "parsed_results.json")
 # ---------------------------------------------------------------------------
 IMAGES = [
     ("alpine_3.19",           "alpine:3.19",                "C"),
-    ("nginx_latest",          "nginx:latest",               "C"),
+    ("nginx_1.29.7",          "nginx:1.29.7",               "C"),
     ("node_20",               "node:20",                    "C"),
     ("python_3.12",           "python:3.12",                "C"),
     ("nginx_1.19",            "nginx:1.19",                 "B"),

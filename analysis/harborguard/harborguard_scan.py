@@ -13,7 +13,7 @@ OUT = os.path.join(ROOT, "logs", "harborguard", "harborguard_results.json")
 
 IMAGES = [
     {"image": "alpine",                "tag": "3.19",   "safe": "alpine_3.19",          "group": "C"},
-    {"image": "nginx",                 "tag": "latest", "safe": "nginx_latest",          "group": "C"},
+    {"image": "nginx",                 "tag": "latest", "safe": "nginx_1.29.7",          "group": "C"},
     {"image": "node",                  "tag": "20",     "safe": "node_20",               "group": "C"},
     {"image": "python",                "tag": "3.12",   "safe": "python_3.12",           "group": "C"},
     {"image": "nginx",                 "tag": "1.19",   "safe": "nginx_1.19",            "group": "B"},

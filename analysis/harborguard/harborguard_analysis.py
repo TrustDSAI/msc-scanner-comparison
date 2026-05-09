@@ -19,13 +19,13 @@ OUT_TXT   = os.path.join(ROOT, "logs", "harborguard", "harborguard_analysis.txt"
 OUT_JSON  = os.path.join(ROOT, "logs", "harborguard", "harborguard_analysis.json")
 
 ORDER = [
-    "alpine_3.19", "nginx_latest", "node_20", "python_3.12",
+    "alpine_3.19", "nginx_1.29.7", "node_20", "python_3.12",
     "nginx_1.19", "node_14", "python_3.8",
     "vulnerables_web-dvwa", "bkimminich_juice-shop",
 ]
 LABEL = {
     "alpine_3.19":           "alpine:3.19",
-    "nginx_latest":          "nginx:latest",
+    "nginx_1.29.7":          "nginx:1.29.7",
     "node_20":               "node:20",
     "python_3.12":           "python:3.12",
     "nginx_1.19":            "nginx:1.19",
@@ -39,7 +39,7 @@ LABEL = {
 STANDALONE = {
     "alpine_3.19":          {"trivy": {"total":6,    "critical":0,   "high":0,    "medium":3,    "low":3,    "fixed":6},
                               "grype": {"total":10,   "critical":0,   "high":0,    "medium":4,    "low":6,    "fixed":6}},
-    "nginx_latest":         {"trivy": {"total":169,  "critical":0,   "high":14,   "medium":29,   "low":126,  "fixed":0},
+    "nginx_1.29.7":         {"trivy": {"total":169,  "critical":0,   "high":14,   "medium":29,   "low":126,  "fixed":0},
                               "grype": {"total":172,  "critical":0,   "high":25,   "medium":33,   "low":8,    "fixed":0}},
     "node_20":              {"trivy": {"total":2268, "critical":33,  "high":277,  "medium":936,  "low":997,  "fixed":14},
                               "grype": {"total":1474, "critical":32,  "high":178,  "medium":360,  "low":67,   "fixed":14}},
@@ -275,12 +275,12 @@ def main():
     p("-" * 90)
 
     TRIVY_MEANS = {
-        "alpine_3.19": 0.056, "nginx_latest": 0.090, "node_20": 0.346,
+        "alpine_3.19": 0.056, "nginx_1.29.7": 0.090, "node_20": 0.346,
         "python_3.12": 0.315, "nginx_1.19": 0.093, "node_14": 0.231,
         "python_3.8": 0.558, "vulnerables_web-dvwa": 0.184, "bkimminich_juice-shop": 0.110,
     }
     GRYPE_MEANS = {
-        "alpine_3.19": 1.451, "nginx_latest": 3.016, "node_20": 18.606,
+        "alpine_3.19": 1.451, "nginx_1.29.7": 3.016, "node_20": 18.606,
         "python_3.12": 15.631, "nginx_1.19": 3.136, "node_14": 17.776,
         "python_3.8": 18.251, "vulnerables_web-dvwa": 11.158, "bkimminich_juice-shop": 11.443,
     }

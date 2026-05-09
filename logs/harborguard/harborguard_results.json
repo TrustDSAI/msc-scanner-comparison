@@ -45,10 +45,10 @@
     }
   },
   {
-    "image_tag": "nginx:latest",
+    "image_tag": "nginx:1.29.7",
     "image": "nginx",
     "tag": "latest",
-    "safe": "nginx_latest",
+    "safe": "nginx_1.29.7",
     "group": "C",
     "status": "SUCCESS",
     "elapsed_s": 45.6,

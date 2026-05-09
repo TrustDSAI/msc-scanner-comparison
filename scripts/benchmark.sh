@@ -11,7 +11,7 @@ RUNS="${1:-30}"
 
 declare -A IMAGES=(
     ["alpine_3.19"]="alpine@sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1"
-    ["nginx_latest"]="nginx@sha256:7150b3a39203cb5bee612ff4a9d18774f8c7caf6399d6e8985e97e28eb751c18"
+    ["nginx_1.29.7"]="nginx@sha256:7150b3a39203cb5bee612ff4a9d18774f8c7caf6399d6e8985e97e28eb751c18"
     ["node_20"]="node@sha256:a4545fc6f4f1483384ad5f4c71d34d71781c3779da407173ec6058079a718520"
     ["python_3.12"]="python@sha256:c4c9e439bf98d5c20453156194f937aefb4a633555d93a1960d612052c4b3436"
     ["nginx_1.19"]="nginx@sha256:df13abe416e37eb3db4722840dd479b00ba193ac6606e7902331dcea50f4f1f2"
@@ -22,7 +22,7 @@ declare -A IMAGES=(
 )
 declare -A OSV_TAGS=(
     ["alpine_3.19"]="alpine:3.19"
-    ["nginx_latest"]="nginx:latest"
+    ["nginx_1.29.7"]="nginx:1.29.7"
     ["node_20"]="node:20"
     ["python_3.12"]="python:3.12"
     ["nginx_1.19"]="nginx:1.19"
@@ -32,7 +32,7 @@ declare -A OSV_TAGS=(
     ["bkimminich_juice-shop"]="bkimminich/juice-shop:latest"
 )
 
-SCAN_ORDER=(alpine_3.19 nginx_1.19 nginx_latest node_14 node_20 python_3.8 python_3.12 vulnerables_web-dvwa bkimminich_juice-shop)
+SCAN_ORDER=(alpine_3.19 nginx_1.19 nginx_1.29.7 node_14 node_20 python_3.8 python_3.12 vulnerables_web-dvwa bkimminich_juice-shop)
 
 # Pre-warm Trivy DB once so no mid-benchmark DB refresh skews timings.
 echo "Updating Trivy DB..."
