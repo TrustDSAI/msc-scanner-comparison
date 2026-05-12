@@ -9,7 +9,7 @@
 ## 1. Tool Versions
 
 | Tool | Version | DB / Schema | Notes |
-|------|---------|-------------|-------|
+| ---- | ------- | ----------- | ----- |
 | Trivy | 0.69.3 | Vulnerability DB v2, updated 2026-03-30 | `--scanners vuln` only |
 | Grype | 0.110.0 | Schema v6.1.4, built 2026-03-30 | default profile |
 | OSV-Scanner | 2.3.5 (scalibr v0.4.5) | Live — api.osv.dev at scan time | `scan image` subcommand |
@@ -24,14 +24,14 @@ Images pulled and pinned by digest on **2026-03-31**.
 ### Group A — Intentionally Vulnerable
 
 | Image | OS | EOSL | Digest |
-|-------|----|------|--------|
+| ----- | -- | ---- | ------ |
 | vulnerables/web-dvwa:latest | Debian 9.5 | YES | `sha256:dae203fe…37daa7` |
 | bkimminich/juice-shop:latest | Debian 13.4 | no | `sha256:5539448a…14114` |
 
 ### Group B — Outdated Real-World
 
 | Image | OS | EOSL | Digest |
-|-------|----|------|--------|
+| ----- | -- | ---- | ------ |
 | nginx:1.19 | Debian 10.9 | YES | `sha256:df13abe4…f4f1f2` |
 | node:14 | Debian 10.13 | YES | `sha256:a158d3b9…d8461aa` |
 | python:3.8 | Debian 12.7 | no | `sha256:d411270700…390c` |
@@ -39,7 +39,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 ### Group C — Modern Baseline
 
 | Image | OS | EOSL | Digest |
-|-------|----|------|--------|
+| ----- | -- | ---- | ------ |
 | alpine:3.19 | Alpine 3.19.9 | YES | `sha256:6baf4358…eb11ca1` |
 | nginx:1.29.7 | Debian 13.4 | no | `sha256:7150b3a3…51c18` |
 | node:20 | Debian 12.13 | no | `sha256:a4545fc6…718520` |
@@ -54,7 +54,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 ### 3.1 alpine:3.19 (Group C)
 
 | Tool | Total | CRITICAL | HIGH | MEDIUM | LOW | Fixed |
-|------|-------|----------|------|--------|-----|-------|
+| ---- | ----- | -------- | ---- | ------ | --- | ----- |
 | Trivy | 6 | 0 | 0 | 3 | 3 | 6 (100%) |
 | Grype | 10 | 0 | 0 | 4 | 6 | 6 (60%) |
 | OSV | 6 | — | — | — | — | — |
@@ -67,7 +67,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 ### 3.2 nginx:1.29.7 (Group C)
 
 | Tool | Total | CRITICAL | HIGH | MEDIUM | LOW | Fixed |
-|------|-------|----------|------|--------|-----|-------|
+| ---- | ----- | -------- | ---- | ------ | --- | ----- |
 | Trivy | 169 | 0 | 14 | 29 | 126 | 0 (0%) |
 | Grype | 172 | 0 | 25 | 33 | 8 | 0 (0%) |
 | OSV | 177 | — | — | — | — | — |
@@ -81,7 +81,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 ### 3.3 node:20 (Group C)
 
 | Tool | Total | CRITICAL | HIGH | MEDIUM | LOW | Fixed |
-|------|-------|----------|------|--------|-----|-------|
+| ---- | ----- | -------- | ---- | ------ | --- | ----- |
 | Trivy | 2268 | 33 | 277 | 936 | 997 | 14 (1%) |
 | Grype | 1474 | 32 | 178 | 360 | 67 | 14 (1%) |
 | OSV | 1458 | — | — | — | — | — |
@@ -96,7 +96,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 ### 3.4 python:3.12 (Group C)
 
 | Tool | Total | CRITICAL | HIGH | MEDIUM | LOW | Fixed |
-|------|-------|----------|------|--------|-----|-------|
+| ---- | ----- | -------- | ---- | ------ | --- | ----- |
 | Trivy | 1751 | 0 | 196 | 557 | 971 | 238 (14%) |
 | Grype | 1418 | 0 | 165 | 375 | 59 | 249 (18%) |
 | OSV | 1422 | — | — | — | — | — |
@@ -111,7 +111,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 ### 3.5 nginx:1.19 (Group B)
 
 | Tool | Total | CRITICAL | HIGH | MEDIUM | LOW | Fixed |
-|------|-------|----------|------|--------|-----|-------|
+| ---- | ----- | -------- | ---- | ------ | --- | ----- |
 | Trivy | 424 | 42 | 149 | 193 | 31 | 337 (79%) |
 | Grype | 550 | 40 | 159 | 194 | 35 | 320 (58%) |
 | OSV | 132† | — | — | — | — | — |
@@ -127,7 +127,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 ### 3.6 node:14 (Group B)
 
 | Tool | Total | CRITICAL | HIGH | MEDIUM | LOW | Fixed |
-|------|-------|----------|------|--------|-----|-------|
+| ---- | ----- | -------- | ---- | ------ | --- | ----- |
 | Trivy | 1439 | 22 | 569 | 754 | 90 | 1112 (77%) |
 | Grype | 1995 | 19 | 453 | 477 | 95 | 681 (34%) |
 | OSV | 210† | — | — | — | — | — |
@@ -141,7 +141,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 ### 3.7 python:3.8 (Group B)
 
 | Tool | Total | CRITICAL | HIGH | MEDIUM | LOW | Fixed |
-|------|-------|----------|------|--------|-----|-------|
+| ---- | ----- | -------- | ---- | ------ | --- | ----- |
 | Trivy | 5660 | 182 | 1369 | 2957 | 1114 | 3371 (60%) |
 | Grype | 2533 | 185 | 652 | 694 | 125 | 1030 (41%) |
 | OSV | 2620 | — | — | — | — | — |
@@ -156,7 +156,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 ### 3.8 vulnerables/web-dvwa:latest (Group A)
 
 | Tool | Total | CRITICAL | HIGH | MEDIUM | LOW | Fixed |
-|------|-------|----------|------|--------|-----|-------|
+| ---- | ----- | -------- | ---- | ------ | --- | ----- |
 | Trivy | 1575 | 254 | 551 | 642 | 116 | 1380 (88%) |
 | Grype | 2097 | 327 | 760 | 700 | 99 | 1362 (65%) |
 | OSV | 336† | — | — | — | — | — |
@@ -170,7 +170,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 ### 3.9 bkimminich/juice-shop:latest (Group A)
 
 | Tool | Total | CRITICAL | HIGH | MEDIUM | LOW | Fixed |
-|------|-------|----------|------|--------|-----|-------|
+| ---- | ----- | -------- | ---- | ------ | --- | ----- |
 | Trivy | 98 | 10 | 47 | 27 | 14 | 83 (85%) |
 | Grype | 93 | 10 | 46 | 26 | 4 | 78 (84%) |
 | OSV | 94 | — | — | — | — | — |
@@ -187,7 +187,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 **30 runs per image per tool.** Trivy DB pre-warmed before the run; `--skip-db-update` used throughout to eliminate DB refresh noise. Images already present locally — no pull time included.
 
 | Grp | Image | Size MB | Trivy mean | ±sd | Grype mean | ±sd | OSV mean | ±sd |
-|-----|-------|---------|-----------|-----|-----------|-----|---------|-----|
+| --- | ----- | ------- | ---------- | --- | ---------- | --- | -------- | --- |
 | C | alpine:3.19 | 3.2 | 189ms | 49ms | 6,915ms | 13,911ms | 2,498ms | 885ms |
 | C | nginx:1.29.7 | 60.0 | 386ms | 153ms | 14,917ms | 1,985ms | 18,047ms | 2,401ms |
 | C | node:20 | 395.6 | 877ms | 413ms | 98,954ms | 4,356ms | 99,559ms | 9,007ms |
@@ -203,6 +203,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 > **fig9_scan_boxplot.png** — 30-run distribution box plots per tool
 
 **Key observations:**
+
 - Trivy is **50–130× faster** than Grype and OSV across all images at steady state.
 - Grype and OSV scale linearly with image size (r ≈ 0.9); Trivy shows weaker size dependence.
 - Grype and OSV are within 10–20% of each other for most images; OSV slightly slower for large images.
@@ -215,7 +216,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 ### 5.1 Total Vulnerability Counts
 
 | Grp | Image | Trivy | T-fix% | Grype | G-fix% | OSV† | Trivy/Grype |
-|-----|-------|-------|--------|-------|--------|------|-------------|
+| --- | ----- | ----- | ------ | ----- | ------ | ---- | ----------- |
 | C | alpine:3.19 | 6 | 100% | 10 | 60% | 6 | 0.6× |
 | C | nginx:1.29.7 | 169 | 0% | 172 | 0% | 177 | 1.0× |
 | C | node:20 | 2268 | 1% | 1474 | 1% | 1458 | 1.5× |
@@ -241,7 +242,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 `Jaccard = |T ∩ G| / |T ∪ G|`. Grype GHSA IDs expanded to CVE aliases before comparison.
 
 | Grp | Image | T CVEs | G CVEs | Shared | T-only | G-only | Jaccard |
-|-----|-------|--------|--------|--------|--------|--------|---------|
+| --- | ----- | ------ | ------ | ------ | ------ | ------ | ------- |
 | C | alpine:3.19 | 2 | 4 | 2 | 0 | 2 | 0.500 |
 | C | nginx:1.29.7 | 96 | 100 | 92 | 4 | 8 | **0.885** |
 | C | node:20 | 1127 | 347 | 329 | 798 | 18 | 0.287 |
@@ -265,7 +266,7 @@ Images pulled and pinned by digest on **2026-03-31**.
 For CVEs found by **both** tools: fraction receiving the same severity rating. T-higher = Trivy assigned higher severity.
 
 | Grp | Image | Shared | Agree | Agree% | T-higher | G-higher |
-|-----|-------|--------|-------|--------|----------|----------|
+| --- | ----- | ------ | ----- | ------ | -------- | -------- |
 | C | alpine:3.19 | 2 | 1 | 50% | 1 | 0 |
 | C | nginx:1.29.7 | 92 | 30 | 33% | 54 | 8 |
 | C | node:20 | 329 | 111 | 34% | 203 | 15 |
@@ -288,7 +289,7 @@ For CVEs found by **both** tools: fraction receiving the same severity rating. T
 ### 5.4 LOW Severity as the Primary Divergence Driver
 
 | Image | Trivy LOW | Grype LOW | Ratio |
-|-------|-----------|-----------|-------|
+| ----- | --------- | --------- | ----- |
 | node:20 | 997 | 67 | 14.9× |
 | python:3.12 | 971 | 59 | 16.5× |
 | python:3.8 | 1114 | 125 | 8.9× |
@@ -303,13 +304,13 @@ Trivy's LOW inflation is the principal driver of total count divergence. CRITICA
 **Policies tested (Trivy and Grype independently; OSV excluded — no severity breakdown in output):**
 
 | Policy | Definition |
-|--------|-----------|
+| ------ | ---------- |
 | **P1** | REJECT if CRITICAL count > 0 |
 | **P2** | REJECT if CRITICAL count > 0 AND at least one fix available |
 | **P3** | REJECT if CRITICAL count > 0 in **both** Trivy and Grype (consensus) |
 
 | Image | Grp | P1 Trivy | P1 Grype | P2 Trivy | P2 Grype | P3 |
-|-------|-----|---------|---------|---------|---------|-----|
+| ----- | --- | -------- | -------- | -------- | -------- | -- |
 | alpine:3.19 | C | PASS | PASS | PASS | PASS | PASS |
 | nginx:1.29.7 | C | PASS | PASS | PASS | PASS | PASS |
 | node:20 | C | REJECT | REJECT | REJECT | REJECT | REJECT |
@@ -323,6 +324,7 @@ Trivy's LOW inflation is the principal driver of total count divergence. CRITICA
 > **fig6_critical_counts.png** — CRITICAL counts Trivy vs Grype per image
 
 **Key findings:**
+
 - 5 of 9 images rejected by all policies — zero tool-specific P1 discrepancies (wherever one rejects, both reject).
 - P3 (consensus) produces identical outcomes to P1 in this dataset — no case where one tool detected CRITICAL and the other did not.
 - P1 and P2 produce identical outcomes because every image with CRITICAL vulnerabilities also has at least one fix available. The P1/P2 distinction is only meaningful for images with CRITICAL vulns and zero fixes — not observed here.
@@ -332,7 +334,7 @@ Trivy's LOW inflation is the principal driver of total count divergence. CRITICA
 ## 7. SBOM Baseline
 
 | Image | Group | Total pkgs | deb | npm | apk | python | binary | php | java |
-|-------|-------|-----------|-----|-----|-----|--------|--------|-----|------|
+| ----- | ----- | ---------- | --- | --- | --- | ------ | ------ | --- | ---- |
 | alpine:3.19 | C | 15 | — | — | 15 | — | — | — | — |
 | nginx:1.29.7 | C | 152 | 151 | — | — | — | — | — | 1 |
 | node:20 | C | 619 | 413 | 204 | — | 1 | 1 | — | — |
@@ -357,7 +359,7 @@ Trivy's LOW inflation is the principal driver of total count divergence. CRITICA
 Top 10 CWEs across all 9 images (Trivy + Grype combined):
 
 | CWE | Description | Trivy | Grype | Combined |
-|-----|-------------|-------|-------|---------|
+| --- | ----------- | ----- | ----- | -------- |
 | CWE-476 | NULL Pointer Dereference | 855 | 225 | **1080** |
 | CWE-416 | Use After Free | 601 | 137 | 738 |
 | CWE-125 | Out-of-bounds Read | 396 | 336 | 732 |
@@ -379,7 +381,7 @@ Memory-safety weaknesses (CWE-476, 416, 125, 787) account for the top four posit
 ## 9. Key Findings
 
 | # | Finding |
-|---|---------|
+| - | ------- |
 | 1 | Trivy reports 1.2–2.2× more total findings than Grype for Debian OS-heavy images, driven by LOW severity inflation (8–16× more LOW entries). |
 | 2 | CRITICAL counts converge across tools (delta ≤3 in 7/9 images) — the most reliable cross-tool signal for policy use. |
 | 3 | CVE-level overlap (Jaccard) ranges from 0.14 (python:3.8) to 0.89 (nginx:1.29.7) — tools do not agree on which CVEs to report. |

@@ -4,6 +4,10 @@ logs/db_snapshots/
 # SBOMs — regeneratable via Syft; large (up to 33 MB each)
 sbom/
 
+# Presentation materials
+generate_presentation.py
+presentation.pptx
+
 # Python
 __pycache__/
 *.pyc
@@ -15,3 +19,4 @@ __pycache__/
 # Editor
 .vscode/
 *.swp
+.claude/
