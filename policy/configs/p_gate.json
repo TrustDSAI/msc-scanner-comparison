@@ -1,0 +1,8 @@
+{
+  "_name":        "Tri-state CI/CD gate",
+  "_description": "Production gating policy with three outcomes. BLOCK only beyond reasonable doubt (KEV+fix, or fully-corroborated CRITICAL with EPSS > 0.5). REVIEW for all other CRITICAL/HIGH findings and KEV-without-fix. PASS otherwise. EOL is reported as context but does not move a finding between tiers.",
+
+  "block_epss_threshold":    0.5,
+  "nvd_acceptable_statuses": ["Analyzed", "Modified"],
+  "kev_requires_fix":        true
+}

@@ -1,0 +1,103 @@
+name: "Policy Gate"
+description: >
+  Multi-scanner container vulnerability gate. Scans an image with Trivy and
+  Grype, enriches findings with NVD/OSV/EPSS/KEV, and applies a tri-state
+  policy (block / review / pass). Fails the build on block-tier findings;
+  configurable to also fail on review-tier.
+author: "MSc scanner-comparison study"
+
+inputs:
+  image:
+    description: "Container image reference to scan"
+    required: true
+  policy:
+    description: "Path to gate config JSON (default: bundled p_gate.json)"
+    required: false
+    default: "/app/configs/p_gate.json"
+  classifier:
+    description: "Layer classifier: rule | agent"
+    required: false
+    default: "rule"
+  fail-on:
+    description: "Which tiers fail the build: block | review | none"
+    required: false
+    default: "review"
+  report-format:
+    description: "Report format: json | markdown | sarif | junit"
+    required: false
+    default: "sarif"
+  report-path:
+    description: "Where to write the report"
+    required: false
+    default: "policy-gate-report.sarif"
+  anthropic-api-key:
+    description: "Anthropic API key (only needed when classifier=agent)"
+    required: false
+    default: ""
+  nvd-api-key:
+    description: "NVD API key (raises enrichment rate limit; recommended)"
+    required: false
+    default: ""
+
+outputs:
+  decision:
+    description: "Gate decision: block | review | pass"
+    value: ${{ steps.gate.outputs.decision }}
+  block-count:
+    description: "Number of block-tier findings"
+    value: ${{ steps.gate.outputs.block_count }}
+  review-count:
+    description: "Number of review-tier findings"
+    value: ${{ steps.gate.outputs.review_count }}
+
+runs:
+  using: "composite"
+  steps:
+    # Persist the enrichment cache across runs to avoid NVD rate limits.
+    - name: Restore enrichment cache
+      uses: actions/cache@v4
+      with:
+        path: .policy-gate-cache
+        key: policy-gate-enrich-${{ runner.os }}
+        restore-keys: |
+          policy-gate-enrich-
+
+    - name: Run policy gate
+      id: gate
+      shell: bash
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        NVD_API_KEY: ${{ inputs.nvd-api-key }}
+      run: |
+        set +e
+        docker run --rm \
+          -v "${{ github.workspace }}/.policy-gate-cache:/cache" \
+          -v "${{ github.workspace }}:/workspace" \
+          -e ANTHROPIC_API_KEY \
+          -e NVD_API_KEY \
+          ghcr.io/${{ github.repository_owner }}/policy-gate:latest \
+            --image "${{ inputs.image }}" \
+            --policy "${{ inputs.policy }}" \
+            --classifier "${{ inputs.classifier }}" \
+            --fail-on "${{ inputs.fail-on }}" \
+            --report-format "${{ inputs.report-format }}" \
+            --report "/workspace/${{ inputs.report-path }}" \
+            --cache /cache
+        GATE_EXIT=$?
+
+        # Parse the report for outputs (json is easiest; re-run query is cheap
+        # but here we derive from exit code + a quick jq on a json sidecar).
+        # The CLI also writes a json verdict alongside for output extraction.
+        echo "exit_code=$GATE_EXIT" >> "$GITHUB_OUTPUT"
+        case $GATE_EXIT in
+          0) echo "decision=pass"   >> "$GITHUB_OUTPUT" ;;
+          1) echo "decision=block"  >> "$GITHUB_OUTPUT" ;;
+          2) echo "decision=review" >> "$GITHUB_OUTPUT" ;;
+        esac
+        exit $GATE_EXIT
+
+    - name: Upload SARIF to code scanning
+      if: always() && inputs.report-format == 'sarif'
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: ${{ inputs.report-path }}

@@ -1,0 +1,30 @@
+# Example: how a consuming repository adds the policy gate to its pipeline.
+#
+# This is the "5 lines" promise: build your image, then call the action.
+# Everything else (scanners, enrichment, OPA, the policy bundle) is inside
+# the action's container.
+
+name: example-security-gate
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  vulnerability-gate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # required for SARIF upload to code scanning
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t my-app:${{ github.sha }} .
+
+      - name: Vulnerability gate
+        uses: TrustDSAI/msc-scanner-comparison/.github/actions/policy-gate@main
+        with:
+          image: my-app:${{ github.sha }}
+          fail-on: review          # fail-closed: block AND review fail the build
+          nvd-api-key: ${{ secrets.NVD_API_KEY }}
