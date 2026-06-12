@@ -149,38 +149,61 @@ ax.yaxis.grid(True, which="both", linestyle="--", alpha=0.4, zorder=0)
 ax.set_axisbelow(True)
 save(fig, "fig1_performance.png")
 
-# ── Fig 2: Total findings — grouped bar ──────────────────────────────────────
-print("Fig 2: Total findings…")
+# ── Fig 2: Findings by severity — stacked bars (Trivy vs Grype) ──────────────
+print("Fig 2: Findings by severity (stacked)…")
+SEV_ORDER  = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+SEV_COLOUR = {
+    "CRITICAL": "#7F1D1D",  # deep red
+    "HIGH":     "#DC2626",  # red
+    "MEDIUM":   "#F59E0B",  # amber
+    "LOW":      "#94A3B8",  # slate (also absorbs NEGLIGIBLE + UNKNOWN)
+}
+
+def sev_stack(counts):
+    """Return [CRITICAL, HIGH, MEDIUM, LOW] folding NEGLIGIBLE+UNKNOWN into LOW."""
+    low = counts.get("LOW", 0) + counts.get("NEGLIGIBLE", 0) + counts.get("UNKNOWN", 0)
+    return [counts.get("CRITICAL", 0), counts.get("HIGH", 0),
+            counts.get("MEDIUM", 0), low]
+
 x = np.arange(len(ORDER))
-width = 0.28
-
+width = 0.38
 fig, ax = plt.subplots(figsize=(14, 6))
-ax.bar(x - width, [RAW_TRIVY[s] for s in ORDER], width,
-       label="Trivy", color=C_TRIVY, alpha=0.85)
-ax.bar(x,          [RAW_GRYPE[s] for s in ORDER], width,
-       label="Grype", color=C_GRYPE, alpha=0.85)
-ax.bar(x + width,  [RAW_OSV[s]   for s in ORDER], width,
-       label="OSV-Scanner†", color=C_OSV, alpha=0.85)
 
+trivy_stacks = np.array([sev_stack(by_safe[s]["trivy_counts"]) for s in ORDER])
+grype_stacks = np.array([sev_stack(by_safe[s]["grype_counts"]) for s in ORDER])
+
+bottom_t = np.zeros(len(ORDER))
+bottom_g = np.zeros(len(ORDER))
+for i, sev in enumerate(SEV_ORDER):
+    ax.bar(x - width/2, trivy_stacks[:, i], width, bottom=bottom_t,
+           color=SEV_COLOUR[sev], edgecolor="white", linewidth=0.4,
+           label=sev if sev != "LOW" else "LOW (incl. negligible/unknown)")
+    ax.bar(x + width/2, grype_stacks[:, i], width, bottom=bottom_g,
+           color=SEV_COLOUR[sev], edgecolor="white", linewidth=0.4)
+    bottom_t += trivy_stacks[:, i]
+    bottom_g += grype_stacks[:, i]
+
+# group background shading
 for grp, (lo, hi) in SPANS.items():
-    ax.axvspan(lo - 0.55, hi + 0.95, alpha=0.06, color=GROUP_COLOUR[grp], zorder=0)
+    ax.axvspan(lo - 0.55, hi + 0.55, alpha=0.06, color=GROUP_COLOUR[grp], zorder=0)
 
-# annotate ratio where divergence is large
-for i, s in enumerate(ORDER):
-    t, g = RAW_TRIVY[s], RAW_GRYPE[s]
-    if min(t, g) > 0:
-        ratio = max(t, g) / min(t, g)
-        if ratio >= 1.5:
-            ax.text(i, max(t, g) + 80, f"{ratio:.1f}×",
-                    ha="center", va="bottom", fontsize=8, fontweight="bold")
+# annotate tool label above each bar
+totals_t = trivy_stacks.sum(axis=1)
+totals_g = grype_stacks.sum(axis=1)
+for i in range(len(ORDER)):
+    ax.text(i - width/2, totals_t[i] * 1.05, "T", ha="center", va="bottom",
+            fontsize=7, color=C_TRIVY, fontweight="bold")
+    ax.text(i + width/2, totals_g[i] * 1.05, "G", ha="center", va="bottom",
+            fontsize=7, color=C_GRYPE, fontweight="bold")
 
-ax.set_ylabel("Total vulnerability findings", fontsize=11)
-ax.set_title("Fig 2 — Total Findings per Image  († OSV reports advisories, not CVEs)",
+ax.set_yscale("log")
+ax.set_ylabel("Findings per image (log scale)", fontsize=11)
+ax.set_title("Fig 2 — Findings by Severity per Image  (T=Trivy, G=Grype)",
              fontsize=12, fontweight="bold")
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
-ax.legend(fontsize=10)
-ax.yaxis.grid(True, linestyle="--", alpha=0.4)
+ax.legend(fontsize=9, loc="upper left", ncol=4, frameon=False)
+ax.yaxis.grid(True, which="both", linestyle="--", alpha=0.4)
 ax.set_axisbelow(True)
 save(fig, "fig2_total_findings.png")
 

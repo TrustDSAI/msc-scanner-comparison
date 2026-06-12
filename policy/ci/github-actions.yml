@@ -1,0 +1,104 @@
+# GitHub Actions example: container scan, normalise, evaluate, gate.
+#
+# Demonstrates how the policy layer integrates into a CI/CD pipeline. The
+# policy bundle is selected via the POLICY environment variable (p1, p2, p3,
+# or p4); P4 additionally runs the enrichment stage.
+
+name: container-vuln-gate
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  scan-and-gate:
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
+      POLICY: p3  # p1 | p2 | p3 | p4
+      EPSS_THRESHOLD: "0.1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install scanners
+        run: |
+          # TODO: pin versions to match dissertation experiment
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.69.3
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin v0.110.0
+
+      - name: Install OPA
+        run: |
+          curl -L -o /usr/local/bin/opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static
+          chmod +x /usr/local/bin/opa
+
+      - name: Scan with Trivy
+        run: trivy image --format json --output trivy.json "$IMAGE"
+
+      - name: Scan with Grype
+        run: grype "$IMAGE" -o json --file grype.json
+
+      - name: Normalise scanner outputs
+        run: |
+          python policy/normalise.py \
+              --trivy trivy.json \
+              --grype grype.json \
+              --image "$IMAGE" \
+              --out policy_input.json
+
+      - name: Enrich (P4 only)
+        if: env.POLICY == 'p4'
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: |
+          python policy/enrich.py \
+              --in policy_input.json \
+              --out enriched_input.json
+
+      - name: Evaluate policy
+        id: opa
+        run: |
+          INPUT="policy_input.json"
+          if [ "$POLICY" = "p4" ]; then INPUT="enriched_input.json"; fi
+          opa eval \
+              --input "$INPUT" \
+              --data policy/rego/ \
+              --format json \
+              "data.vuln.${POLICY}.block_build" \
+              > verdict.json
+
+          BLOCK=$(jq -r '.result[0].expressions[0].value' verdict.json)
+          echo "block=$BLOCK" >> "$GITHUB_OUTPUT"
+
+      - name: Emit findings report
+        run: |
+          INPUT="policy_input.json"
+          if [ "$POLICY" = "p4" ]; then INPUT="enriched_input.json"; fi
+          opa eval \
+              --input "$INPUT" \
+              --data policy/rego/ \
+              --format json \
+              "data.vuln.${POLICY}.deny" \
+              | jq '.result[0].expressions[0].value' \
+              > deny_report.json
+          cat deny_report.json
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: vuln-gate-report
+          path: |
+            policy_input.json
+            verdict.json
+            deny_report.json
+
+      - name: Enforce gate decision
+        if: steps.opa.outputs.block == 'true'
+        run: |
+          echo "::error::Vulnerability gate failed (policy=$POLICY). See deny_report.json."
+          exit 1

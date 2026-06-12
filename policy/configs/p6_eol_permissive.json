@@ -1,0 +1,19 @@
+{
+  "_name":           "P6 EOL-permissive (fallthrough)",
+  "_description":    "EOL flag is recorded but does not insta-block. Equivalent to P5_layer; demonstrates the config-driven toggle.",
+  "eol_insta_block": false,
+  "app": {
+    "epss_threshold":          0.1,
+    "nvd_acceptable_statuses": ["Analyzed", "Modified"],
+    "require_consensus":       true,
+    "require_osv_advisory":    true,
+    "require_osv_fix":         true
+  },
+  "os": {
+    "epss_threshold":          0.01,
+    "nvd_acceptable_statuses": ["Analyzed", "Modified"],
+    "require_consensus":       true,
+    "require_osv_advisory":    true,
+    "require_osv_fix":         true
+  }
+}

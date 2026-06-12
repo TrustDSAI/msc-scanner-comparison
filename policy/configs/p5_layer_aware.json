@@ -1,0 +1,18 @@
+{
+  "_name":        "P5 layer-aware",
+  "_description": "App-layer: high EPSS bar but lifecycle-tolerant NVD statuses. OS-layer: relaxed EPSS, same NVD set. 'Modified' is a normal NVD lifecycle state, not an invalidity signal; only 'Rejected' and 'Disputed' invalidate a finding.",
+  "app": {
+    "epss_threshold":          0.1,
+    "nvd_acceptable_statuses": ["Analyzed", "Modified"],
+    "require_consensus":       true,
+    "require_osv_advisory":    true,
+    "require_osv_fix":         true
+  },
+  "os": {
+    "epss_threshold":          0.01,
+    "nvd_acceptable_statuses": ["Analyzed", "Modified"],
+    "require_consensus":       true,
+    "require_osv_advisory":    true,
+    "require_osv_fix":         true
+  }
+}

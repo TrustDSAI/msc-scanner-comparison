@@ -1,0 +1,78 @@
+{
+  "image": "python:3.8",
+  "snapshot_date": "2026-03-31",
+  "findings": [
+    {
+      "cve_id": "CVE-2024-EXAMPLE-1",
+      "package": "openssl",
+      "version": "1.1.1k",
+      "ecosystem": "debian",
+      "severity": "CRITICAL",
+      "detected_by": ["trivy", "grype"],
+      "fix_version": "1.1.1l",
+      "nvd": {
+        "status": "Analyzed",
+        "rejected": false,
+        "disputed": false
+      },
+      "osv": {
+        "advisory_found": true,
+        "fix_version": "1.1.1l",
+        "affected_ecosystems": ["debian"]
+      },
+      "epss": {
+        "score": 0.42,
+        "percentile": 0.97,
+        "as_of": "2026-03-30"
+      }
+    },
+    {
+      "cve_id": "CVE-2024-EXAMPLE-2",
+      "package": "libfoo",
+      "version": "2.3.4",
+      "ecosystem": "debian",
+      "severity": "CRITICAL",
+      "detected_by": ["trivy"],
+      "fix_version": null,
+      "nvd": {
+        "status": "Awaiting Analysis",
+        "rejected": false,
+        "disputed": false
+      },
+      "osv": {
+        "advisory_found": false,
+        "fix_version": null,
+        "affected_ecosystems": null
+      },
+      "epss": {
+        "score": 0.001,
+        "percentile": 0.12,
+        "as_of": "2026-03-30"
+      }
+    },
+    {
+      "cve_id": "CVE-2024-EXAMPLE-3",
+      "package": "libbar",
+      "version": "1.0.0",
+      "ecosystem": "npm",
+      "severity": "HIGH",
+      "detected_by": ["trivy", "grype"],
+      "fix_version": "1.0.1",
+      "nvd": {
+        "status": "Analyzed",
+        "rejected": false,
+        "disputed": false
+      },
+      "osv": {
+        "advisory_found": true,
+        "fix_version": "1.0.1",
+        "affected_ecosystems": ["npm"]
+      },
+      "epss": {
+        "score": 0.05,
+        "percentile": 0.78,
+        "as_of": "2026-03-30"
+      }
+    }
+  ]
+}

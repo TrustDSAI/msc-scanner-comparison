@@ -1,0 +1,19 @@
+{
+  "_name":           "P6 EOL-strict",
+  "_description":    "EOL images insta-block. Non-EOL images fall through to P5 layer-aware gating with default thresholds.",
+  "eol_insta_block": true,
+  "app": {
+    "epss_threshold":          0.1,
+    "nvd_acceptable_statuses": ["Analyzed", "Modified"],
+    "require_consensus":       true,
+    "require_osv_advisory":    true,
+    "require_osv_fix":         true
+  },
+  "os": {
+    "epss_threshold":          0.01,
+    "nvd_acceptable_statuses": ["Analyzed", "Modified"],
+    "require_consensus":       true,
+    "require_osv_advisory":    true,
+    "require_osv_fix":         true
+  }
+}

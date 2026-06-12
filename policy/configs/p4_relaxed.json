@@ -1,0 +1,9 @@
+{
+  "_name":                   "P4 relaxed",
+  "_description":            "Lowered EPSS threshold (0.01); accepts both Analyzed and Modified NVD statuses.",
+  "epss_threshold":          0.01,
+  "nvd_acceptable_statuses": ["Analyzed", "Modified"],
+  "require_consensus":       true,
+  "require_osv_advisory":    true,
+  "require_osv_fix":         true
+}
