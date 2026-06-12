@@ -1,0 +1,22 @@
+{
+  "_name":        "P7 severity-aware",
+  "_description": "P5 + HIGH severity + KEV. Inherits P5's layer routing; adds two new gate triggers. HIGH requires stronger independent evidence (EPSS > 0.5) than CRITICAL because severity labels disagree across scanners. KEV catalog membership blocks regardless of severity when a fix is available. Image lifecycle (EOL) is reported on every deny message but does not affect the gate decision: that policy belongs to the CI workflow, not Rego.",
+
+  "high_epss_threshold": 0.5,
+  "kev_requires_fix":    true,
+
+  "app": {
+    "epss_threshold":          0.1,
+    "nvd_acceptable_statuses": ["Analyzed", "Modified"],
+    "require_consensus":       true,
+    "require_osv_advisory":    true,
+    "require_osv_fix":         true
+  },
+  "os": {
+    "epss_threshold":          0.01,
+    "nvd_acceptable_statuses": ["Analyzed", "Modified"],
+    "require_consensus":       true,
+    "require_osv_advisory":    true,
+    "require_osv_fix":         true
+  }
+}

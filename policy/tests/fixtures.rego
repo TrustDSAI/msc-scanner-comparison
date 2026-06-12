@@ -29,6 +29,7 @@ critical_full := {
         "fix_version":    "1.1.1l",
     },
     "epss": {"score": 0.42, "percentile": 0.97, "as_of": "2026-03-29"},
+    "kev":  {"in_kev": false, "date_added": null, "due_date": null, "ransomware_use": null},
 }
 
 # --- Variants ----------------------------------------------------------

@@ -92,8 +92,7 @@ POLICY_RUNS: list[tuple[str, str, Path | None]] = [
     ("P4_strict",   "vuln.p4", CONFIGS_DIR / "p4_strict.json"),
     ("P4_relaxed",  "vuln.p4", CONFIGS_DIR / "p4_relaxed.json"),
     ("P5_layer",    "vuln.p5", CONFIGS_DIR / "p5_layer_aware.json"),
-    ("P6_eol_strict",      "vuln.p6", CONFIGS_DIR / "p6_eol_strict.json"),
-    ("P6_eol_permissive",  "vuln.p6", CONFIGS_DIR / "p6_eol_permissive.json"),
+    ("P7_severity_aware",  "vuln.p7", CONFIGS_DIR / "p7_severity_aware.json"),
 ]
 
 
@@ -167,6 +166,8 @@ def _empty(field_name: str) -> dict:
         return {"advisory_found": False, "fix_version": None, "affected_ecosystems": []}
     if field_name == "epss":
         return {"score": None, "percentile": None, "as_of": None}
+    if field_name == "kev":
+        return {"in_kev": False, "date_added": None, "due_date": None, "ransomware_use": None}
     return {}
 
 

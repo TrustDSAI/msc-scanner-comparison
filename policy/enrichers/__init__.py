@@ -17,12 +17,14 @@ from .base import Enricher, EnrichmentResult
 from .nvd import NVDEnricher
 from .osv import OSVEnricher
 from .epss import EPSSEnricher
+from .kev import KEVEnricher
 
 
 ENRICHERS: list[Enricher] = [
     NVDEnricher(),
     OSVEnricher(),
     EPSSEnricher(),
+    KEVEnricher(),
 ]
 
 
@@ -33,4 +35,5 @@ __all__ = [
     "NVDEnricher",
     "OSVEnricher",
     "EPSSEnricher",
+    "KEVEnricher",
 ]

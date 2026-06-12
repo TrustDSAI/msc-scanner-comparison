@@ -83,6 +83,15 @@ epss_above(finding, threshold) if {
     finding.epss.score > threshold
 }
 
+# --- KEV predicates (P7) ----------------------------------------------
+
+# True when CISA's Known Exploited Vulnerabilities catalog lists this CVE.
+in_kev(finding) if finding.kev.in_kev == true
+
+# --- Severity predicates (extended for P7) ----------------------------
+
+is_severity(finding, tier) if finding.severity == tier
+
 # --- Config helpers ----------------------------------------------------
 
 # Resolve a config value at input.config.<key>, falling back to a fallback.
@@ -106,6 +115,15 @@ make_msg(finding, policy_name, reason, extras) := msg if {
         "fix_version": finding.fix_version,
         "layer":       finding.layer,
         "reason":      reason,
+
+        # Image-lifecycle context attached to every deny entry.
+        # EOL is reported, not gated: downstream CI logic decides whether
+        # to treat an EOL image differently. This keeps lifecycle data
+        # visible in the audit trail without conflating it with the CVE
+        # gating decision.
+        "image_label":      object.get(object.get(input, "image", {}), "label", ""),
+        "image_eol":        object.get(object.get(input, "image", {}), "eol", false),
+        "image_eol_source": object.get(object.get(input, "image", {}), "eol_source", ""),
     }
     msg := object.union(base, extras)
 }
