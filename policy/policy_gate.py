@@ -252,7 +252,69 @@ FORMATTERS = {
 }
 
 
-# --- Main ------------------------------------------------------------
+# --- Core pipeline (used by both CLI and API) -------------------------
+
+def run_gate(
+    image: str,
+    *,
+    policy_path: Path = DEFAULT_CONFIG,
+    trivy_json: Path | None = None,
+    grype_json: Path | None = None,
+    classifier: str = "rule",
+    rego_dir: Path = REGO_DIR,
+    policy_package: str = DEFAULT_GATE_PKG,
+    config_override: dict | None = None,
+) -> dict:
+    """Run the full enrichment + OPA pipeline for one image.
+
+    Returns the verdict dict:
+        {image, decision, image_eol, image_eol_source, block: [...], review: [...]}
+
+    Caller is responsible for calling configure_cache() before invoking this.
+    """
+    with tempfile.TemporaryDirectory() as td:
+        tdp = Path(td)
+        t_json = trivy_json or (tdp / "trivy.json")
+        g_json = grype_json or (tdp / "grype.json")
+        if trivy_json is None:
+            run_trivy(image, t_json)
+        if grype_json is None:
+            run_grype(image, g_json)
+
+        payload = normalise(t_json, g_json, image, classifier)
+        payload = asyncio.run(enrich_critical_and_high(payload))
+
+        cfg = config_override if config_override is not None else (
+            {k: v for k, v in json.loads(policy_path.read_text()).items()
+             if not k.startswith("_")}
+        )
+        payload["config"] = cfg
+        eval_input = tdp / "gate_input.json"
+        eval_input.write_text(json.dumps(payload))
+
+        block  = opa_eval(eval_input, f"data.{policy_package}.block",  rego_dir) or []
+        review = opa_eval(eval_input, f"data.{policy_package}.review", rego_dir) or []
+
+    if review and advisor_available():
+        try:
+            advisor = ReviewAdvisor()
+            for finding in review:
+                finding["advice"] = advisor.advise(finding)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[policy-gate] advisor unavailable: {exc}", file=sys.stderr)
+
+    decision = "block" if block else ("review" if review else "pass")
+    return {
+        "image":            image,
+        "decision":         decision,
+        "image_eol":        payload["image"]["eol"],
+        "image_eol_source": payload["image"]["eol_source"],
+        "block":            block,
+        "review":           review,
+    }
+
+
+# --- Main (CLI) -------------------------------------------------------
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
@@ -273,56 +335,21 @@ def main() -> int:
     p.add_argument("--rego-dir", type=Path, default=REGO_DIR,
                    help="directory of .rego files to load (default: built-in rego/)")
     p.add_argument("--policy-package", default=DEFAULT_GATE_PKG,
-                   help="OPA package to evaluate (default: vuln.gate); set this when "
-                        "using a custom --rego-dir")
+                   help="OPA package to evaluate (default: vuln.gate)")
     p.add_argument("--cache", type=Path, default=CACHE_DIR)
     args = p.parse_args()
 
     configure_cache(args.cache)
 
-    with tempfile.TemporaryDirectory() as td:
-        tdp = Path(td)
-        trivy_json = args.trivy or (tdp / "trivy.json")
-        grype_json = args.grype or (tdp / "grype.json")
-        if args.trivy is None:
-            run_trivy(args.image, trivy_json)
-        if args.grype is None:
-            run_grype(args.image, grype_json)
-
-        payload = normalise(trivy_json, grype_json, args.image, args.classifier)
-        payload = asyncio.run(enrich_critical_and_high(payload))
-
-        # Inject config and evaluate.
-        cfg = json.loads(args.policy.read_text())
-        cfg = {k: v for k, v in cfg.items() if not k.startswith("_")}
-        payload["config"] = cfg
-        eval_input = tdp / "gate_input.json"
-        eval_input.write_text(json.dumps(payload))
-
-        pkg    = args.policy_package
-        rdir   = args.rego_dir
-        block  = opa_eval(eval_input, f"data.{pkg}.block",  rdir) or []
-        review = opa_eval(eval_input, f"data.{pkg}.review", rdir) or []
-
-    # Attach reviewer advice to every REVIEW finding when an LLM is available.
-    # Advice is cached by CVE+enrichment snapshot so repeat runs are free.
-    if review and advisor_available():
-        try:
-            advisor = ReviewAdvisor()
-            for finding in review:
-                finding["advice"] = advisor.advise(finding)
-        except Exception as exc:  # noqa: BLE001
-            print(f"[policy-gate] advisor unavailable: {exc}", file=sys.stderr)
-
-    decision = "block" if block else ("review" if review else "pass")
-    verdict = {
-        "image":            args.image,
-        "decision":         decision,
-        "image_eol":        payload["image"]["eol"],
-        "image_eol_source": payload["image"]["eol_source"],
-        "block":            block,
-        "review":           review,
-    }
+    verdict = run_gate(
+        args.image,
+        policy_path=args.policy,
+        trivy_json=args.trivy,
+        grype_json=args.grype,
+        classifier=args.classifier,
+        rego_dir=args.rego_dir,
+        policy_package=args.policy_package,
+    )
 
     rendered = FORMATTERS[args.report_format](verdict)
     if args.report:
@@ -330,17 +357,15 @@ def main() -> int:
     else:
         print(rendered)
 
-    # Console summary to stderr so it does not pollute a stdout report.
-    print(f"[policy-gate] {args.image}: {decision.upper()} "
-          f"(block={len(block)}, review={len(review)}, "
-          f"eol={payload['image']['eol']})", file=sys.stderr)
+    print(f"[policy-gate] {args.image}: {verdict['decision'].upper()} "
+          f"(block={len(verdict['block'])}, review={len(verdict['review'])}, "
+          f"eol={verdict['image_eol']})", file=sys.stderr)
 
-    # Exit-code mapping.
     if args.fail_on == "none":
         return 0
-    if block:
+    if verdict["decision"] == "block":
         return 1
-    if review and args.fail_on == "review":
+    if verdict["decision"] == "review" and args.fail_on == "review":
         return 2
     return 0
 

@@ -37,8 +37,13 @@ RUN curl -sSL "https://github.com/anchore/grype/releases/download/v${GRYPE_VERSI
 
 # --- Python deps ---
 # Anthropic and OpenAI SDKs are optional (advisor + agent classifier).
-# The pipeline otherwise uses urllib only, so keep this minimal.
-RUN pip install "anthropic>=0.40,<1.0" "openai>=1.0,<2.0"
+# fastapi + uvicorn are needed only for the API server mode.
+RUN pip install \
+        "anthropic>=0.40,<1.0" \
+        "openai>=1.0,<2.0" \
+        "fastapi>=0.115,<1.0" \
+        "uvicorn[standard]>=0.30,<1.0" \
+        "python-multipart>=0.0.9"
 
 # --- Application ---
 WORKDIR /app
@@ -48,6 +53,7 @@ COPY classifiers/   ./classifiers/
 COPY rego/          ./rego/
 COPY configs/       ./configs/
 COPY policy_gate.py ./policy_gate.py
+COPY api.py         ./api.py
 
 # Cache directory for enrichment data; mount a volume here in CI to persist
 # across runs and avoid NVD rate limits.
@@ -59,5 +65,17 @@ RUN mkdir -p /cache
 #     --image my-app:latest --rego-dir /policy --policy-package myorg.gate
 VOLUME /policy
 
-ENTRYPOINT ["python3", "/app/policy_gate.py"]
+# Two run modes:
+#
+#   CLI (default) — one image, exit code 0/1/2:
+#     docker run --rm ghcr.io/<org>/policy-gate --image my-app:latest
+#
+#   API server — listens on :8080, POST /gate:
+#     docker run --rm -p 8080:8080 \
+#       -e POLICY_GATE_MODE=api \
+#       ghcr.io/<org>/policy-gate
+#
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["--help"]
