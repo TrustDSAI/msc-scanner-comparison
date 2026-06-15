@@ -64,6 +64,7 @@ from enrichers import ENRICHERS
 from enrichers.cache import configure as configure_cache
 from enrichers.eol import EOLEnricher
 from classifiers import get as get_classifier
+from classifiers.advisor import ReviewAdvisor, is_available as advisor_available
 
 REGO_DIR = HERE / "rego"
 DEFAULT_CONFIG = HERE / "configs" / "p_gate.json"
@@ -159,6 +160,7 @@ def report_markdown(verdict: dict) -> str:
     if verdict["image_eol"]:
         lines.append(f"**Image is end-of-life** (source: {verdict['image_eol_source']})")
     lines.append("")
+
     for tier in ("block", "review"):
         entries = verdict[tier]
         if not entries:
@@ -174,6 +176,17 @@ def report_markdown(verdict: dict) -> str:
             lines.append(f"| {e['cve_id']} | {e['package']} | {e['version']} | "
                          f"{epss_s} | {kev_s} | {e['reason']} |")
         lines.append("")
+
+        # Reviewer advice section: only for review tier, only when advice exists.
+        if tier == "review":
+            advised = [(e, e.get("advice")) for e in entries if e.get("advice")]
+            if advised:
+                lines.append("### Reviewer guidance")
+                lines.append("")
+                for e, advice in advised:
+                    lines.append(f"**{e['cve_id']} ({e['package']}):** {advice}")
+                    lines.append("")
+
     return "\n".join(lines)
 
 
@@ -283,6 +296,16 @@ def main() -> int:
 
         block  = opa_eval(eval_input, f"data.{GATE_PKG}.block")  or []
         review = opa_eval(eval_input, f"data.{GATE_PKG}.review") or []
+
+    # Attach reviewer advice to every REVIEW finding when an LLM is available.
+    # Advice is cached by CVE+enrichment snapshot so repeat runs are free.
+    if review and advisor_available():
+        try:
+            advisor = ReviewAdvisor()
+            for finding in review:
+                finding["advice"] = advisor.advise(finding)
+        except Exception as exc:  # noqa: BLE001
+            print(f"[policy-gate] advisor unavailable: {exc}", file=sys.stderr)
 
     decision = "block" if block else ("review" if review else "pass")
     verdict = {

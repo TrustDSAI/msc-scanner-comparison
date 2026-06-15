@@ -1,0 +1,163 @@
+# Validation image manifest
+# Each entry specifies the expected gate outcome so the run script can
+# verify the gate's decision against the pre-stated expectation.
+#
+# expected_tier: block | review | pass
+# gate_path: the specific gate condition being exercised
+# target_cve: primary CVE(s) the image is designed around
+
+images:
+
+  - id: v01-log4shell
+    tag: policy-gate-val/v01-log4shell:latest
+    dockerfile: images/v01-log4shell/Dockerfile
+    incident: "Log4Shell (CVE-2021-44228), Dec 2021 — mass global exploitation"
+    target_cve: CVE-2021-44228
+    ecosystem: java
+    expected_tier: block
+    gate_path: kev_fix
+    notes: >
+      log4j-core:2.14.1 JAR placed in /app. Both Trivy and Grype detect via
+      JAR manifest. CVE-2021-44228 is in CISA KEV (added 2021-12-10) and has
+      a fix in 2.15.0. Gate should BLOCK on the KEV+fix path regardless of
+      EPSS score.
+
+  - id: v02-jenkins-2441
+    tag: jenkins/jenkins:2.441
+    dockerfile: null
+    incident: "CVE-2024-23897 (Jenkins), Jan–Feb 2024 — ransomware exploitation"
+    target_cve: CVE-2024-23897
+    ecosystem: java
+    expected_tier: block
+    gate_path: kev_fix
+    notes: >
+      Pre-built image; no local build required. CVE-2024-23897 (arbitrary file
+      read via Jenkins CLI) is in CISA KEV and has a fix in Jenkins 2.442+.
+      Gate should BLOCK. Validates gate operation on a third-party application
+      image without a custom Dockerfile.
+
+  - id: v03-text4shell
+    tag: policy-gate-val/v03-text4shell:latest
+    dockerfile: images/v03-text4shell/Dockerfile
+    incident: "Text4Shell (CVE-2022-42889), Oct 2022 — RCE via Commons Text interpolation"
+    target_cve: CVE-2022-42889
+    ecosystem: java
+    expected_tier: review
+    gate_path: review_crit
+    notes: >
+      commons-text:1.9 JAR in /app. CVE-2022-42889 is NOT in the CISA KEV
+      catalog (confirmed by checking the June 2026 catalog: no confirmed
+      exploitation in the wild was recorded). EPSS is below the 0.5 auto-block
+      threshold. The gate correctly routes to REVIEW rather than BLOCK, even
+      though Text4Shell received extensive media coverage comparable to
+      Log4Shell. This is the intended behaviour: severity-label-based gates
+      (P1-P3) would have blocked this; the evidence-based gate declines to
+      auto-block without exploitation confirmation. The LLM advisor provides
+      triage guidance for the reviewer.
+
+  - id: v04-spring4shell
+    tag: policy-gate-val/v04-spring4shell:latest
+    dockerfile: images/v04-spring4shell/Dockerfile
+    incident: "Spring4Shell (CVE-2022-22965), Mar 2022 — exploited within 24 h of disclosure"
+    target_cve: CVE-2022-22965
+    ecosystem: java
+    expected_tier: block
+    gate_path: kev_fix
+    notes: >
+      spring-webmvc:5.3.17 and spring-beans:5.3.17 JARs in /app. CVE-2022-22965
+      is in CISA KEV with a fix in 5.3.18/5.2.20. Tests framework-level
+      vulnerability detection (Spring MVC data binding) versus utility library
+      detection in v01 and v03.
+
+  - id: v05-regresshion
+    tag: policy-gate-val/v05-regresshion:latest
+    dockerfile: images/v05-regresshion/Dockerfile
+    incident: "regreSSHion (CVE-2024-6387), Jul 2024 — unauthenticated OpenSSH RCE"
+    target_cve: CVE-2024-6387
+    ecosystem: os-deb
+    expected_tier: review
+    gate_path: review_high
+    notes: >
+      ubuntu:22.04 with openssh-server pinned to 1:8.9p1-3 (jammy/main, no
+      security backport). OpenSSH 8.9p1 is in the vulnerable range 8.5p1–9.7p1.
+      CVE-2024-6387 is NOT in the CISA KEV catalog (confirmed by June 2026
+      catalog; no confirmed exploitation in the wild despite widespread media
+      coverage) and is rated HIGH severity by NVD, not CRITICAL. The gate
+      routes to REVIEW via the P7 HIGH+consensus path rather than BLOCK.
+      This illustrates the gate's empirical grounding: media prominence and
+      CVSS severity do not automatically trigger a block; KEV membership or
+      EPSS above 0.5 is required. The LLM advisor provides triage guidance.
+
+  - id: v06-crit-low-epss
+    tag: policy-gate-val/v06-crit-low-epss:latest
+    dockerfile: images/v06-crit-low-epss/Dockerfile
+    incident: "Multiple CVEs (cryptography 38.0.4, Pillow 9.3.0, lxml 4.9.2)"
+    target_cve: "CVE-2023-0286, CVE-2023-44271, CVE-2022-2309"
+    ecosystem: python
+    expected_tier: review
+    gate_path: review_crit
+    notes: >
+      CRITICAL-rated CVEs with EPSS historically below 0.1 and no CISA KEV
+      membership. Gate should reach REVIEW (exit 2) but not BLOCK (exit 1).
+      Validates the EPSS filter: the gate must not auto-block every CRITICAL
+      finding. If EPSS has risen above 0.5 for any CVE by scan time, document
+      as an EPSS drift event (correct gate behaviour, not a gate bug).
+
+  - id: v07-high-only
+    tag: policy-gate-val/v07-high-only:latest
+    dockerfile: images/v07-high-only/Dockerfile
+    incident: "curl HIGH-severity CVE history (ubuntu:22.04 jammy/main)"
+    target_cve: "Multiple curl/libcurl HIGH CVEs"
+    ecosystem: os-deb
+    expected_tier: review
+    gate_path: review_high
+    notes: >
+      ubuntu:22.04 with curl from jammy/main (no security backports). curl
+      carries a consistent stream of HIGH-severity CVEs with low exploitation
+      rates. No CRITICAL CVEs expected on a plain ubuntu:22.04 base. Gate
+      should add HIGH+fix+consensus findings to REVIEW via the P7 path
+      without auto-blocking. Exercises the only gate path entered via HIGH
+      severity.
+
+  - id: v08-eol-stretch
+    tag: policy-gate-val/v08-eol-stretch:latest
+    dockerfile: images/v08-eol-stretch/Dockerfile
+    incident: "Debian 9 Stretch (EOL 2022-06-30) — unfixed CVE accumulation"
+    target_cve: "Multiple OS CVEs (openssl, sqlite3)"
+    ecosystem: os-deb
+    expected_tier: review
+    gate_path: review_crit_eol_context
+    notes: >
+      Debian 9 is past end-of-life; Trivy reports EOSL=true. Gate should
+      annotate every deny message with eol=true but determine the tier from
+      CVE evidence (EPSS, KEV) as normal. Most Debian 9 CVEs have EPSS below
+      0.5 and no KEV entry, so expected outcome is REVIEW. Validates the P6
+      design decision: EOL is context metadata, not an independent gate trigger.
+
+  - id: v09-distroless
+    tag: gcr.io/distroless/static-debian12:latest
+    dockerfile: null
+    incident: "N/A — hardened base image (no shell, no package manager)"
+    target_cve: null
+    ecosystem: none
+    expected_tier: pass
+    gate_path: pass_clean
+    notes: >
+      Distroless static image contains no OS packages beyond glibc and the
+      CA certificates bundle. No CRITICAL, HIGH, or KEV findings expected.
+      Gate should exit 0 (PASS). Validates the PASS path executes cleanly
+      and the gate does not emit spurious findings on a hardened image.
+
+  - id: v10-alpine-current
+    tag: alpine:3.21
+    dockerfile: null
+    incident: "N/A — current Alpine release (actively maintained)"
+    target_cve: null
+    ecosystem: none
+    expected_tier: pass
+    gate_path: pass_clean
+    notes: >
+      alpine:3.19 is in the study dataset. alpine:3.21 is an out-of-sample
+      control: a genuinely current image the gate was not tuned against.
+      Expected PASS. Provides a lightweight second PASS data point and
+      confirms the gate behaves identically on Alpine 3.21 vs 3.19.
