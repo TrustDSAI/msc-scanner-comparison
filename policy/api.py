@@ -11,9 +11,19 @@ Usage
 Docker
 ------
     docker run --rm -p 8080:8080 \\
+        -e POLICY_GATE_API_KEY=changeme \\
         -e ANTHROPIC_API_KEY=... \\
         -v policy-gate-cache:/cache \\
         ghcr.io/<org>/policy-gate-api
+
+Authentication
+--------------
+Set POLICY_GATE_API_KEY to enable authentication. Clients must send the key
+in the X-API-Key request header. If the variable is unset, the server starts
+unauthenticated (suitable for local/dev use only).
+
+    curl -H "X-API-Key: changeme" -d '{"image":"alpine:3.21"}' \\
+         -H "Content-Type: application/json" http://localhost:8080/gate
 
 Endpoints
 ---------
@@ -34,7 +44,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, Security, UploadFile, File, Form
+from fastapi.security import APIKeyHeader
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -53,6 +64,20 @@ from enrichers.cache import configure as configure_cache
 # Initialise the enrichment cache once at startup.
 _cache_dir = Path(os.environ.get("POLICY_GATE_CACHE", str(CACHE_DIR)))
 configure_cache(_cache_dir)
+
+# ── Authentication ────────────────────────────────────────────────────────────
+# Set POLICY_GATE_API_KEY in the environment to enable API key auth.
+# When the variable is unset the server starts unauthenticated (dev/local use).
+_API_KEY = os.environ.get("POLICY_GATE_API_KEY", "")
+_api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+
+def _require_api_key(key: Optional[str] = Security(_api_key_header)) -> None:
+    if not _API_KEY:
+        return  # auth disabled
+    if key != _API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+
 
 app = FastAPI(
     title="policy-gate",
@@ -120,12 +145,13 @@ def health() -> dict:
     return {"status": "ok", "cache": str(_cache_dir)}
 
 
-@app.get("/config", tags=["ops"])
+@app.get("/config", tags=["ops"], dependencies=[Security(_require_api_key)])
 def config() -> dict:
     return _load_default_config()
 
 
-@app.post("/gate", response_model=GateResponse, tags=["gate"])
+@app.post("/gate", response_model=GateResponse, tags=["gate"],
+          dependencies=[Security(_require_api_key)])
 async def gate(req: GateRequest) -> GateResponse:
     """Scan *image* end-to-end and return a tri-state verdict.
 
@@ -153,7 +179,8 @@ async def gate(req: GateRequest) -> GateResponse:
     return GateResponse(**verdict)
 
 
-@app.post("/gate/verdict", response_model=GateResponse, tags=["gate"])
+@app.post("/gate/verdict", response_model=GateResponse, tags=["gate"],
+          dependencies=[Security(_require_api_key)])
 async def gate_from_scans(
     image: str = Form(..., description="Image reference (for labelling)."),
     trivy: UploadFile = File(..., description="Trivy JSON output."),
