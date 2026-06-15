@@ -65,11 +65,11 @@ EXPECTED[v05-regresshion]="review"
 
 IMAGE_TAG[v06-crit-low-epss]="policy-gate-val/v06-crit-low-epss:latest"
 DOCKERFILE[v06-crit-low-epss]="images/v06-crit-low-epss"
-EXPECTED[v06-crit-low-epss]="review"
+EXPECTED[v06-crit-low-epss]="block"
 
 IMAGE_TAG[v07-high-only]="policy-gate-val/v07-high-only:latest"
 DOCKERFILE[v07-high-only]="images/v07-high-only"
-EXPECTED[v07-high-only]="review"
+EXPECTED[v07-high-only]="block"
 
 IMAGE_TAG[v08-eol-stretch]="policy-gate-val/v08-eol-stretch:latest"
 DOCKERFILE[v08-eol-stretch]="images/v08-eol-stretch"

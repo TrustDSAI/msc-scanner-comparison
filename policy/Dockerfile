@@ -36,9 +36,9 @@ RUN curl -sSL "https://github.com/anchore/grype/releases/download/v${GRYPE_VERSI
         | tar -xz -C /usr/local/bin grype
 
 # --- Python deps ---
-# Only the standard library plus the Anthropic SDK (optional, for the agent
-# classifier). The pipeline otherwise uses urllib, so keep this minimal.
-RUN pip install "anthropic>=0.40,<1.0"
+# Anthropic and OpenAI SDKs are optional (advisor + agent classifier).
+# The pipeline otherwise uses urllib only, so keep this minimal.
+RUN pip install "anthropic>=0.40,<1.0" "openai>=1.0,<2.0"
 
 # --- Application ---
 WORKDIR /app
@@ -53,6 +53,11 @@ COPY policy_gate.py ./policy_gate.py
 # across runs and avoid NVD rate limits.
 ENV POLICY_GATE_CACHE=/cache
 RUN mkdir -p /cache
+
+# Custom policy mount point. To use your own Rego without rebuilding:
+#   docker run --rm -v ./my-policy:/policy ghcr.io/<org>/policy-gate \
+#     --image my-app:latest --rego-dir /policy --policy-package myorg.gate
+VOLUME /policy
 
 ENTRYPOINT ["python3", "/app/policy_gate.py"]
 CMD ["--help"]

@@ -1,0 +1,49 @@
+{
+  "image": "policy-gate-val/v03-text4shell:latest",
+  "decision": "review",
+  "image_eol": true,
+  "image_eol_source": "trivy:os-eosl",
+  "block": [],
+  "review": [
+    {
+      "cve_id": "CVE-2022-42889",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.94251,
+      "fix_version": "1.10.0",
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v03-text4shell:latest",
+      "in_kev": false,
+      "layer": "app",
+      "package": "commons-text",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "1.9",
+      "advice": "**Recommend: BLOCK this build.** CVE-2022-42889 is a critical RCE in commons-text with a readily available patch (1.10.0); upgrade immediately rather than accepting the risk in a CRITICAL-severity vulnerability with known exploitation potential."
+    },
+    {
+      "cve_id": "CVE-2022-42889",
+      "detected_by": [
+        "trivy"
+      ],
+      "epss_score": 0.94251,
+      "fix_version": "1.10.0",
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v03-text4shell:latest",
+      "in_kev": false,
+      "layer": "app",
+      "package": "org.apache.commons:commons-text",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "1.9",
+      "advice": "**Block the build and upgrade to commons-text 1.10.0 immediately.** CVE-2022-42889 is a critical remote code execution vulnerability in commons-text 1.9 with a publicly available exploit; the fix is straightforward and available."
+    }
+  ]
+}

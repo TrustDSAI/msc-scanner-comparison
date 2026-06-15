@@ -1,0 +1,338 @@
+{
+  "image": "policy-gate-val/v06-crit-low-epss:latest",
+  "decision": "block",
+  "image_eol": false,
+  "image_eol_source": "trivy:os-eosl",
+  "block": [
+    {
+      "cve_id": "CVE-2023-4863",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.93301,
+      "fix_version": "10.0.1",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": true,
+      "layer": "skipped",
+      "package": "pillow",
+      "policy": "gate",
+      "reason": "KEV catalog: actively exploited, fix available",
+      "severity": "HIGH",
+      "tier": "block",
+      "version": "9.3.0"
+    },
+    {
+      "cve_id": "CVE-2023-4863",
+      "detected_by": [
+        "trivy"
+      ],
+      "epss_score": 0.93301,
+      "fix_version": "10.0.1",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": true,
+      "layer": "skipped",
+      "package": "Pillow",
+      "policy": "gate",
+      "reason": "KEV catalog: actively exploited, fix available",
+      "severity": "HIGH",
+      "tier": "block",
+      "version": "9.3.0"
+    }
+  ],
+  "review": [
+    {
+      "cve_id": "CVE-2023-0286",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.86858,
+      "fix_version": "39.0.1",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "cryptography",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "38.0.4",
+      "advice": "**Recommend: BLOCK and upgrade to cryptography 39.0.1.** CVE-2023-0286 is a HIGH severity X.509 certificate validation bypass in OpenSSL that affects cryptography versions before 39.0.1; a fix is available and should be applied immediately regardless of EPSS unavailability."
+    },
+    {
+      "cve_id": "CVE-2023-50447",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.00754,
+      "fix_version": "10.2.0",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "unknown",
+      "package": "pillow",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "9.3.0",
+      "advice": "**Recommend: BLOCK this build.** CVE-2023-50447 is a CRITICAL pillow vulnerability with a confirmed fix available (10.2.0); upgrade immediately rather than accepting the risk of a known critical flaw in image processing code."
+    },
+    {
+      "cve_id": "CVE-2023-50447",
+      "detected_by": [
+        "trivy"
+      ],
+      "epss_score": 0.00754,
+      "fix_version": "10.2.0",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "app",
+      "package": "Pillow",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "9.3.0",
+      "advice": "**Recommend: BLOCK this build.** CVE-2023-50447 is a CRITICAL vulnerability in Pillow with a confirmed fix available (10.2.0); upgrade immediately rather than accepting the risk of a known critical flaw in image processing code that handles untrusted input."
+    },
+    {
+      "cve_id": "CVE-2023-50782",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00855,
+      "fix_version": "42.0.0",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "cryptography",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "38.0.4",
+      "advice": "**Recommend: BLOCK the build.** CVE-2023-50782 is a HIGH severity vulnerability in cryptography with a confirmed fix available (42.0.0); upgrade immediately since the current version (38.0.4) is significantly outdated and the risk outweighs any integration friction."
+    },
+    {
+      "cve_id": "CVE-2024-26130",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00462,
+      "fix_version": "42.0.4",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "cryptography",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "38.0.4",
+      "advice": "**Recommend: BLOCK and upgrade to 42.0.4.** CVE-2024-26130 is a HIGH severity vulnerability in cryptography with a confirmed fix available; the absence of EPSS/KEV data does not reduce risk for a cryptographic library where exploitation could compromise sensitive operations."
+    },
+    {
+      "cve_id": "CVE-2026-24049",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00015,
+      "fix_version": "0.46.2",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "wheel",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "0.45.1",
+      "advice": "**Recommend: BLOCK and upgrade to 0.46.2.** This is a HIGH severity vulnerability in a direct dependency with a confirmed fix available; the absence of EPSS/KEV data doesn't reduce risk for a patched issue, and upgrading carries minimal risk for a minor version bump."
+    },
+    {
+      "cve_id": "CVE-2026-26007",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00011,
+      "fix_version": "46.0.5",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "cryptography",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "38.0.4",
+      "advice": "**Recommend: BLOCK and upgrade to 46.0.5.** This is a HIGH severity vulnerability in a cryptographic library with a confirmed fix available; the absence of EPSS/KEV data doesn't reduce the risk profile of a crypto flaw, and the version gap (38.0.4 \u2192 46.0.5) is substantial enough to warrant immediate patching before deployment."
+    },
+    {
+      "cve_id": "CVE-2026-41066",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.0006,
+      "fix_version": "6.1.0",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "lxml",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "4.9.2",
+      "advice": "**Recommend: BLOCK the build and upgrade lxml to 6.1.0.** This is a HIGH severity vulnerability with a confirmed fix available; the absence of EPSS/KEV data doesn't reduce risk for a known CVE, and the fix is straightforward with no EOL constraints."
+    },
+    {
+      "cve_id": "CVE-2026-42496",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00052,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "perl-base",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "5.40.1-6",
+      "advice": "**Recommend BLOCK** \u2014 This is a CRITICAL perl vulnerability with no available fix and no evidence of public exploitation data to assess real-world risk; blocking forces the team to either upgrade the base image or justify acceptance through a formal exception process."
+    },
+    {
+      "cve_id": "CVE-2026-5450",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00073,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc-bin",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.41-12+deb13u3",
+      "advice": "**Recommend BLOCK** \u2014 CVE-2026-5450 is a future-dated CVE (2026) that does not exist in any official vulnerability database (NVD, OSV, CISA KEV), indicating this is likely a test/invalid finding; if genuine, the absence of any fix and CRITICAL severity warrants blocking until the vulnerability can be verified through official sources."
+    },
+    {
+      "cve_id": "CVE-2026-5450",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00073,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc6",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.41-12+deb13u3",
+      "advice": "**BLOCK this build** \u2014 CVE-2026-5450 is a CRITICAL severity vulnerability in a core system library (libc6) with no available fix, and the future date suggests this may be a test/placeholder CVE that requires verification before proceeding. Confirm the CVE's legitimacy with your security team; if genuine, this build cannot be deployed until a patched libc6 version is released."
+    },
+    {
+      "cve_id": "CVE-2026-6100",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.00137,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "unknown",
+      "package": "python",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "3.11.15",
+      "advice": "**Recommend BLOCK** \u2014 This CVE lacks corroborating evidence (no NVD data, no OSV advisory, no EPSS score, not in CISA KEV) and appears to be a future-dated or invalid identifier; verify the CVE number's legitimacy before proceeding, as it may be a false positive or data error."
+    },
+    {
+      "cve_id": "CVE-2026-7210",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.00187,
+      "fix_version": "3.15.0b2",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "unknown",
+      "package": "python",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "3.11.15",
+      "advice": "**Recommend BLOCK** \u2014 This is a CRITICAL CVE with a fix available (3.15.0b2), and the image is not EOL, so upgrading is feasible; the lack of EPSS/KEV data and OSV confirmation suggests this may be a low-confidence or disputed finding, but CRITICAL severity warrants blocking until the fix can be applied or the CVE status is clarified."
+    },
+    {
+      "cve_id": "CVE-2026-8376",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00048,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v06-crit-low-epss:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "perl-base",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "5.40.1-6",
+      "advice": "**Recommend BLOCK** \u2014 This is a CRITICAL perl vulnerability with no available fix and no evidence of public exploitation data to assess real-world risk; blocking forces the team to either upgrade the base image or justify acceptance through a formal exception process."
+    }
+  ]
+}

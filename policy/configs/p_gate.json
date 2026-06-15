@@ -1,8 +1,11 @@
 {
-  "_name":        "Tri-state CI/CD gate",
-  "_description": "Production gating policy with three outcomes. BLOCK only beyond reasonable doubt (KEV+fix, or fully-corroborated CRITICAL with EPSS > 0.5). REVIEW for all other CRITICAL/HIGH findings and KEV-without-fix. PASS otherwise. EOL is reported as context but does not move a finding between tiers.",
+  "_name":        "Tri-state CI/CD gate (default configuration)",
+  "_description": "Production gating policy. BLOCK = KEV+fix or fully-corroborated CRITICAL with EPSS above block_epss_threshold. REVIEW = all other CRITICAL/HIGH findings and KEV-without-fix. PASS otherwise. All thresholds are configurable; pass --policy <your-config.json> to override any value.",
 
   "block_epss_threshold":    0.5,
+  "review_high_min_epss":    0.0,
   "nvd_acceptable_statuses": ["Analyzed", "Modified"],
-  "kev_requires_fix":        true
+  "kev_requires_fix":        true,
+  "enable_kev_block":        true,
+  "enable_critical_block":   true
 }

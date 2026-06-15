@@ -69,7 +69,7 @@ from classifiers.advisor import ReviewAdvisor, is_available as advisor_available
 REGO_DIR = HERE / "rego"
 DEFAULT_CONFIG = HERE / "configs" / "p_gate.json"
 CACHE_DIR = HERE / ".cache" / "enrich"
-GATE_PKG = "vuln.gate"
+DEFAULT_GATE_PKG = "vuln.gate"
 
 
 # --- Scanner invocation ----------------------------------------------
@@ -136,10 +136,10 @@ def _empty(field: str) -> dict:
     }.get(field, {})
 
 
-def opa_eval(input_path: Path, query: str) -> object:
+def opa_eval(input_path: Path, query: str, rego_dir: Path) -> object:
     proc = subprocess.run(
         ["opa", "eval", "--input", str(input_path),
-         "--data", str(REGO_DIR), "--format", "json", query],
+         "--data", str(rego_dir), "--format", "json", query],
         capture_output=True, text=True, check=True,
     )
     out = json.loads(proc.stdout)
@@ -270,6 +270,11 @@ def main() -> int:
     p.add_argument("--report-format", choices=list(FORMATTERS), default="json")
     p.add_argument("--fail-on", choices=["block", "review", "none"], default="review",
                    help="which tiers fail the build (default: review = fail-closed)")
+    p.add_argument("--rego-dir", type=Path, default=REGO_DIR,
+                   help="directory of .rego files to load (default: built-in rego/)")
+    p.add_argument("--policy-package", default=DEFAULT_GATE_PKG,
+                   help="OPA package to evaluate (default: vuln.gate); set this when "
+                        "using a custom --rego-dir")
     p.add_argument("--cache", type=Path, default=CACHE_DIR)
     args = p.parse_args()
 
@@ -294,8 +299,10 @@ def main() -> int:
         eval_input = tdp / "gate_input.json"
         eval_input.write_text(json.dumps(payload))
 
-        block  = opa_eval(eval_input, f"data.{GATE_PKG}.block")  or []
-        review = opa_eval(eval_input, f"data.{GATE_PKG}.review") or []
+        pkg    = args.policy_package
+        rdir   = args.rego_dir
+        block  = opa_eval(eval_input, f"data.{pkg}.block",  rdir) or []
+        review = opa_eval(eval_input, f"data.{pkg}.review", rdir) or []
 
     # Attach reviewer advice to every REVIEW finding when an LLM is available.
     # Advice is cached by CVE+enrichment snapshot so repeat runs are free.

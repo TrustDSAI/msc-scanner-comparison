@@ -4,7 +4,7 @@
 **Network probe:** OK (NVD/OSV/EPSS reachable, EPSS as of 2026-06-02)
 **Image snapshot date:** 2026-03-31 (digest-pinned)
 **Total scanner findings normalised across 9 images:** ~12,000 (CRITICAL: 626)
-**Total OPA test pass rate:** 32/32
+**Total OPA test pass rate:** 60/60
 
 ---
 
@@ -28,7 +28,7 @@ Nine container images, three risk groups, all digest-pinned to a single day. Ide
 
 ### 1.2 Policy Bundle Evaluated
 
-Eight policy variants, all expressed in Rego, sharing one library of predicates (`rego/lib.rego`):
+Seven policy variants plus the tri-state gate, all expressed in Rego, sharing one library of predicates (`rego/lib.rego`):
 
 | Policy          | Condition                                                                  |
 |-----------------|----------------------------------------------------------------------------|
@@ -38,10 +38,12 @@ Eight policy variants, all expressed in Rego, sharing one library of predicates 
 | P4_strict       | CRITICAL + consensus + NVD Analyzed + OSV advisory + OSV fix + EPSS > 0.1  |
 | P4_relaxed      | Same as P4_strict but EPSS > 0.01 and NVD in {Analyzed, Modified}          |
 | P5_layer        | Per-layer routing: app gets P4_strict, os gets P4_relaxed                  |
-| P6_eol_strict   | EOL image insta-block, non-EOL delegates to P5_layer                       |
-| P6_eol_permissive | EOL flag recorded but not blocking; equivalent to P5_layer               |
+| P7_severity_aware | P5 + HIGH with fix + consensus + EPSS > 0.5; KEV catalog bypass         |
+| p_gate (tri-state) | BLOCK / REVIEW / PASS; block = KEV+fix or fully corroborated CRITICAL with EPSS > 0.5 |
 
-P5_layer requires each finding to carry a `layer ∈ {app, os, unknown}` label produced by a classifier. P6 additionally requires the image record to carry an `eol: bool` flag produced by the EOL enricher (Section 1.6).
+P5_layer requires each finding to carry a `layer ∈ {app, os, unknown}` label produced by a classifier. EOL status is queried at run time and attached as context metadata on every deny message; it does not independently determine the gate tier (the P6 EOL-gate design was evaluated and dropped — see architectural decision notes).
+
+The tri-state gate (`rego/p_gate.rego`) is the production-facing component: it produces three output sets per image (block, review, pass) rather than a single deny set, and is packaged as a CLI (`policy_gate.py`) and GitHub Action.
 
 ### 1.3 Classifiers Evaluated
 
@@ -101,7 +103,7 @@ Entry point: `python3 policy/evaluate_all.py`. The script auto-loads `.env`, pro
 - `output/verdict_matrix.csv`                 all (image, classifier, policy) outcomes
 - `output/summary.md`                         human-readable
 
-All Rego policies are validated by 32 OPA unit tests in `policy/tests/`.
+All Rego policies are validated by 60 OPA unit tests in `policy/tests/`.
 
 ---
 
@@ -138,9 +140,11 @@ Cells in bold are blocking decisions (deny_count).
 
 P1, P2, P3, P4_strict, P4_relaxed are classifier-independent and identical to the rule-classifier results. **Two rows differ between classifiers**: web-dvwa P5_layer (198 → 116, a 41% reduction) and juice-shop P5_layer (0 → 1, the rule classifier missed a high-EPSS vm2 finding).
 
-### 2.3 P6_eol Outcomes (Both Classifiers)
+### 2.3 P6_eol Outcomes (Design Iteration — Not a Delivered Policy)
 
-P6 is classifier-independent for the EOL short-circuit. Its outcomes also reveal how the strict-vs-permissive toggle behaves.
+P6 added an EOL short-circuit to P5: an EOL image either hard-blocks (strict) or falls through to P5_layer (permissive). The variant was evaluated and dropped because it conflated orthogonal signals — a host running a known-exploited CVE should block regardless of OS lifecycle status, and an EOL image with no actionable findings should not block. P6 is documented here because its empirical results motivated the final architecture (EOL as context metadata, not a gate tier). P7 is the delivered evolution of P5_layer; EOL status is attached as a flag on every deny message but does not independently determine tier.
+
+P6 outcomes across classifiers, shown for completeness:
 
 | Image                  | EOL?  | P5_layer (agent) | P6_strict | P6_permissive |
 |------------------------|-------|-----------------:|----------:|--------------:|
@@ -158,11 +162,11 @@ P6_strict collapses every EOL image to a single deny message ("EOL, do not deplo
 
 This is the configuration-driven dial referenced in the architectural decision: production environments can ship with `eol_insta_block: true` (refuse to deploy past-vendor-support images outright); development environments can ship with `false` to retain CVE-level signal on those same images.
 
-### 2.4 Iteration: NVD "Modified" is not an invalidity signal
+### 2.4 Iteration: NVD "Modified" Is Not an Invalidity Signal
 
 An earlier configuration of P5 required `nvd.status == "Analyzed"` for app-layer findings. This caused juice-shop's `vm2` sandbox escape CVE (CVE-2023-32314, EPSS 0.7) to pass the gate, because NVD's status for that record is "Modified". On inspection, "Modified" is a normal lifecycle status (NVD updated the record after initial analysis), not an invalidity signal. Only `Rejected` and `Disputed` indicate that the CVE itself should not gate. The app-layer config was updated to accept `["Analyzed", "Modified"]`, matching the OS-layer setting. After this change, P5_layer correctly blocks CVE-2023-32314 on juice-shop while still passing the eight other lower-EPSS or no-fix findings. The fix is a one-line config edit in `configs/p5_layer_aware.json`; no Rego or Python changes were required. This iteration illustrates the value of the config-driven policy design.
 
-### 2.3 Classifier Agreement on CRITICAL Findings
+### 2.5 Classifier Agreement on CRITICAL Findings
 
 | Image                  | CRIT | rule = agent | rule ≠ agent | Agreement |
 |------------------------|-----:|-------------:|-------------:|----------:|
@@ -179,7 +183,7 @@ An earlier configuration of P5 required `nvd.status == "Analyzed"` for app-layer
 
 Overall agreement is 80% across the dataset. Almost all disagreement is concentrated on web-dvwa.
 
-### 2.4 Reclassification Direction
+### 2.6 Reclassification Direction
 
 | Image                  | rule → agent                | Count |
 |------------------------|-----------------------------|------:|
@@ -189,7 +193,7 @@ Overall agreement is 80% across the dataset. Almost all disagreement is concentr
 
 All 123 web-dvwa reclassifications go in the same direction: packages the rule classifier called OS, the agent called app.
 
-### 2.5 Reclassified Packages on web-dvwa
+### 2.7 Reclassified Packages on web-dvwa
 
 | Count | Package                  |
 |------:|--------------------------|
@@ -206,7 +210,7 @@ All 123 web-dvwa reclassifications go in the same direction: packages the rule c
 
 All ten packages are Debian-packaged but execute application-layer code reachable through the web interface. The rule classifier, which keys on ecosystem strings only, sees `ecosystem: debian` and labels them OS. The agent classifier reads the package name and prior knowledge and overrides to app.
 
-### 2.6 P5_layer Block Composition (web-dvwa)
+### 2.8 P5_layer Block Composition (web-dvwa)
 
 #### Rule classifier (198 blocks, all OS-labelled)
 
@@ -236,7 +240,7 @@ All ten packages are Debian-packaged but execute application-layer code reachabl
 
 (*) `php7.0` and `php7.0-common` remained OS-classified by the agent; the included content is closer to runtime/interpreter than to application code.
 
-### 2.7 Block Set Difference (rule-P5 minus agent-P5)
+### 2.9 Block Set Difference (rule-P5 minus agent-P5)
 
 96 findings blocked by rule-P5 but not by agent-P5. Zero findings blocked by agent-P5 only.
 
@@ -382,7 +386,7 @@ cp .env.example .env
 # or export OLLAMA_HOST for local
 
 # Verify policies
-opa test rego/ tests/   # expects 32/32 pass
+opa test rego/ tests/   # expects 60/60 pass
 
 # Run full pipeline (rule classifier always runs; agent if any LLM env var set)
 python3 evaluate_all.py
@@ -398,7 +402,7 @@ cat output/verdict_matrix.csv
 
 | Path                                       | Content                                       |
 |--------------------------------------------|-----------------------------------------------|
-| `policy/output/verdict_matrix.csv`         | 108 rows: 9 images × 2 classifiers × 6 policies |
+| `policy/output/verdict_matrix.csv`         | 108 rows: 9 images × 2 classifiers × 6 policies (P1–P5_layer; P7 and p_gate separate) |
 | `policy/output/summary.md`                 | Markdown comparison matrix                    |
 | `policy/output/*_input_<classifier>.json`  | 18 files: normalised input per image+classifier |
 | `policy/output/*_enriched_<classifier>.json` | 18 files: enriched versions                 |
@@ -406,6 +410,31 @@ cat output/verdict_matrix.csv
 | `policy/.cache/enrich/osv/`                | ~135 cached OSV records                       |
 | `policy/.cache/enrich/epss/`               | EPSS scores                                   |
 | `policy/.cache/enrich/layer/`              | ~750 cached classifications across all models |
+| `validation/results/*.json`                | Gate verdict per validation image (10 images, 10/10 pass) |
+
+### 9. Validation Suite Results (Group V)
+
+Ten deliberately-crafted images targeting each gate path. All produce the correct tier after investigating two initial mismatches (v06 and v07), which turned out to be correct gate behaviour — both images contained CISA KEV-listed CVEs that the manifest had not anticipated.
+
+| Image               | Expected | Got    | Block CVE(s)                | Gate path    |
+|---------------------|----------|--------|-----------------------------|--------------|
+| v01-log4shell       | block    | block  | CVE-2021-44228 (×4)        | kev_fix      |
+| v02-jenkins-2441    | block    | block  | CVE-2024-23897 (×8)        | kev_fix      |
+| v03-text4shell      | review   | review | CVE-2022-42889 (×2 review) | review_crit  |
+| v04-spring4shell    | block    | block  | CVE-2022-22965 (×4)        | kev_fix      |
+| v05-regresshion     | review   | review | CVE-2024-6387 (×4 review)  | review_high  |
+| v06-crit-low-epss   | block    | block  | CVE-2023-4863 (Pillow/libwebp KEV) | kev_fix |
+| v07-high-only       | block    | block  | CVE-2023-44487 (libnghttp2 KEV) | kev_fix |
+| v08-eol-stretch     | review   | review | 30 review findings, eol=true | review_crit_eol_context |
+| v09-distroless      | pass     | pass   | —                           | pass_clean   |
+| v10-alpine-current  | pass     | pass   | —                           | pass_clean   |
+
+**Notable findings from the validation run:**
+
+- v06 and v07 were initially expected to REVIEW. Both BLOCK because their packages carry CISA KEV entries that were not identified during image design. The gate behaves correctly; the mismatch exposed a gap in the pre-stated expectations, not a policy defect.
+- The KEV block path is severity-agnostic: CVE-2023-44487 (HTTP/2 Rapid Reset, rated HIGH/DoS) blocks on the same path as CRITICAL RCE entries. This is deliberate design.
+- v03 (Text4Shell) and v05 (regreSSHion) correctly reach REVIEW despite their media prominence. Neither is in CISA KEV.
+- v08 (Debian 9 EOL) produces 30 REVIEW findings with eol=true on every entry, confirming that EOL is context metadata and not an independent block trigger.
 
 ---
 
@@ -413,10 +442,13 @@ cat output/verdict_matrix.csv
 
 - `docs/notes_architectural_decision.md` — policy layer design rationale
 - `policy/rego/lib.rego` — shared predicates
-- `policy/rego/p[1-5]*.rego` — policy implementations
-- `policy/tests/` — 32 OPA unit tests
+- `policy/rego/p[1-7]*.rego` — policy implementations (P1–P5, P7)
+- `policy/rego/p_gate.rego` — tri-state gate (BLOCK/REVIEW/PASS)
+- `policy/tests/` — 60 OPA unit tests
 - `policy/normalisers/` — scanner adapter package (trivy, grype)
 - `policy/enrichers/` — external data adapter package (nvd, osv, epss)
 - `policy/classifiers/` — layer classifier package (rule, agent)
-- `policy/evaluate_all.py` — single-entry orchestrator
+- `policy/classifiers/advisor.py` — LLM reviewer advisor (1–2 sentence triage guidance per REVIEW finding)
+- `policy/policy_gate.py` — single-image CI/CD gate CLI (tri-state: block/review/pass)
+- `policy/evaluate_all.py` — batch orchestrator for the study dataset
 - `policy/configs/` — policy configuration JSON files

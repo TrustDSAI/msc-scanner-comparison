@@ -1,0 +1,8 @@
+{
+  "image": "alpine:3.21",
+  "decision": "pass",
+  "image_eol": false,
+  "image_eol_source": "endoflife.date",
+  "block": [],
+  "review": []
+}

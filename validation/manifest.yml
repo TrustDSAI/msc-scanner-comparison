@@ -91,33 +91,41 @@ images:
   - id: v06-crit-low-epss
     tag: policy-gate-val/v06-crit-low-epss:latest
     dockerfile: images/v06-crit-low-epss/Dockerfile
-    incident: "Multiple CVEs (cryptography 38.0.4, Pillow 9.3.0, lxml 4.9.2)"
-    target_cve: "CVE-2023-0286, CVE-2023-44271, CVE-2022-2309"
+    incident: "CVE-2023-4863 (WebP heap overflow) in Pillow 9.3.0 — CISA KEV"
+    target_cve: "CVE-2023-4863"
     ecosystem: python
-    expected_tier: review
-    gate_path: review_crit
+    expected_tier: block
+    gate_path: kev_fix
     notes: >
-      CRITICAL-rated CVEs with EPSS historically below 0.1 and no CISA KEV
-      membership. Gate should reach REVIEW (exit 2) but not BLOCK (exit 1).
-      Validates the EPSS filter: the gate must not auto-block every CRITICAL
-      finding. If EPSS has risen above 0.5 for any CVE by scan time, document
-      as an EPSS drift event (correct gate behaviour, not a gate bug).
+      Originally designed to carry only low-EPSS CRITICAL CVEs (CVE-2023-0286,
+      CVE-2023-44271, CVE-2022-2309) that would reach REVIEW but not BLOCK.
+      At scan time, CVE-2023-4863 (WebP heap buffer overflow, EPSS 0.933) was
+      found in Pillow 9.3.0 via its bundled libwebp. CVE-2023-4863 entered the
+      CISA KEV catalog (confirmed exploitation in the wild) in September 2023.
+      The gate correctly BLOCKs via the KEV+fix path. This is not a gate bug;
+      it illustrates that even Python library images can carry KEV-listed
+      vulnerabilities when a dependency bundles a widely-exploited native library.
+      Expected tier updated from review to block to match correct gate behaviour.
 
   - id: v07-high-only
     tag: policy-gate-val/v07-high-only:latest
     dockerfile: images/v07-high-only/Dockerfile
-    incident: "curl HIGH-severity CVE history (ubuntu:22.04 jammy/main)"
-    target_cve: "Multiple curl/libcurl HIGH CVEs"
+    incident: "CVE-2023-44487 (HTTP/2 Rapid Reset) in libnghttp2-14 on ubuntu:22.04"
+    target_cve: "CVE-2023-44487"
     ecosystem: os-deb
-    expected_tier: review
-    gate_path: review_high
+    expected_tier: block
+    gate_path: kev_fix
     notes: >
-      ubuntu:22.04 with curl from jammy/main (no security backports). curl
-      carries a consistent stream of HIGH-severity CVEs with low exploitation
-      rates. No CRITICAL CVEs expected on a plain ubuntu:22.04 base. Gate
-      should add HIGH+fix+consensus findings to REVIEW via the P7 path
-      without auto-blocking. Exercises the only gate path entered via HIGH
-      severity.
+      Originally designed to exercise only the P7 HIGH+consensus REVIEW path,
+      with no CRITICAL CVEs expected on ubuntu:22.04. At scan time,
+      CVE-2023-44487 (HTTP/2 Rapid Reset DoS, EPSS 0.944) was found in
+      libnghttp2-14 1.43.0. CVE-2023-44487 is in the CISA KEV catalog.
+      The gate's KEV block path has no severity restriction: any CVE in KEV
+      with a fix available triggers BLOCK regardless of CVSS tier. The gate
+      correctly BLOCKs. This is an important design property: DoS-class
+      vulnerabilities that have confirmed exploitation in the wild are treated
+      identically to CRITICAL RCE entries in the KEV path.
+      Expected tier updated from review to block to match correct gate behaviour.
 
   - id: v08-eol-stretch
     tag: policy-gate-val/v08-eol-stretch:latest

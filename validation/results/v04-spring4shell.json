@@ -1,0 +1,126 @@
+{
+  "image": "policy-gate-val/v04-spring4shell:latest",
+  "decision": "block",
+  "image_eol": true,
+  "image_eol_source": "trivy:os-eosl",
+  "block": [
+    {
+      "cve_id": "CVE-2022-22965",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.94439,
+      "fix_version": "5.3.18",
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v04-spring4shell:latest",
+      "in_kev": true,
+      "layer": "app",
+      "package": "spring-beans",
+      "policy": "gate",
+      "reason": "KEV catalog: actively exploited, fix available",
+      "severity": "CRITICAL",
+      "tier": "block",
+      "version": "5.3.17"
+    },
+    {
+      "cve_id": "CVE-2022-22965",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.94439,
+      "fix_version": "5.3.18",
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v04-spring4shell:latest",
+      "in_kev": true,
+      "layer": "app",
+      "package": "spring-webmvc",
+      "policy": "gate",
+      "reason": "KEV catalog: actively exploited, fix available",
+      "severity": "CRITICAL",
+      "tier": "block",
+      "version": "5.3.17"
+    },
+    {
+      "cve_id": "CVE-2022-22965",
+      "detected_by": [
+        "trivy"
+      ],
+      "epss_score": 0.94439,
+      "fix_version": "5.2.20.RELEASE, 5.3.18",
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v04-spring4shell:latest",
+      "in_kev": true,
+      "layer": "app",
+      "package": "org.springframework:spring-beans",
+      "policy": "gate",
+      "reason": "KEV catalog: actively exploited, fix available",
+      "severity": "CRITICAL",
+      "tier": "block",
+      "version": "5.3.17"
+    },
+    {
+      "cve_id": "CVE-2022-22965",
+      "detected_by": [
+        "trivy"
+      ],
+      "epss_score": 0.94439,
+      "fix_version": "5.2.20.RELEASE, 5.3.18",
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v04-spring4shell:latest",
+      "in_kev": true,
+      "layer": "app",
+      "package": "org.springframework:spring-webmvc",
+      "policy": "gate",
+      "reason": "KEV catalog: actively exploited, fix available",
+      "severity": "CRITICAL",
+      "tier": "block",
+      "version": "5.3.17"
+    }
+  ],
+  "review": [
+    {
+      "cve_id": "CVE-2023-20860",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.63842,
+      "fix_version": "5.3.26",
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v04-spring4shell:latest",
+      "in_kev": false,
+      "layer": "app",
+      "package": "spring-webmvc",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "5.3.17",
+      "advice": "**Recommend: BLOCK the build.** CVE-2023-20860 is a critical Spring WebMVC vulnerability with a confirmed fix available (5.3.26); upgrade immediately rather than accepting technical debt on an already EOL image."
+    },
+    {
+      "cve_id": "CVE-2023-20860",
+      "detected_by": [
+        "trivy"
+      ],
+      "epss_score": 0.63842,
+      "fix_version": "6.0.7, 5.3.26",
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v04-spring4shell:latest",
+      "in_kev": false,
+      "layer": "app",
+      "package": "org.springframework:spring-webmvc",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "5.3.17",
+      "advice": "**Recommend BLOCK and upgrade to 5.3.26 or 6.0.7 immediately.** This is a confirmed Spring Framework RCE vulnerability (CVE-2023-20860) affecting Spring MVC with a CRITICAL rating and available patches; the absence of EPSS/KEV data does not reduce the risk given the severity classification and fix availability."
+    }
+  ]
+}

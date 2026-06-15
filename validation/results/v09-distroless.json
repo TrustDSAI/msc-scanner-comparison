@@ -1,0 +1,8 @@
+{
+  "image": "gcr.io/distroless/static-debian12:latest",
+  "decision": "pass",
+  "image_eol": false,
+  "image_eol_source": "trivy:os-eosl",
+  "block": [],
+  "review": []
+}

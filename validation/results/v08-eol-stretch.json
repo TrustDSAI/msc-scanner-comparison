@@ -1,0 +1,614 @@
+{
+  "image": "policy-gate-val/v08-eol-stretch:latest",
+  "decision": "review",
+  "image_eol": true,
+  "image_eol_source": "trivy:os-eosl",
+  "block": [],
+  "review": [
+    {
+      "cve_id": "CVE-2018-6485",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.01095,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc-bin",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Block this build.** CVE-2018-6485 is a critical glibc vulnerability affecting a Debian 9 system that is EOL with no available patch; the risk of exploitation outweighs deployment, and the image should be rebuilt with a supported OS version."
+    },
+    {
+      "cve_id": "CVE-2018-6485",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.01095,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc6",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend: BLOCK this build.** CVE-2018-6485 is a critical libc vulnerability in an EOL Debian 9 image with no available patch, making remediation impossible without upgrading the base OS\u2014this is unacceptable for production deployment."
+    },
+    {
+      "cve_id": "CVE-2018-6485",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.01095,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "multiarch-support",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend BLOCK**: This is a glibc vulnerability (CVE-2018-6485) in an EOL Debian 9 image with no available patch, making remediation impossible without upgrading the base OS\u2014accept the risk only if the application cannot be migrated to a supported distribution."
+    },
+    {
+      "cve_id": "CVE-2018-6551",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.00416,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc-bin",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend: BLOCK this build.** CVE-2018-6551 is a known critical vulnerability in libc with no available fix, and the Debian 9 base image is EOL with no security updates\u2014this combination creates unacceptable risk for production deployment."
+    },
+    {
+      "cve_id": "CVE-2018-6551",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.00416,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc6",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend: BLOCK this build.** CVE-2018-6551 is a known critical vulnerability in libc6 with no available fix, and the OS is EOL with no security updates forthcoming\u2014this poses unacceptable risk in production."
+    },
+    {
+      "cve_id": "CVE-2018-6551",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.00416,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "multiarch-support",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend: BLOCK this build.** The package is from an EOL Debian 9 image with a CRITICAL CVE and no available fix, making remediation impossible without upgrading the base OS\u2014this is a hard blocker for production deployment."
+    },
+    {
+      "cve_id": "CVE-2019-12900",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.01111,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libbz2-1.0",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "1.0.6-8.1",
+      "advice": "**Recommend: BLOCK this build.** CVE-2019-12900 is a known remote code execution in bzip2 with no available patch, the image is EOL, and there is no compensating control documented\u2014this is an unacceptable risk for production deployment."
+    },
+    {
+      "cve_id": "CVE-2019-8457",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.30735,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libdb5.3",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "5.3.28-12+deb9u1",
+      "advice": "**Recommend BLOCK**: This is a confirmed critical vulnerability in an EOL Debian 9 system with no available patch, making remediation impossible without upgrading the base OS\u2014the finding cannot be safely passed without addressing the underlying image obsolescence."
+    },
+    {
+      "cve_id": "CVE-2019-8457",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.30735,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libsqlite3-0",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "3.16.2-5+deb9u3",
+      "advice": "**Recommend BLOCK**: This is a confirmed critical SQLite vulnerability in an end-of-life Debian 9 system with no available patch, making remediation impossible without upgrading the base OS\u2014an unacceptable risk for production."
+    },
+    {
+      "cve_id": "CVE-2019-9169",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.04945,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc-bin",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend BLOCK**: CVE-2019-9169 is a known critical regex DoS in glibc affecting libc-bin with no available fix and the image is EOL (Debian 9), making patching impossible\u2014this poses unacceptable risk in production. Require image upgrade to a supported Debian version or provide compensating controls before deployment."
+    },
+    {
+      "cve_id": "CVE-2019-9169",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.04945,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc6",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend: BLOCK this build.** CVE-2019-9169 is a known critical regex vulnerability in glibc with no available patch for this EOL Debian 9 version, making remediation impossible without upgrading the base OS image."
+    },
+    {
+      "cve_id": "CVE-2019-9169",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.04945,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "multiarch-support",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend: BLOCK this build.** CVE-2019-9169 is a known regex DoS vulnerability in glibc affecting multiarch-support with no available patch, and the Debian 9 base image is EOL with no security updates forthcoming\u2014this creates unmitigated risk that should not progress to production."
+    },
+    {
+      "cve_id": "CVE-2020-1712",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00105,
+      "fix_version": "232-25+deb9u14",
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "libsystemd0",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "232-25+deb9u13",
+      "advice": "**Recommend: BLOCK and require the patch to 232-25+deb9u14.** This is a HIGH severity vulnerability in a core system library with a confirmed fix available; the image's EOL status makes it ineligible for exception and increases risk of unpatched dependencies."
+    },
+    {
+      "cve_id": "CVE-2020-1712",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00105,
+      "fix_version": "232-25+deb9u14",
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "libudev1",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "232-25+deb9u13",
+      "advice": "**Recommend: BLOCK and require upgrade to 232-25+deb9u14.** This is a HIGH severity vulnerability in a core system library with a confirmed fix available; the image EOL status makes patching even more critical to avoid accumulating unaddressed security debt."
+    },
+    {
+      "cve_id": "CVE-2021-33574",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.0013,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc-bin",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend BLOCK**: This is a critical glibc vulnerability in an end-of-life Debian 9 system with no available patch, making remediation impossible without upgrading the base OS\u2014this image should not proceed to production."
+    },
+    {
+      "cve_id": "CVE-2021-33574",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.0013,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc6",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend: BLOCK this build.** CVE-2021-33574 is a critical libc6 vulnerability in an EOL Debian 9 image with no available fix, making remediation impossible without a base image upgrade\u2014this is an unacceptable risk for production deployment."
+    },
+    {
+      "cve_id": "CVE-2021-33574",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.0013,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "multiarch-support",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend: BLOCK this build.** The package is from an EOL Debian 9 image with a CRITICAL CVE and no available fix, making remediation impossible without a base image upgrade."
+    },
+    {
+      "cve_id": "CVE-2021-35942",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.01407,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc-bin",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend: BLOCK this build.** CVE-2021-35942 is a critical glibc vulnerability in an EOL Debian 9 image with no available patch, making remediation impossible without upgrading the base OS\u2014this is a hard blocker for production deployment."
+    },
+    {
+      "cve_id": "CVE-2021-35942",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.01407,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc6",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend BLOCK**: This is a critical glibc vulnerability in an end-of-life Debian 9 system with no available patch, making remediation impossible without upgrading the base OS\u2014this image should not proceed to production."
+    },
+    {
+      "cve_id": "CVE-2021-35942",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.01407,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "multiarch-support",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend: BLOCK this build.** CVE-2021-35942 is a critical vulnerability in a Debian 9 (EOL) system package with no available fix, and the image itself is end-of-life\u2014this combination presents unmitigatable risk and should not proceed to production."
+    },
+    {
+      "cve_id": "CVE-2022-2068",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.20216,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libssl1.1",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "1.1.0l-1~deb9u6",
+      "advice": "**Recommend BLOCK**: This is a critical OpenSSL vulnerability in an end-of-life Debian 9 system with no available patch, making remediation impossible without upgrading the base OS\u2014this image should not proceed to production."
+    },
+    {
+      "cve_id": "CVE-2022-2068",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.20216,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "openssl",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "1.1.0l-1~deb9u6",
+      "advice": "**Recommend: BLOCK this build.** CVE-2022-2068 is a critical OpenSSL vulnerability in an EOL Debian 9 image with no available patch; the absence of a fix combined with end-of-life status means this risk cannot be remediated and should not progress to production."
+    },
+    {
+      "cve_id": "CVE-2022-2274",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.39689,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libssl1.1",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "1.1.0l-1~deb9u6",
+      "advice": "**Recommend BLOCK**: This is a critical vulnerability in an EOL Debian 9 system with no available fix, making remediation impossible without upgrading the base OS\u2014the finding cannot be safely passed without addressing the underlying platform obsolescence."
+    },
+    {
+      "cve_id": "CVE-2022-2274",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.39689,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "openssl",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "1.1.0l-1~deb9u6",
+      "advice": "**Recommend BLOCK**: This is a critical OpenSSL vulnerability in an end-of-life Debian 9 image with no available patch, making remediation impossible without upgrading the base OS\u2014this should not proceed to production."
+    },
+    {
+      "cve_id": "CVE-2022-23218",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.00515,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc-bin",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend: BLOCK this build.** CVE-2022-23218 is a critical glibc vulnerability in an EOL Debian 9 image with no available patch, making remediation impossible without upgrading the base OS\u2014this is an unacceptable risk for production deployment."
+    },
+    {
+      "cve_id": "CVE-2022-23218",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.00515,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc6",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend BLOCK**: CVE-2022-23218 is a critical glibc vulnerability in an EOL Debian 9 image with no available patch, making remediation impossible without upgrading the base OS\u2014this is an unacceptable risk for production. Require the image maintainer to upgrade to a supported Debian version (11+) where the fix is available."
+    },
+    {
+      "cve_id": "CVE-2022-23218",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.00515,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "multiarch-support",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend: BLOCK this build.** CVE-2022-23218 is a critical glibc vulnerability in an EOL Debian 9 image with no available patch, making remediation impossible without upgrading the base OS\u2014this is an unacceptable risk for production deployment."
+    },
+    {
+      "cve_id": "CVE-2022-23219",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.00573,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc-bin",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend BLOCK**: CVE-2022-23219 is a critical glibc vulnerability in an EOL Debian 9 image with no available patch, making remediation impossible without upgrading the base OS\u2014this is an unacceptable risk for production. Require the image maintainer to upgrade to a supported Debian version or provide explicit risk acceptance."
+    },
+    {
+      "cve_id": "CVE-2022-23219",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.00573,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc6",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend BLOCK**: libc6 2.24 is from Debian 9 (EOL since June 2022) with no available patch, and CVE-2022-23219 is a critical glibc vulnerability affecting core system functionality\u2014this image cannot be remediated and poses unacceptable risk in production."
+    },
+    {
+      "cve_id": "CVE-2022-23219",
+      "detected_by": [
+        "grype"
+      ],
+      "epss_score": 0.00573,
+      "fix_version": null,
+      "image_eol": true,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v08-eol-stretch:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "multiarch-support",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.24-11+deb9u4",
+      "advice": "**Recommend: BLOCK this build.** The package is from an EOL Debian 9 image with a CRITICAL CVE and no available fix, making remediation impossible without upgrading the base OS\u2014this is a hard blocker for production deployment."
+    }
+  ]
+}

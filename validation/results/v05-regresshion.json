@@ -1,0 +1,93 @@
+{
+  "image": "policy-gate-val/v05-regresshion:latest",
+  "decision": "review",
+  "image_eol": false,
+  "image_eol_source": "trivy:os-eosl",
+  "block": [],
+  "review": [
+    {
+      "cve_id": "CVE-2024-6387",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.65792,
+      "fix_version": "1:8.9p1-3ubuntu0.10",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v05-regresshion:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "openssh-client",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "1:8.9p1-3",
+      "advice": "**Recommend: BLOCK and require upgrade to 1:9.2p1-2+deb12u3.** CVE-2024-6387 is a known remote code execution vulnerability in OpenSSH with a confirmed patch available; the fix is a minor version bump with no breaking changes, making this a straightforward security remediation."
+    },
+    {
+      "cve_id": "CVE-2024-6387",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.65792,
+      "fix_version": "1:8.9p1-3ubuntu0.10",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v05-regresshion:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "openssh-server",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "1:8.9p1-3",
+      "advice": "**Recommend: BLOCK and require the patch upgrade to 1:8.9p1-3ubuntu0.10.** CVE-2024-6387 is a remote code execution vulnerability in OpenSSH with a confirmed fix available; the absence of EPSS/KEV data does not reduce the risk of a HIGH-severity RCE in a critical service component."
+    },
+    {
+      "cve_id": "CVE-2024-6387",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.65792,
+      "fix_version": "1:8.9p1-3ubuntu0.10",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v05-regresshion:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "openssh-sftp-server",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "1:8.9p1-3",
+      "advice": "**Recommend: BLOCK and require the patch upgrade to 1:8.9p1-3ubuntu0.10.** CVE-2024-6387 is a remote code execution vulnerability in OpenSSH with a fix readily available; the absence of EPSS/KEV data does not reduce the risk of a HIGH-severity RCE, and the image is not EOL so patching is feasible."
+    },
+    {
+      "cve_id": "CVE-2026-45447",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00092,
+      "fix_version": "3.0.2-0ubuntu1.25",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v05-regresshion:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "libssl3",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "3.0.2-0ubuntu1.23",
+      "advice": "**Recommend: BLOCK and require upgrade to 3.0.20-1~deb12u2.** This is a HIGH severity OpenSSL vulnerability with a confirmed fix available in a supported Debian version; the absence of EPSS/KEV data doesn't reduce the risk profile of a HIGH-rated CVE in a critical cryptographic library."
+    }
+  ]
+}

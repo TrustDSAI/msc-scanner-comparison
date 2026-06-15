@@ -56,14 +56,21 @@
 # entry via lib.make_msg, but does not by itself move a finding between
 # tiers. Acting on EOL is a CI-workflow decision, not a Rego decision.
 #
-# Config schema
-# -------------
+# Config schema (all keys optional; defaults shown)
+# -------------------------------------------------
 # {
-#   "block_epss_threshold":    0.5,
-#   "review_high_min_epss":    0.0,    # HIGH goes to review at any EPSS by default
+#   "block_epss_threshold":    0.5,     # EPSS floor for the CRITICAL block path
+#   "review_high_min_epss":    0.0,     # EPSS floor for HIGH to reach review (0 = any)
 #   "nvd_acceptable_statuses": ["Analyzed", "Modified"],
-#   "kev_requires_fix":        true
+#   "kev_requires_fix":        true,    # false = block KEV even without a fix
+#   "enable_kev_block":        true,    # false = disable the KEV block path entirely
+#   "enable_critical_block":   true     # false = disable the corroborated-CRITICAL path
 # }
+#
+# Custom policy: supply --rego-dir and --policy-package to replace this
+# file entirely. The custom package must expose the same three sets:
+#   block, review   (sets of objects with at least cve_id, package, version, reason)
+# The enrichment pipeline and report formatters are unchanged.
 
 package vuln.gate
 
@@ -71,7 +78,11 @@ import data.vuln.lib
 import future.keywords.if
 import future.keywords.in
 
-block_epss_threshold := lib.config_value("block_epss_threshold", 0.5)
+block_epss_threshold    := lib.config_value("block_epss_threshold",  0.5)
+review_high_min_epss   := lib.config_value("review_high_min_epss",   0.0)
+enable_kev_block       := lib.config_value("enable_kev_block",       true)
+enable_critical_block  := lib.config_value("enable_critical_block",  true)
+kev_requires_fix_cfg   := lib.config_value("kev_requires_fix",       true)
 
 nvd_acceptable_statuses := s if {
     s := input.config.nvd_acceptable_statuses
@@ -92,13 +103,23 @@ decision(finding) := "pass" if {
 
 # --- Block tier (beyond reasonable doubt) -----------------------------
 
-is_block(finding) if kev_block(finding)
-is_block(finding) if critical_block(finding)
+is_block(finding) if {
+    enable_kev_block
+    kev_block(finding)
+}
+is_block(finding) if {
+    enable_critical_block
+    critical_block(finding)
+}
 
-# Condition 1: KEV catalog + fix available.
+# Condition 1: KEV catalog + fix available (or fix not required per config).
 kev_block(finding) if {
     lib.in_kev(finding)
     lib.has_fix(finding)
+}
+kev_block(finding) if {
+    lib.in_kev(finding)
+    not kev_requires_fix_cfg
 }
 
 # Condition 2: fully corroborated CRITICAL above the high-confidence EPSS bar.
@@ -120,10 +141,12 @@ is_review(finding) if {
 }
 
 # HIGH with a fix and consensus: real, but severity label untrustworthy.
+# review_high_min_epss can raise the bar (e.g. 0.1 to suppress noisy LOW-EPSS HIGH findings).
 is_review(finding) if {
     lib.is_severity(finding, "HIGH")
     lib.has_fix(finding)
     lib.is_consensus(finding)
+    lib.epss_above(finding, review_high_min_epss)
 }
 
 # KEV without a fix: actively exploited, no remediation path.

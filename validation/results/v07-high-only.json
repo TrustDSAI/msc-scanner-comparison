@@ -1,0 +1,93 @@
+{
+  "image": "policy-gate-val/v07-high-only:latest",
+  "decision": "block",
+  "image_eol": false,
+  "image_eol_source": "trivy:os-eosl",
+  "block": [
+    {
+      "cve_id": "CVE-2023-44487",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.9439,
+      "fix_version": "1.43.0-1ubuntu0.1",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v07-high-only:latest",
+      "in_kev": true,
+      "layer": "skipped",
+      "package": "libnghttp2-14",
+      "policy": "gate",
+      "reason": "KEV catalog: actively exploited, fix available",
+      "severity": "HIGH",
+      "tier": "block",
+      "version": "1.43.0-1build3"
+    }
+  ],
+  "review": [
+    {
+      "cve_id": "CVE-2023-38545",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.2625,
+      "fix_version": "7.81.0-1ubuntu1.14",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v07-high-only:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "curl",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "7.81.0-1",
+      "advice": "**Recommend: BLOCK and require upgrade to 7.81.0-1ubuntu1.14.** CVE-2023-38545 is a HIGH severity curl vulnerability with a confirmed fix available in your distro; applying the patch eliminates the risk with no breaking changes expected for a minor version bump."
+    },
+    {
+      "cve_id": "CVE-2023-38545",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.2625,
+      "fix_version": "7.81.0-1ubuntu1.14",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v07-high-only:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "libcurl4",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "7.81.0-1",
+      "advice": "**Recommend: BLOCK and require the patch upgrade to 7.81.0-1ubuntu1.14.** This is a HIGH severity curl vulnerability with a confirmed fix available in your distro; the absence of CISA KEV status does not reduce risk for a widely-used library, and the patch is a minor version bump with low regression risk."
+    },
+    {
+      "cve_id": "CVE-2026-45447",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00092,
+      "fix_version": "3.0.2-0ubuntu1.25",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v07-high-only:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "libssl3",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "3.0.2-0ubuntu1.23",
+      "advice": "**Recommend: BLOCK and require upgrade to 3.0.20-1~deb12u2.** This is a HIGH severity OpenSSL vulnerability with a confirmed fix available in a supported Debian version; the absence of EPSS/KEV data doesn't reduce the risk profile of a HIGH-rated CVE in a critical cryptographic library."
+    }
+  ]
+}
