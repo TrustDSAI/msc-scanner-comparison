@@ -65,6 +65,8 @@ from enrichers.cache import configure as configure_cache
 from enrichers.eol import EOLEnricher
 from classifiers import get as get_classifier
 from classifiers.advisor import ReviewAdvisor, is_available as advisor_available
+import provenance as provenance_mod
+from exceptions_loader import load_exceptions
 
 REGO_DIR = HERE / "rego"
 DEFAULT_CONFIG = HERE / "configs" / "p_gate.json"
@@ -156,25 +158,42 @@ def report_json(verdict: dict) -> str:
 def report_markdown(verdict: dict) -> str:
     lines = [f"# Vulnerability gate report: {verdict['image']}", ""]
     lines.append(f"**Decision:** {verdict['decision'].upper()}  "
-                 f"(block: {len(verdict['block'])}, review: {len(verdict['review'])})")
+                 f"(block: {len(verdict['block'])}, review: {len(verdict['review'])}, "
+                 f"suppressed: {len(verdict.get('suppressed', []))})")
     if verdict["image_eol"]:
         lines.append(f"**Image is end-of-life** (source: {verdict['image_eol_source']})")
+
+    prov = verdict.get("provenance") or {}
+    if prov and "error" not in prov:
+        tv = prov.get("tool_versions", {})
+        lines.append(
+            f"**Provenance:** trivy {tv.get('trivy')}, grype {tv.get('grype')}, "
+            f"opa {tv.get('opa')}, bundle {prov.get('policy_bundle_fingerprint')}, "
+            f"classifier={prov.get('classifier')}, scanned {prov.get('scan_timestamp')}"
+        )
     lines.append("")
 
-    for tier in ("block", "review"):
-        entries = verdict[tier]
+    for tier in ("block", "review", "suppressed"):
+        entries = verdict.get(tier, [])
         if not entries:
             continue
         lines.append(f"## {tier.title()} ({len(entries)})")
         lines.append("")
-        lines.append("| CVE | Package | Version | EPSS | KEV | Reason |")
-        lines.append("|-----|---------|---------|------|-----|--------|")
-        for e in entries:
-            epss = e.get("epss_score")
-            epss_s = f"{epss:.3f}" if isinstance(epss, (int, float)) else "-"
-            kev_s = "yes" if e.get("in_kev") else "-"
-            lines.append(f"| {e['cve_id']} | {e['package']} | {e['version']} | "
-                         f"{epss_s} | {kev_s} | {e['reason']} |")
+        if tier == "suppressed":
+            lines.append("| CVE | Package | Version | Would have been | Reason |")
+            lines.append("|-----|---------|---------|------------------|--------|")
+            for e in entries:
+                lines.append(f"| {e['cve_id']} | {e['package']} | {e['version']} | "
+                             f"{e.get('would_have_been', '-')} | {e['reason']} |")
+        else:
+            lines.append("| CVE | Package | Version | EPSS | KEV | Reason |")
+            lines.append("|-----|---------|---------|------|-----|--------|")
+            for e in entries:
+                epss = e.get("epss_score")
+                epss_s = f"{epss:.3f}" if isinstance(epss, (int, float)) else "-"
+                kev_s = "yes" if e.get("in_kev") else "-"
+                lines.append(f"| {e['cve_id']} | {e['package']} | {e['version']} | "
+                             f"{epss_s} | {kev_s} | {e['reason']} |")
         lines.append("")
 
         # Reviewer advice section: only for review tier, only when advice exists.
@@ -194,7 +213,7 @@ def report_sarif(verdict: dict) -> str:
     """Minimal SARIF 2.1.0 so the report renders in GitHub code scanning."""
     results = []
     for tier, level in (("block", "error"), ("review", "warning")):
-        for e in verdict[tier]:
+        for e in verdict.get(tier, []):
             results.append({
                 "ruleId": e["cve_id"],
                 "level":  level,
@@ -205,11 +224,25 @@ def report_sarif(verdict: dict) -> str:
                     "in_kev": e.get("in_kev", False),
                 },
             })
+
+    prov = verdict.get("provenance") or {}
+    tv = prov.get("tool_versions", {})
+    driver = {
+        "name": "policy-gate",
+        "version": prov.get("build_sha") or prov.get("policy_bundle_fingerprint", ""),
+        "rules": [],
+        "properties": {
+            "provenance": prov,
+            "trivy_version": tv.get("trivy"),
+            "grype_version": tv.get("grype"),
+            "opa_version": tv.get("opa"),
+        },
+    }
     return json.dumps({
         "version": "2.1.0",
         "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
         "runs": [{
-            "tool": {"driver": {"name": "policy-gate", "rules": []}},
+            "tool": {"driver": driver},
             "results": results,
         }],
     }, indent=2)
@@ -237,10 +270,30 @@ def report_junit(verdict: dict) -> str:
     failures = len(verdict["block"])
     skipped = len(verdict["review"])
     body = "\n".join(cases)
+
+    prov = verdict.get("provenance") or {}
+    tv = prov.get("tool_versions", {})
+    props = {
+        "trivy_version": tv.get("trivy"),
+        "grype_version": tv.get("grype"),
+        "opa_version": tv.get("opa"),
+        "policy_bundle_fingerprint": prov.get("policy_bundle_fingerprint"),
+        "policy_package": prov.get("policy_package"),
+        "classifier": prov.get("classifier"),
+        "build_sha": prov.get("build_sha"),
+        "scan_timestamp": prov.get("scan_timestamp"),
+        "suppressed_count": len(verdict.get("suppressed", [])),
+    }
+    props_xml = "\n".join(
+        f'    <property name="{escape(k)}" value="{escape(str(v))}"/>'
+        for k, v in props.items() if v is not None
+    )
+    properties_block = f"  <properties>\n{props_xml}\n  </properties>\n" if props_xml else ""
+
     return (
         f'<?xml version="1.0" encoding="UTF-8"?>\n'
         f'<testsuite name="policy-gate" tests="{n}" '
-        f'failures="{failures}" skipped="{skipped}">\n{body}\n</testsuite>'
+        f'failures="{failures}" skipped="{skipped}">\n{properties_block}{body}\n</testsuite>'
     )
 
 
@@ -264,14 +317,20 @@ def run_gate(
     rego_dir: Path = REGO_DIR,
     policy_package: str = DEFAULT_GATE_PKG,
     config_override: dict | None = None,
+    exceptions_dir: Path | None = None,
 ) -> dict:
     """Run the full enrichment + OPA pipeline for one image.
 
     Returns the verdict dict:
-        {image, decision, image_eol, image_eol_source, block: [...], review: [...]}
+        {image, decision, image_eol, image_eol_source,
+         block: [...], review: [...], suppressed: [...],
+         summary: {...}, provenance: {...}}
 
     Caller is responsible for calling configure_cache() before invoking this.
+    exceptions_dir=None (default) means no suppression is applied.
     """
+    scan_timestamp = provenance_mod.now_iso()
+
     with tempfile.TemporaryDirectory() as td:
         tdp = Path(td)
         t_json = trivy_json or (tdp / "trivy.json")
@@ -289,11 +348,14 @@ def run_gate(
              if not k.startswith("_")}
         )
         payload["config"] = cfg
+        if exceptions_dir is not None:
+            payload["exceptions"] = load_exceptions(exceptions_dir)
         eval_input = tdp / "gate_input.json"
         eval_input.write_text(json.dumps(payload))
 
-        block  = opa_eval(eval_input, f"data.{policy_package}.block",  rego_dir) or []
-        review = opa_eval(eval_input, f"data.{policy_package}.review", rego_dir) or []
+        block      = opa_eval(eval_input, f"data.{policy_package}.block",      rego_dir) or []
+        review     = opa_eval(eval_input, f"data.{policy_package}.review",     rego_dir) or []
+        suppressed = opa_eval(eval_input, f"data.{policy_package}.suppressed", rego_dir) or []
 
     if review and advisor_available():
         try:
@@ -310,6 +372,14 @@ def run_gate(
         sev = f.get("severity", "UNKNOWN")
         severity_counts[sev] = severity_counts.get(sev, 0) + 1
 
+    try:
+        prov = provenance_mod.build_provenance(
+            rego_dir=rego_dir, policy_package=policy_package,
+            config=cfg, classifier=classifier, scan_timestamp=scan_timestamp,
+        )
+    except Exception as exc:  # noqa: BLE001
+        prov = {"error": f"provenance unavailable: {exc}"}
+
     return {
         "image":            image,
         "decision":         decision,
@@ -317,14 +387,17 @@ def run_gate(
         "image_eol_source": payload["image"]["eol_source"],
         "block":            block,
         "review":           review,
+        "suppressed":       suppressed,
         "summary": {
             "total_findings":    len(findings),
             "severity_counts":   severity_counts,
             "evaluated_findings": sum(
                 1 for f in findings if f.get("severity") in ("CRITICAL", "HIGH")
             ),
+            "suppressed_count": len(suppressed),
             "reason": _summary_reason(decision, findings),
         },
+        "provenance": prov,
     }
 
 
@@ -364,6 +437,8 @@ def main() -> int:
                    help="directory of .rego files to load (default: built-in rego/)")
     p.add_argument("--policy-package", default=DEFAULT_GATE_PKG,
                    help="OPA package to evaluate (default: vuln.gate)")
+    p.add_argument("--exceptions-dir", type=Path, default=None,
+                   help="directory of exception YAML files (default: none, no suppression)")
     p.add_argument("--cache", type=Path, default=CACHE_DIR)
     args = p.parse_args()
 
@@ -377,6 +452,7 @@ def main() -> int:
         classifier=args.classifier,
         rego_dir=args.rego_dir,
         policy_package=args.policy_package,
+        exceptions_dir=args.exceptions_dir,
     )
 
     rendered = FORMATTERS[args.report_format](verdict)

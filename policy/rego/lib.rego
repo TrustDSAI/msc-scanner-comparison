@@ -99,6 +99,56 @@ config_value(key, fallback) := v if {
     v := input.config[key]
 } else := fallback
 
+# --- Suppression / exception predicates ---------------------------------
+#
+# An exception is matched (and suppresses a finding) when its cve_id
+# matches, its optional package/image scoping match (absent = unscoped,
+# matches anything), and it has not expired. Exceptions are read from
+# input.exceptions, a flat list loaded from version-controlled YAML
+# (see exceptions_loader.py). When input.exceptions is undefined (the
+# default, no --exceptions-dir passed), `some exc in input.exceptions`
+# simply yields zero matches -- existing block/review behaviour is
+# unaffected.
+
+suppressed(finding, image) if {
+    some exc in input.exceptions
+    exc.cve_id == finding.cve_id
+    matches_package(exc, finding)
+    matches_image(exc, image)
+    not expired(exc, finding)
+}
+
+# Unscoped (no package key) matches any package; otherwise exact match.
+# Phase 1 ships exact-version-or-unconstrained matching only -- no semver
+# range parser (OPA has no semver comparison builtin); range-style
+# "<3.9.18" constraints are explicit future work.
+matches_package(exc, finding) if {
+    not exc.package
+}
+matches_package(exc, finding) if {
+    exc.package == finding.package
+}
+
+# Unscoped (no image key) matches any image; otherwise exact label match.
+matches_image(exc, image) if {
+    not exc.image
+}
+matches_image(exc, image) if {
+    exc.image == image.label
+}
+
+# An exception expires past its ISO date, or once a fix is recorded
+# (when using expires_when: fix_available -- re-evaluated every run).
+expired(exc, finding) if {
+    exc.expires
+    time.parse_rfc3339_ns(exc.expires) < time.now_ns()
+}
+expired(exc, finding) if {
+    exc.expires_when == "fix_available"
+    finding.osv.fix_version != null
+    finding.osv.fix_version != ""
+}
+
 # --- Message construction ----------------------------------------------
 
 # Build a structured deny message. Policies pass the policy name and any

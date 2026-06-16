@@ -58,14 +58,16 @@ from enrichers import ENRICHERS
 from enrichers.cache import configure as configure_cache
 from enrichers.eol import EOLEnricher
 from classifiers import CLASSIFIERS
+from exceptions_loader import load_exceptions
 
 # --- Configuration ----------------------------------------------------
 
-DATA_RAW    = HERE.parent / "data" / "raw"
-OUTPUT_DIR  = HERE / "output"
-REGO_DIR    = HERE / "rego"
-CONFIGS_DIR = HERE / "configs"
-CACHE_DIR   = HERE / ".cache" / "enrich"
+DATA_RAW       = HERE.parent / "data" / "raw"
+OUTPUT_DIR     = HERE / "output"
+REGO_DIR       = HERE / "rego"
+CONFIGS_DIR    = HERE / "configs"
+CACHE_DIR      = HERE / ".cache" / "enrich"
+EXCEPTIONS_DIR = HERE / "exceptions"
 
 # (safe_name, label, group)
 # EOL status is NOT hardcoded; it is read from Trivy's Metadata.OS.EOSL
@@ -93,6 +95,18 @@ POLICY_RUNS: list[tuple[str, str, Path | None]] = [
     ("P4_relaxed",  "vuln.p4", CONFIGS_DIR / "p4_relaxed.json"),
     ("P5_layer",    "vuln.p5", CONFIGS_DIR / "p5_layer_aware.json"),
     ("P7_severity_aware",  "vuln.p7", CONFIGS_DIR / "p7_severity_aware.json"),
+]
+
+# Tri-state gate runs (block/review/suppressed sets, not a single deny
+# set). Run twice per image: once with no exceptions applied, once with
+# policy/exceptions/ applied, so the suppression workflow's effect is
+# directly visible in the verdict matrix (suppressed_count flips from 0
+# to 1 on bkimminich/juice-shop, the only image the example exception
+# matches; all other images are unaffected).
+# (display_name, policy_package, config_path, apply_exceptions)
+GATE_RUNS: list[tuple[str, str, Path, bool]] = [
+    ("p_gate",                "vuln.gate", CONFIGS_DIR / "p_gate.json", False),
+    ("p_gate_with_exceptions", "vuln.gate", CONFIGS_DIR / "p_gate.json", True),
 ]
 
 
@@ -182,13 +196,17 @@ def opa_eval(input_path: Path, query: str) -> object:
     return expressions[0].get("value")
 
 
-def _inject_config(input_path: Path, out_path: Path, config_path: Path | None) -> None:
-    """Write a copy of input_path with an optional `config` block grafted in."""
+def _inject_config(input_path: Path, out_path: Path, config_path: Path | None,
+                   exceptions_dir: Path | None = None) -> None:
+    """Write a copy of input_path with an optional `config` block grafted in,
+    and an optional `exceptions` array (see exceptions_loader.load_exceptions)."""
     payload = json.loads(input_path.read_text())
     if config_path is not None:
         cfg = json.loads(config_path.read_text())
         cfg = {k: v for k, v in cfg.items() if not k.startswith("_")}
         payload["config"] = cfg
+    if exceptions_dir is not None:
+        payload["exceptions"] = load_exceptions(exceptions_dir)
     out_path.write_text(json.dumps(payload, indent=2))
 
 
@@ -217,6 +235,7 @@ class Row:
     block: bool
     deny_count: int
     critical_total: int
+    suppressed_count: int = 0
 
 
 def _layer_counts(findings: list[dict]) -> dict[str, int]:
@@ -272,6 +291,20 @@ def run() -> None:
                 rows.append(Row(label, group, clf, policy_name,
                                 block, len(deny), crit_total))
 
+            for gate_name, gate_pkg, config_path, apply_exc in GATE_RUNS:
+                run_input = OUTPUT_DIR / f"{safe}_{clf}_{gate_name}_input.json"
+                _inject_config(enriched_path, run_input, config_path,
+                               exceptions_dir=EXCEPTIONS_DIR if apply_exc else None)
+
+                gate_block = opa_eval(run_input, f"data.{gate_pkg}.block") or []
+                gate_review = opa_eval(run_input, f"data.{gate_pkg}.review") or []
+                gate_suppressed = opa_eval(run_input, f"data.{gate_pkg}.suppressed") or []
+                rows.append(Row(label, group, clf, gate_name,
+                                len(gate_block) > 0,
+                                len(gate_block) + len(gate_review),
+                                crit_total,
+                                len(gate_suppressed)))
+
             verdict_summary = {
                 row.policy: {"block": row.block, "deny": row.deny_count}
                 for row in rows
@@ -304,10 +337,10 @@ def run() -> None:
     with matrix_path.open("w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["group", "image", "classifier", "policy",
-                    "block", "deny_count", "critical_total"])
+                    "block", "deny_count", "critical_total", "suppressed_count"])
         for r in rows:
             w.writerow([r.group, r.image, r.classifier, r.policy,
-                        r.block, r.deny_count, r.critical_total])
+                        r.block, r.deny_count, r.critical_total, r.suppressed_count])
 
     # Markdown summary
     md_lines = ["# Policy comparison matrix", "",
@@ -338,6 +371,22 @@ def run() -> None:
                     f"{'**B**' if verdicts[p[0]].block else 'pass'} ({verdicts[p[0]].deny_count})"
                     for p in POLICY_RUNS
                 ) + " |"
+            )
+        md_lines.append("")
+
+    # Suppression demo: p_gate with vs without policy/exceptions/ applied.
+    gate_rows = [r for r in rows if r.policy in ("p_gate", "p_gate_with_exceptions")]
+    if gate_rows:
+        md_lines += ["## Suppression workflow demo (tri-state gate)", "",
+                     "`policy/exceptions/example-vm2.yaml` suppresses CVE-2023-32314 "
+                     "on bkimminich/juice-shop only; all other images are unaffected.",
+                     "",
+                     "| Image | Classifier | Run | Block | Deny (block+review) | Suppressed |",
+                     "|-------|------------|-----|-------|----------------------|------------|"]
+        for r in gate_rows:
+            md_lines.append(
+                f"| {r.image} | {r.classifier} | {r.policy} | "
+                f"{'**BLOCK**' if r.block else 'pass'} | {r.deny_count} | {r.suppressed_count} |"
             )
         md_lines.append("")
 

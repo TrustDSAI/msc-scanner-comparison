@@ -68,9 +68,22 @@
 # }
 #
 # Custom policy: supply --rego-dir and --policy-package to replace this
-# file entirely. The custom package must expose the same three sets:
+# file entirely. The custom package must expose:
 #   block, review   (sets of objects with at least cve_id, package, version, reason)
+#   suppressed      (optional; best-effort -- undefined evaluates to no
+#                     suppression, the Python caller's opa_eval() already
+#                     handles an undefined query gracefully)
 # The enrichment pipeline and report formatters are unchanged.
+#
+# Suppression (--exceptions-dir)
+# -------------------------------
+# A finding matching an unexpired entry in input.exceptions (see
+# lib.suppressed) is excluded from both block and review, and recorded
+# instead in a third output set, `suppressed`, carrying a
+# `would_have_been: "block"|"review"` field for audit -- suppressing a
+# hard block is a different governance decision than suppressing a
+# softer review, and that distinction is kept visible rather than
+# collapsed. See docs/notes_suppression_workflow_design.md.
 
 package vuln.gate
 
@@ -87,6 +100,13 @@ kev_requires_fix_cfg   := lib.config_value("kev_requires_fix",       true)
 nvd_acceptable_statuses := s if {
     s := input.config.nvd_acceptable_statuses
 } else := ["Analyzed", "Modified"]
+
+# Defaulted so lib.suppressed(finding, gate_image) never receives an
+# undefined argument when input.image is absent (e.g. test fixtures using
+# fx.wrap() with no image block) -- an undefined function argument makes
+# the whole call (and thus `not lib.suppressed(...)`) undefined rather
+# than false, which would silently empty out block/review.
+gate_image := object.get(input, "image", {})
 
 # --- Decision per finding ---------------------------------------------
 
@@ -160,6 +180,7 @@ is_review(finding) if {
 block contains msg if {
     some finding in input.findings
     is_block(finding)
+    not lib.suppressed(finding, gate_image)
     msg := lib.make_msg(finding, "gate", block_reason(finding),
         {"tier":       "block",
          "epss_score": object.get(finding.epss, "score", null),
@@ -170,10 +191,37 @@ review contains msg if {
     some finding in input.findings
     not is_block(finding)
     is_review(finding)
+    not lib.suppressed(finding, gate_image)
     msg := lib.make_msg(finding, "gate", review_reason(finding),
         {"tier":       "review",
          "epss_score": object.get(finding.epss, "score", null),
          "in_kev":     object.get(finding.kev, "in_kev", false)})
+}
+
+# Findings that would have reached block or review but matched an
+# unexpired exception. Recorded for audit; never counted toward
+# block_build / review_required.
+suppressed contains msg if {
+    some finding in input.findings
+    is_block(finding)
+    lib.suppressed(finding, gate_image)
+    msg := lib.make_msg(finding, "gate", block_reason(finding),
+        {"tier":             "suppressed",
+         "would_have_been":  "block",
+         "epss_score":       object.get(finding.epss, "score", null),
+         "in_kev":           object.get(finding.kev, "in_kev", false)})
+}
+
+suppressed contains msg if {
+    some finding in input.findings
+    not is_block(finding)
+    is_review(finding)
+    lib.suppressed(finding, gate_image)
+    msg := lib.make_msg(finding, "gate", review_reason(finding),
+        {"tier":             "suppressed",
+         "would_have_been":  "review",
+         "epss_score":       object.get(finding.epss, "score", null),
+         "in_kev":           object.get(finding.kev, "in_kev", false)})
 }
 
 # --- Reason strings ---------------------------------------------------

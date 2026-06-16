@@ -23,7 +23,7 @@ import uvicorn
 
 from fastapi import FastAPI, HTTPException, Security, UploadFile, File, Form
 from fastapi.security import APIKeyHeader
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import BaseModel, Field
 
 HERE = Path(__file__).resolve().parent
@@ -38,12 +38,20 @@ from policy_gate import (
     _load_dotenv,
 )
 from enrichers.cache import configure as configure_cache
+import provenance as provenance_mod
 
 _load_dotenv(HERE / ".env")
 
 # Initialise the enrichment cache once at startup.
 _cache_dir = Path(os.environ.get("POLICY_GATE_CACHE", str(CACHE_DIR)))
 configure_cache(_cache_dir)
+
+# Server-side exceptions directory. Exceptions are checked into the repo
+# and PR-reviewed (see docs/notes_suppression_workflow_design.md), so the
+# API has no per-request exceptions field -- it always reads from this
+# fixed, operator-controlled location. Unset = no suppression applied.
+_exceptions_dir_env = os.environ.get("POLICY_GATE_EXCEPTIONS_DIR")
+_EXCEPTIONS_DIR = Path(_exceptions_dir_env) if _exceptions_dir_env else None
 
 _API_KEY = os.environ.get("POLICY_GATE_API_KEY", "")
 _api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
@@ -100,8 +108,14 @@ class GateSummary(BaseModel):
     evaluated_findings: int = Field(
         ..., description="Findings with severity CRITICAL or HIGH (the only "
                          "tiers the gate evaluates).")
+    suppressed_count: int = Field(0, description="Findings excluded via an unexpired exception.")
     reason: str = Field(..., description="Human-readable justification for the decision, "
                                           "including why a PASS was reached.")
+
+
+class Provenance(BaseModel):
+    """What produced this verdict: tool versions, policy bundle, config, timestamp."""
+    model_config = {"extra": "allow"}
 
 
 class GateResponse(BaseModel):
@@ -111,7 +125,9 @@ class GateResponse(BaseModel):
     image_eol_source: Optional[str]
     block: List[Finding]
     review: List[Finding]
+    suppressed: List[Finding] = []
     summary: GateSummary
+    provenance: Provenance
 
 
 def _load_default_config() -> dict:
@@ -129,7 +145,12 @@ def _merge_config(override: dict | None) -> dict | None:
 
 @app.get("/health", tags=["ops"])
 def health() -> dict:
-    return {"status": "ok", "cache": str(_cache_dir)}
+    return {
+        "status": "ok",
+        "cache": str(_cache_dir),
+        "tool_versions": provenance_mod.get_tool_versions(),
+        "build_sha": os.environ.get("POLICY_GATE_BUILD_SHA") or None,
+    }
 
 
 @app.get("/config", tags=["ops"], dependencies=[Security(_require_api_key)])
@@ -139,24 +160,20 @@ def config() -> dict:
 
 @app.post("/gate", response_model=GateResponse, tags=["gate"],
           dependencies=[Security(_require_api_key)])
-async def gate(req: GateRequest) -> GateResponse:
+async def gate(req: GateRequest, format: str = "json") -> GateResponse:
     """Scan *image* end-to-end and return a tri-state verdict.
 
     Invokes Trivy and Grype (must be on PATH inside the container), enriches
     every CRITICAL/HIGH finding, evaluates the OPA policy bundle, and
     optionally attaches LLM reviewer advice.
 
-    Scanning takes 30–120 seconds per image; the response is returned when
+    Scanning takes 30-120 seconds per image; the response is returned when
     the full pipeline completes.
 
-    Args:
-        req (GateRequest): The request object containing image and configuration details.
-
-    Raises:
-        HTTPException: Raised if an error occurs during the gate evaluation.
-
-    Returns:
-        GateResponse: The response object containing the tri-state verdict and associated findings.
+    format=sarif returns a SARIF 2.1.0 document instead of the JSON verdict,
+    so a calling CI pipeline can upload the response directly to GitHub code
+    scanning without needing any of this project's source code -- the
+    pipeline only ever talks to this HTTP API.
     """
     cfg = _merge_config(req.config)
     try:
@@ -168,9 +185,14 @@ async def gate(req: GateRequest) -> GateResponse:
             rego_dir=REGO_DIR,
             policy_package=req.policy_package,
             config_override=cfg,
+            exceptions_dir=_EXCEPTIONS_DIR,
         )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    if format == "sarif":
+        from policy_gate import report_sarif
+        return Response(content=report_sarif(verdict), media_type="application/sarif+json")
 
     return GateResponse(**verdict)
 
@@ -232,6 +254,7 @@ async def gate_from_scans(
                 rego_dir=REGO_DIR,
                 policy_package=policy_package,
                 config_override=cfg,
+                exceptions_dir=_EXCEPTIONS_DIR,
             )
         except Exception as exc:
             raise HTTPException(status_code=500, detail=str(exc)) from exc

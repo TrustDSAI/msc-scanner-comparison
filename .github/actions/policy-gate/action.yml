@@ -71,6 +71,7 @@ runs:
       run: |
         set +e
         docker run --rm \
+          -v /var/run/docker.sock:/var/run/docker.sock \
           -v "${{ github.workspace }}/.policy-gate-cache:/cache" \
           -v "${{ github.workspace }}:/workspace" \
           -e ANTHROPIC_API_KEY \

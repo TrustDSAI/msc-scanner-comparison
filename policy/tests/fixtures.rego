@@ -72,3 +72,13 @@ wrap_with_config(findings, config) := {
     "findings": findings,
     "config":   config,
 }
+
+# Full input document for suppression tests: findings, config, exceptions,
+# and an image block (fx.wrap() carries no image key at all, so it is
+# insufficient for testing image-scoped exceptions).
+wrap_full(findings, config, exceptions, image) := {
+    "findings":   findings,
+    "config":     config,
+    "exceptions": exceptions,
+    "image":      image,
+}

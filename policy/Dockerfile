@@ -14,6 +14,12 @@ ARG TRIVY_VERSION=0.69.3
 ARG GRYPE_VERSION=0.110.0
 ARG OPA_VERSION=1.17.0
 
+# Build-time provenance: pass --build-arg BUILD_SHA=$(git rev-parse --short HEAD)
+# so every verdict can self-report which image build produced it (see
+# provenance.py). Defaults to "unknown" for local/manual builds.
+ARG BUILD_SHA=unknown
+ENV POLICY_GATE_BUILD_SHA=${BUILD_SHA}
+
 ENV DEBIAN_FRONTEND=noninteractive \
     PIP_NO_CACHE_DIR=1 \
     PYTHONUNBUFFERED=1
@@ -38,22 +44,27 @@ RUN curl -sSL "https://github.com/anchore/grype/releases/download/v${GRYPE_VERSI
 # --- Python deps ---
 # Anthropic and OpenAI SDKs are optional (advisor + agent classifier).
 # fastapi + uvicorn are needed only for the API server mode.
+# pyyaml is required for the suppression/exception YAML loader.
 RUN pip install \
         "anthropic>=0.40,<1.0" \
         "openai>=1.0,<2.0" \
         "fastapi>=0.115,<1.0" \
         "uvicorn[standard]>=0.30,<1.0" \
-        "python-multipart>=0.0.9"
+        "python-multipart>=0.0.9" \
+        "pyyaml>=6.0,<7.0"
 
 # --- Application ---
 WORKDIR /app
-COPY normalisers/   ./normalisers/
-COPY enrichers/     ./enrichers/
-COPY classifiers/   ./classifiers/
-COPY rego/          ./rego/
-COPY configs/       ./configs/
-COPY policy_gate.py ./policy_gate.py
-COPY api.py         ./api.py
+COPY normalisers/         ./normalisers/
+COPY enrichers/           ./enrichers/
+COPY classifiers/         ./classifiers/
+COPY rego/                ./rego/
+COPY configs/             ./configs/
+COPY exceptions/          ./exceptions/
+COPY policy_gate.py       ./policy_gate.py
+COPY api.py               ./api.py
+COPY provenance.py        ./provenance.py
+COPY exceptions_loader.py ./exceptions_loader.py
 
 # Cache directory for enrichment data; mount a volume here in CI to persist
 # across runs and avoid NVD rate limits.
@@ -69,10 +80,12 @@ VOLUME /policy
 #
 #   CLI (default) — one image, exit code 0/1/2:
 #     docker run --rm ghcr.io/<org>/policy-gate --image my-app:latest
+#     (add --exceptions-dir /app/exceptions to apply suppression)
 #
 #   API server — listens on :8080, POST /gate:
 #     docker run --rm -p 8080:8080 \
 #       -e POLICY_GATE_MODE=api \
+#       -e POLICY_GATE_EXCEPTIONS_DIR=/app/exceptions \
 #       ghcr.io/<org>/policy-gate
 #
 COPY docker-entrypoint.sh /docker-entrypoint.sh

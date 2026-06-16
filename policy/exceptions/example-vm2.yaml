@@ -1,0 +1,28 @@
+# Worked example for the suppression workflow (Phase 1).
+# See docs/notes_suppression_workflow_design.md for the governance model.
+#
+# CVE-2023-32314 (vm2 sandbox escape) is the one finding that blocks
+# bkimminich/juice-shop under the tri-state gate (EPSS 0.70, KEV member,
+# fix available in 3.9.18). This exception is a date-based suppression,
+# not fix_available: the upstream fix is already recorded in the
+# enrichment data (osv.fix_version is non-empty), so expires_when:
+# fix_available would be treated as already-expired and would not
+# demonstrate suppression against the live dataset. A real team in this
+# situation has already identified the fix and is suppressing the build
+# failure only long enough to schedule the dependency bump.
+exception:
+  cve_id:        CVE-2023-32314
+  package:       vm2
+  image:         bkimminich/juice-shop
+  scope:         single_image
+
+  expires:       2027-01-01
+  expires_when:  null
+
+  approval:
+    approver:    thesis-demo@example.org
+    approved_at: 2026-06-16
+    reasoning: >
+      vm2 sandbox escape, fix already identified (3.9.18). Suppressing
+      the build failure for one sprint while the dependency bump is
+      scheduled and tested; not an indefinite risk acceptance.
