@@ -94,6 +94,16 @@ class Finding(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class GateSummary(BaseModel):
+    total_findings: int
+    severity_counts: Dict[str, int]
+    evaluated_findings: int = Field(
+        ..., description="Findings with severity CRITICAL or HIGH (the only "
+                         "tiers the gate evaluates).")
+    reason: str = Field(..., description="Human-readable justification for the decision, "
+                                          "including why a PASS was reached.")
+
+
 class GateResponse(BaseModel):
     image: str
     decision: str = Field(..., description="block | review | pass")
@@ -101,6 +111,7 @@ class GateResponse(BaseModel):
     image_eol_source: Optional[str]
     block: List[Finding]
     review: List[Finding]
+    summary: GateSummary
 
 
 def _load_default_config() -> dict:

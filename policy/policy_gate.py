@@ -304,6 +304,12 @@ def run_gate(
             print(f"[policy-gate] advisor unavailable: {exc}", file=sys.stderr)
 
     decision = "block" if block else ("review" if review else "pass")
+    findings = payload["findings"]
+    severity_counts: dict = {}
+    for f in findings:
+        sev = f.get("severity", "UNKNOWN")
+        severity_counts[sev] = severity_counts.get(sev, 0) + 1
+
     return {
         "image":            image,
         "decision":         decision,
@@ -311,7 +317,29 @@ def run_gate(
         "image_eol_source": payload["image"]["eol_source"],
         "block":            block,
         "review":           review,
+        "summary": {
+            "total_findings":    len(findings),
+            "severity_counts":   severity_counts,
+            "evaluated_findings": sum(
+                1 for f in findings if f.get("severity") in ("CRITICAL", "HIGH")
+            ),
+            "reason": _summary_reason(decision, findings),
+        },
     }
+
+
+def _summary_reason(decision: str, findings: list) -> str:
+    total = len(findings)
+    if decision != "pass":
+        return f"{decision} tier reached; see block/review for details"
+    if total == 0:
+        return "no findings reported by either scanner"
+    evaluated = sum(1 for f in findings if f.get("severity") in ("CRITICAL", "HIGH"))
+    if evaluated == 0:
+        return (f"{total} findings reported, none CRITICAL or HIGH "
+                f"(only CRITICAL/HIGH are evaluated against the gate)")
+    return (f"{evaluated} CRITICAL/HIGH findings evaluated, none met "
+            f"block or review conditions")
 
 
 # --- Main (CLI) -------------------------------------------------------
