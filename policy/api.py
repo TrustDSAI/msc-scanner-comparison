@@ -1,30 +1,5 @@
 #!/usr/bin/env python3
-"""policy-gate REST API.
-
-Exposes the full scan + enrich + OPA pipeline over HTTP so CI runners and
-dashboards can call it without a local Trivy/Grype/OPA installation.
-
-Usage
------
-    uvicorn api:app --host 0.0.0.0 --port 8080
-
-Docker
-------
-    docker run --rm -p 8080:8080 \\
-        -e POLICY_GATE_API_KEY=changeme \\
-        -e ANTHROPIC_API_KEY=... \\
-        -v policy-gate-cache:/cache \\
-        ghcr.io/<org>/policy-gate-api
-
-Authentication
---------------
-Set POLICY_GATE_API_KEY to enable authentication. Clients must send the key
-in the X-API-Key request header. If the variable is unset, the server starts
-unauthenticated (suitable for local/dev use only).
-
-    curl -H "X-API-Key: changeme" -d '{"image":"alpine:3.21"}' \\
-         -H "Content-Type: application/json" http://localhost:8080/gate
-
+"""
 Endpoints
 ---------
     POST /gate          Scan an image and return a tri-state verdict.
@@ -43,6 +18,8 @@ import sys
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+import logging
+import uvicorn
 
 from fastapi import FastAPI, HTTPException, Security, UploadFile, File, Form
 from fastapi.security import APIKeyHeader
@@ -58,16 +35,16 @@ from policy_gate import (
     DEFAULT_GATE_PKG,
     REGO_DIR,
     CACHE_DIR,
+    _load_dotenv,
 )
 from enrichers.cache import configure as configure_cache
+
+_load_dotenv(HERE / ".env")
 
 # Initialise the enrichment cache once at startup.
 _cache_dir = Path(os.environ.get("POLICY_GATE_CACHE", str(CACHE_DIR)))
 configure_cache(_cache_dir)
 
-# ── Authentication ────────────────────────────────────────────────────────────
-# Set POLICY_GATE_API_KEY in the environment to enable API key auth.
-# When the variable is unset the server starts unauthenticated (dev/local use).
 _API_KEY = os.environ.get("POLICY_GATE_API_KEY", "")
 _api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
@@ -86,9 +63,12 @@ app = FastAPI(
 )
 
 
-# ── Request / response models ─────────────────────────────────────────────────
-
 class GateRequest(BaseModel):
+    """Request model for the /gate endpoint.
+
+    Args:
+        BaseModel (pydantic.BaseModel): Pydantic BaseModel for data validation and serialization.
+    """
     image: str = Field(..., description="Container image reference to scan.")
     classifier: str = Field("rule", description="Layer classifier: rule | agent.")
     policy_package: str = Field(DEFAULT_GATE_PKG,
@@ -123,8 +103,6 @@ class GateResponse(BaseModel):
     review: List[Finding]
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
-
 def _load_default_config() -> dict:
     raw = json.loads(DEFAULT_CONFIG.read_text())
     return {k: v for k, v in raw.items() if not k.startswith("_")}
@@ -137,8 +115,6 @@ def _merge_config(override: dict | None) -> dict | None:
     base.update(override)
     return base
 
-
-# ── Endpoints ─────────────────────────────────────────────────────────────────
 
 @app.get("/health", tags=["ops"])
 def health() -> dict:
@@ -161,6 +137,15 @@ async def gate(req: GateRequest) -> GateResponse:
 
     Scanning takes 30–120 seconds per image; the response is returned when
     the full pipeline completes.
+
+    Args:
+        req (GateRequest): The request object containing image and configuration details.
+
+    Raises:
+        HTTPException: Raised if an error occurs during the gate evaluation.
+
+    Returns:
+        GateResponse: The response object containing the tri-state verdict and associated findings.
     """
     cfg = _merge_config(req.config)
     try:
@@ -194,6 +179,21 @@ async def gate_from_scans(
     Upload Trivy and Grype JSON files directly; the gate skips scanner
     invocation and runs only enrich + OPA. Useful when scanners run in a
     separate CI step or on a different host.
+
+    Args:
+        image (str, optional): The image reference for labelling. Defaults to Form(..., description="Image reference (for labelling).").
+        trivy (UploadFile, optional): The Trivy JSON output file. Defaults to File(..., description="Trivy JSON output.").
+        grype (UploadFile, optional): The Grype JSON output file. Defaults to File(..., description="Grype JSON output.").
+        classifier (str, optional): The classifier to use. Defaults to Form("rule").
+        policy_package (str, optional): The policy package to use. Defaults to Form(DEFAULT_GATE_PKG).
+        config_json (Optional[str], optional): JSON config override string. Defaults to Form(None, description="JSON config override string.").
+
+    Raises:
+        HTTPException: Raised if an error occurs during the gate evaluation.
+        HTTPException: Raised if the config_json is not valid JSON.
+
+    Returns:
+        GateResponse: The response object containing the tri-state verdict and associated findings.
     """
     cfg = None
     if config_json:
@@ -226,3 +226,8 @@ async def gate_from_scans(
             raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     return GateResponse(**verdict)
+
+if __name__ == "__main__":
+    logger = logging.getLogger("uvicorn")
+    logger.setLevel(logging.INFO)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

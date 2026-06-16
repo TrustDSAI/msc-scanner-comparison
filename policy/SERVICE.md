@@ -77,6 +77,8 @@ python3 policy_gate.py --image python:3.8
 | `--report` | stdout | Report output path |
 | `--report-format` | `json` | `json`, `markdown`, `sarif`, or `junit` |
 | `--fail-on` | `review` | Tiers that fail the build: `block`, `review`, `none` |
+| `--rego-dir` | `rego/` | Directory of `.rego` files to load; point at your own policy |
+| `--policy-package` | `vuln.gate` | OPA package to evaluate; set this with `--rego-dir` for a custom policy |
 | `--cache` | `.cache/enrich` | Enrichment cache directory |
 
 ### `--fail-on` semantics
@@ -90,6 +92,44 @@ python3 policy_gate.py --image python:3.8
 `review` is the default (fail-closed): a CI gate should not silently let
 review-tier findings through. Teams that want a softer gate set
 `fail-on: block` and route review findings to a separate human workflow.
+
+## REST API (`api.py`)
+
+The same pipeline is also exposed over HTTP, for CI runners or dashboards
+that prefer a request/response call over a CLI invocation.
+
+```bash
+# CLI mode is the image default; switch to API mode with an env var
+docker run --rm -p 8080:8080 \
+  -e POLICY_GATE_MODE=api \
+  -e POLICY_GATE_API_KEY="$(openssl rand -hex 32)" \
+  -v "$PWD/.cache:/cache" \
+  ghcr.io/<org>/policy-gate:latest
+```
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/gate` | POST | Scan an image (`{"image": "..."}`); runs the full pipeline |
+| `/gate/verdict` | POST | Multipart upload of pre-computed Trivy + Grype JSON; skips scanning |
+| `/health` | GET | Liveness probe; never requires auth |
+| `/config` | GET | Active gate configuration |
+| `/docs` | GET | Interactive Swagger UI |
+
+### Authentication
+
+Set `POLICY_GATE_API_KEY` to require an API key on every endpoint except
+`/health`. Clients send it in the `X-API-Key` header:
+
+```bash
+curl -H "X-API-Key: $POLICY_GATE_API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{"image": "alpine:3.21"}' \
+     http://localhost:8080/gate
+```
+
+If the variable is unset, the API starts without authentication. This is
+acceptable for local development but not for anything reachable beyond
+localhost or a trusted private network — there is no other access control.
 
 ## Report formats
 
