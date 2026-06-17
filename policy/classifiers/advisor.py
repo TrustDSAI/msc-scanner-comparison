@@ -37,6 +37,23 @@ _SYSTEM = (
     "Do not hedge or qualify everything — give a recommendation."
 )
 
+_BATCH_SYSTEM = (
+    "You are a security triage assistant embedded in a CI/CD vulnerability gate. "
+    "Multiple findings have been routed to human review. "
+    "Write a concise consolidated triage summary (3-5 sentences). "
+    "Group findings by theme or package where it helps. "
+    "End with a clear recommended action for the reviewer. "
+    "Be direct — do not hedge or repeat the raw data back."
+)
+
+_BATCH_TEMPLATE = """\
+The following {n} findings were routed to the REVIEW tier (not severe enough to auto-block, \
+not clean enough to auto-pass). Provide a consolidated triage summary.
+
+{rows}
+
+Summarise in 3-5 sentences what the reviewer should focus on and what action to take."""
+
 _USER_TEMPLATE = """\
 Finding routed to REVIEW tier. Provide triage advice.
 
@@ -121,6 +138,41 @@ class ReviewAdvisor:
                 "no LLM API key set (ANTHROPIC_API_KEY or OPENAI_API_KEY)"
             )
 
+    def advise_batch(self, findings: list) -> str | None:
+        """Return a single consolidated triage summary for all review findings."""
+        if not findings:
+            return None
+        from enrichers.cache import get_cache
+        cache = get_cache()
+        import hashlib, json as _json
+        key_src = self.provider + self.model + _json.dumps(
+            [_cache_key(self.provider, self.model, f) for f in findings], sort_keys=True
+        )
+        key = hashlib.sha256(key_src.encode()).hexdigest()
+        cached = cache.get("advice_batch", key)
+        if cached is not None:
+            return cached.get("summary")
+
+        rows = "\n".join(
+            f"- {f.get('cve_id','?')} | {f.get('package','?')} {f.get('version','?')} "
+            f"| {f.get('severity','?')} | EPSS {(f.get('epss') or {}).get('score', 0):.3f} "
+            f"| fix={'yes' if f.get('fix_version') else 'no'} "
+            f"| kev={'yes' if (f.get('kev') or {}).get('in_kev') else 'no'}"
+            for f in findings
+        )
+        prompt = _BATCH_TEMPLATE.format(n=len(findings), rows=rows)
+        try:
+            if self.provider == "anthropic":
+                text = self._call_anthropic(prompt, system=_BATCH_SYSTEM, max_tokens=300)
+            else:
+                text = self._call_openai(prompt, system=_BATCH_SYSTEM, max_tokens=300)
+            text = text.strip()
+        except Exception as exc:  # noqa: BLE001
+            text = f"[advisor unavailable: {exc}]"
+
+        cache.put("advice_batch", key, {"summary": text})
+        return text
+
     def advise(self, finding: dict) -> str | None:
         """Return a 1-2 sentence advice string, or None on failure."""
         from enrichers.cache import get_cache
@@ -143,14 +195,14 @@ class ReviewAdvisor:
         cache.put("advice", key, {"advice": text})
         return text
 
-    def _call_anthropic(self, user_prompt: str) -> str:
+    def _call_anthropic(self, user_prompt: str, system: str = _SYSTEM, max_tokens: int = 150) -> str:
         from anthropic import Anthropic
         client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
         resp = client.messages.create(
             model=self.model,
-            max_tokens=150,
+            max_tokens=max_tokens,
             temperature=0,
-            system=_SYSTEM,
+            system=system,
             messages=[{"role": "user", "content": user_prompt}],
         )
         for block in resp.content:
@@ -158,13 +210,13 @@ class ReviewAdvisor:
                 return block.text
         return ""
 
-    def _call_openai(self, user_prompt: str) -> str:
+    def _call_openai(self, user_prompt: str, system: str = _SYSTEM, max_tokens: int = 150) -> str:
         body = json.dumps({
             "model":       self.model,
             "temperature": 0,
-            "max_tokens":  150,
+            "max_tokens":  max_tokens,
             "messages": [
-                {"role": "system", "content": _SYSTEM},
+                {"role": "system", "content": system},
                 {"role": "user",   "content": user_prompt},
             ],
         }).encode()

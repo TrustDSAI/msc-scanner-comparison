@@ -357,11 +357,11 @@ def run_gate(
         review     = opa_eval(eval_input, f"data.{policy_package}.review",     rego_dir) or []
         suppressed = opa_eval(eval_input, f"data.{policy_package}.suppressed", rego_dir) or []
 
+    review_summary = None
     if review and advisor_available():
         try:
             advisor = ReviewAdvisor()
-            for finding in review:
-                finding["advice"] = advisor.advise(finding)
+            review_summary = advisor.advise_batch(review)
         except Exception as exc:  # noqa: BLE001
             print(f"[policy-gate] advisor unavailable: {exc}", file=sys.stderr)
 
@@ -387,6 +387,7 @@ def run_gate(
         "image_eol_source": payload["image"]["eol_source"],
         "block":            block,
         "review":           review,
+        "review_summary":   review_summary,
         "suppressed":       suppressed,
         "summary": {
             "total_findings":    len(findings),
