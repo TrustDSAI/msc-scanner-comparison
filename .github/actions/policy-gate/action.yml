@@ -38,6 +38,10 @@ inputs:
     description: "NVD API key (raises enrichment rate limit; recommended)"
     required: false
     default: ""
+  exceptions-dir:
+    description: "Repo-relative path to exception YAML directory (enables suppression)"
+    required: false
+    default: ""
 
 outputs:
   decision:
@@ -92,7 +96,8 @@ runs:
             --fail-on "${{ inputs.fail-on }}" \
             --report-format "${{ inputs.report-format }}" \
             --report "/workspace/${{ inputs.report-path }}" \
-            --cache /cache
+            --cache /cache \
+            ${{ inputs.exceptions-dir != '' && format('--exceptions-dir /workspace/{0}', inputs.exceptions-dir) || '' }}
         GATE_EXIT=$?
 
         # Parse the report for outputs (json is easiest; re-run query is cheap
