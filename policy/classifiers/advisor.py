@@ -163,9 +163,9 @@ class ReviewAdvisor:
         prompt = _BATCH_TEMPLATE.format(n=len(findings), rows=rows)
         try:
             if self.provider == "anthropic":
-                text = self._call_anthropic(prompt, system=_BATCH_SYSTEM, max_tokens=300)
+                text = self._call_anthropic(prompt, system=_BATCH_SYSTEM, max_tokens=600)
             else:
-                text = self._call_openai(prompt, system=_BATCH_SYSTEM, max_tokens=300)
+                text = self._call_openai(prompt, system=_BATCH_SYSTEM, max_tokens=600)
             text = text.strip()
         except Exception as exc:  # noqa: BLE001
             text = f"[advisor unavailable: {exc}]"
