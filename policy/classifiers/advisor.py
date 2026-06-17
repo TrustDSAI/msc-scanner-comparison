@@ -138,10 +138,17 @@ class ReviewAdvisor:
                 "no LLM API key set (ANTHROPIC_API_KEY or OPENAI_API_KEY)"
             )
 
+    _BATCH_CAP = 20  # max findings sent to LLM; keeps prompt within context limits
+
     def advise_batch(self, findings: list) -> str | None:
         """Return a single consolidated triage summary for all review findings."""
         if not findings:
             return None
+        findings = sorted(
+            findings,
+            key=lambda f: (f.get("epss") or {}).get("score", 0),
+            reverse=True,
+        )[:self._BATCH_CAP]
         from enrichers.cache import get_cache
         cache = get_cache()
         import hashlib, json as _json
