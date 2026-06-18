@@ -30,6 +30,14 @@ inputs:
     description: "Where to write the report"
     required: false
     default: "policy-gate-report.sarif"
+  pr-comment-path:
+    description: "Path to write the PR-comment markdown (enables PR-comment generation)"
+    required: false
+    default: ""
+  comment-max-findings:
+    description: "Max rows per table in the PR comment (default: 20)"
+    required: false
+    default: "20"
   anthropic-api-key:
     description: "Anthropic API key (only needed when classifier=agent)"
     required: false
@@ -97,6 +105,8 @@ runs:
             --report-format "${{ inputs.report-format }}" \
             --report "/workspace/${{ inputs.report-path }}" \
             --cache /cache \
+            --comment-max-findings "${{ inputs.comment-max-findings }}" \
+            ${{ inputs.pr-comment-path != '' && format('--pr-comment-path /workspace/{0}', inputs.pr-comment-path) || '' }} \
             ${{ inputs.exceptions-dir != '' && format('--exceptions-dir /workspace/{0}', inputs.exceptions-dir) || '' }}
         GATE_EXIT=$?
 

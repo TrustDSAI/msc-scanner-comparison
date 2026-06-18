@@ -209,6 +209,78 @@ def report_markdown(verdict: dict) -> str:
     return "\n".join(lines)
 
 
+def report_pr_comment(verdict: dict, max_findings: int = 20) -> str:
+    """GitHub PR comment body: same content the workflow used to build in
+    inline github-script JS. Kept here so every consumer gets identical
+    formatting and the row cap without re-implementing it per repo.
+
+    Override banner and "full log" link are left out: they need PR-label
+    and run-URL context the tool doesn't have. The workflow appends those.
+    """
+    decision = verdict["decision"]
+    emoji = {"block": "🔴", "review": "🟡", "pass": "🟢"}.get(decision, "⚪")
+    block      = verdict.get("block", [])
+    review     = verdict.get("review", [])
+    suppressed = verdict.get("suppressed", [])
+
+    def table(entries, header, row_fn):
+        shown = entries[:max_findings]
+        rows = "\n".join(row_fn(e) for e in shown)
+        out = f"{header}\n{rows}"
+        hidden = len(entries) - len(shown)
+        if hidden > 0:
+            out += f"\n\n_+{hidden} more not shown (capped at {max_findings})_"
+        return out
+
+    sections = [
+        f"## {emoji} Policy Gate: **{decision.upper()}**",
+        f"**{len(block)}** blocked · **{len(review)}** review · **{len(suppressed)}** suppressed",
+    ]
+
+    if block:
+        body = table(
+            block,
+            "| CVE | Package | Severity | EPSS | |\n|---|---|---|---|---|",
+            lambda f: f"| `{f['cve_id']}` | {f['package']} {f['version']} | "
+                      f"{f.get('severity', '-')} | {(f.get('epss_score') or 0):.3f} | "
+                      f"{'✅ KEV' if f.get('in_kev') else '—'} |",
+        )
+        if verdict.get("block_summary"):
+            body += f"\n\n> 🤖 **Triage advice:** {verdict['block_summary']}"
+        sections.append(f"### Blocked findings\n{body}")
+
+    if review:
+        body = table(
+            review,
+            "| CVE | Package | Severity | EPSS |\n|---|---|---|---|",
+            lambda f: f"| `{f['cve_id']}` | {f['package']} {f['version']} | "
+                      f"{f.get('severity', '-')} | {(f.get('epss_score') or 0):.3f} |",
+        )
+        if verdict.get("review_summary"):
+            body += f"\n\n> 🤖 **Triage advice:** {verdict['review_summary']}"
+        sections.append(f"### Review findings\n{body}")
+
+    if suppressed:
+        body = table(
+            suppressed,
+            "| CVE | Package | Severity | Would have been |\n|---|---|---|---|",
+            lambda f: f"| `{f['cve_id']}` | {f['package']} {f['version']} | "
+                      f"{f.get('severity', '-')} | {f.get('would_have_been', '—')} |",
+        )
+        sections.append(f"### Suppressed findings\n{body}")
+
+    prov = verdict.get("provenance") or {}
+    if prov and "error" not in prov:
+        tv = prov.get("tool_versions", {})
+        fp = (prov.get("policy_bundle_fingerprint") or "")[:19]
+        sections.append(
+            f"<sub>trivy `{tv.get('trivy', '?')}` · grype `{tv.get('grype', '?')}` · "
+            f"opa `{tv.get('opa', '?')}` · bundle `{fp}`</sub>"
+        )
+
+    return "\n\n".join(sections)
+
+
 def report_sarif(verdict: dict) -> str:
     """Minimal SARIF 2.1.0 so the report renders in GitHub code scanning."""
     results = []
@@ -300,6 +372,7 @@ def report_junit(verdict: dict) -> str:
 FORMATTERS = {
     "json": report_json,
     "markdown": report_markdown,
+    "pr-comment": report_pr_comment,
     "sarif": report_sarif,
     "junit": report_junit,
 }
@@ -437,6 +510,11 @@ def main() -> int:
     p.add_argument("--report", type=Path, default=None,
                    help="write report to this path (default: stdout)")
     p.add_argument("--report-format", choices=list(FORMATTERS), default="json")
+    p.add_argument("--comment-max-findings", type=int, default=20,
+                   help="max rows per table in pr-comment format (default: 20)")
+    p.add_argument("--pr-comment-path", type=Path, default=None,
+                   help="also render the pr-comment markdown to this path, "
+                        "regardless of --report-format")
     p.add_argument("--fail-on", choices=["block", "review", "none"], default="review",
                    help="which tiers fail the build (default: review = fail-closed)")
     p.add_argument("--rego-dir", type=Path, default=REGO_DIR,
@@ -461,11 +539,18 @@ def main() -> int:
         exceptions_dir=args.exceptions_dir,
     )
 
-    rendered = FORMATTERS[args.report_format](verdict)
+    if args.report_format == "pr-comment":
+        rendered = report_pr_comment(verdict, max_findings=args.comment_max_findings)
+    else:
+        rendered = FORMATTERS[args.report_format](verdict)
     if args.report:
         args.report.write_text(rendered)
     else:
         print(rendered)
+
+    if args.pr_comment_path is not None:
+        comment = report_pr_comment(verdict, max_findings=args.comment_max_findings)
+        args.pr_comment_path.write_text(comment)
 
     print(f"[policy-gate] {args.image}: {verdict['decision'].upper()} "
           f"(block={len(verdict['block'])}, review={len(verdict['review'])}, "

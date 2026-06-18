@@ -1,0 +1,7 @@
+group,image,critical_total,p4_strict,p4_relaxed,p5_layer_rule,p5_layer_agent,delta
+A,bkimminich/juice-shop,9,0,3,1,1,0
+A,vulnerables/web-dvwa,328,24,198,198,116,-82
+B,nginx:1.19,42,0,16,16,16,0
+B,node:14,23,0,12,12,12,0
+B,python:3.8,191,0,6,6,6,0
+C,node:20,33,0,1,1,1,0

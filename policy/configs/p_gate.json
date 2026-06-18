@@ -4,6 +4,9 @@
 
   "block_epss_threshold":    0.5,
   "review_high_min_epss":    0.0,
+  "review_critical_app_min_epss":     0.1,
+  "review_critical_os_min_epss":      0.01,
+  "review_critical_unknown_min_epss": 0.0,
   "nvd_acceptable_statuses": ["Analyzed", "Modified"],
   "kev_requires_fix":        true,
   "enable_kev_block":        true,

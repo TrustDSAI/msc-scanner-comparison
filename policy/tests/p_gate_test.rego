@@ -167,3 +167,62 @@ test_empty_passes if {
     not gate.block_build with input as fx.wrap([])
     not gate.review_required with input as fx.wrap([])
 }
+
+
+# ----- Layer-aware review floor (P5_layer folded into review tier) ----
+
+# app layer needs EPSS > 0.1; below that, no review.
+crit_app_low_epss := with_kev(
+    json.patch(fx.critical_full, [
+        {"op": "replace", "path": "/epss/score", "value": 0.05},
+        {"op": "replace", "path": "/layer",      "value": "app"},
+    ]),
+    kev_absent,
+)
+
+crit_app_high_epss := json.patch(crit_app_low_epss, [
+    {"op": "replace", "path": "/epss/score", "value": 0.15},
+])
+
+# os layer needs EPSS > 0.01; 0.05 clears it even though it would fail
+# the app floor.
+crit_os_low_epss := with_kev(
+    json.patch(fx.critical_full, [
+        {"op": "replace", "path": "/epss/score", "value": 0.05},
+        {"op": "replace", "path": "/layer",      "value": "os"},
+    ]),
+    kev_absent,
+)
+
+# unknown layer keeps the unconditional 0.0 floor (never silently dropped).
+crit_unknown_layer := with_kev(
+    json.patch(fx.critical_full, [
+        {"op": "replace", "path": "/epss/score", "value": 0.001},
+        {"op": "replace", "path": "/layer",      "value": "unknown"},
+    ]),
+    kev_absent,
+)
+
+test_app_layer_below_floor_does_not_review if {
+    not gate.review_required with input as fx.wrap([crit_app_low_epss])
+    gate.decision(crit_app_low_epss) == "pass" with input as fx.wrap([crit_app_low_epss])
+}
+
+test_app_layer_above_floor_reviews if {
+    gate.review_required with input as fx.wrap([crit_app_high_epss])
+    gate.decision(crit_app_high_epss) == "review" with input as fx.wrap([crit_app_high_epss])
+}
+
+test_os_layer_lower_floor_reviews_where_app_would_not if {
+    gate.review_required with input as fx.wrap([crit_os_low_epss])
+}
+
+test_unknown_layer_uses_zero_floor if {
+    gate.review_required with input as fx.wrap([crit_unknown_layer])
+}
+
+test_layer_floor_configurable if {
+    # Raise the os floor above 0.05 -> crit_os_low_epss no longer reviews.
+    inp := fx.wrap_with_config([crit_os_low_epss], {"review_critical_os_min_epss": 0.1})
+    not gate.review_required with input as inp
+}

@@ -41,12 +41,24 @@
 # Review conditions
 # -----------------
 #   - Any CRITICAL finding not already in block (e.g. lower EPSS, missing
-#     OSV advisory, single-scanner).
+#     OSV advisory, single-scanner), gated by a layer-aware EPSS floor
+#     (see below) so noisy low-EPSS findings don't flood the review queue.
 #   - Any HIGH finding with a fix and consensus (severity label is
 #     untrustworthy across tools, so HIGH never auto-blocks; it is shown
 #     to a human).
 #   - KEV membership WITHOUT a fix (actively exploited but no remediation
 #     path; cannot block because the build could never pass, must surface).
+#
+# Layer-aware review floor (from P5_layer, Chapter 5)
+# ----------------------------------------------------
+# P5_layer's empirical result (juice-shop 9->1, web-dvwa 198->116 block
+# reduction) showed per-layer EPSS asymmetry filters review-queue noise
+# without losing real findings. Folded into review only -- the block tier
+# stays layer-agnostic per the rationale above. A CRITICAL finding's EPSS
+# must clear review_critical_app_min_epss if layer=="app",
+# review_critical_os_min_epss if layer=="os", or
+# review_critical_unknown_min_epss if layer is missing/"unknown" (default
+# 0.0 -- unclassified findings are never silently dropped).
 #
 # Pass
 # ----
@@ -61,6 +73,9 @@
 # {
 #   "block_epss_threshold":    0.5,     # EPSS floor for the CRITICAL block path
 #   "review_high_min_epss":    0.0,     # EPSS floor for HIGH to reach review (0 = any)
+#   "review_critical_app_min_epss":     0.1,  # EPSS floor for app-layer CRITICAL review
+#   "review_critical_os_min_epss":      0.01, # EPSS floor for os-layer CRITICAL review
+#   "review_critical_unknown_min_epss": 0.0,  # EPSS floor when layer is missing/unknown
 #   "nvd_acceptable_statuses": ["Analyzed", "Modified"],
 #   "kev_requires_fix":        true,    # false = block KEV even without a fix
 #   "enable_kev_block":        true,    # false = disable the KEV block path entirely
@@ -96,6 +111,23 @@ review_high_min_epss   := lib.config_value("review_high_min_epss",   0.0)
 enable_kev_block       := lib.config_value("enable_kev_block",       true)
 enable_critical_block  := lib.config_value("enable_critical_block",  true)
 kev_requires_fix_cfg   := lib.config_value("kev_requires_fix",       true)
+
+review_critical_app_min_epss     := lib.config_value("review_critical_app_min_epss",     0.1)
+review_critical_os_min_epss      := lib.config_value("review_critical_os_min_epss",      0.01)
+review_critical_unknown_min_epss := lib.config_value("review_critical_unknown_min_epss", 0.0)
+
+# Layer-aware EPSS floor for the CRITICAL review path (P5_layer, folded in
+# at review tier only -- see file docstring).
+review_critical_min_epss(finding) := review_critical_app_min_epss if {
+    finding.layer == "app"
+}
+review_critical_min_epss(finding) := review_critical_os_min_epss if {
+    finding.layer == "os"
+}
+review_critical_min_epss(finding) := review_critical_unknown_min_epss if {
+    not finding.layer == "app"
+    not finding.layer == "os"
+}
 
 nvd_acceptable_statuses := s if {
     s := input.config.nvd_acceptable_statuses
@@ -155,9 +187,10 @@ critical_block(finding) if {
 
 # --- Review tier ------------------------------------------------------
 
-# Any CRITICAL not already blocked.
+# Any CRITICAL not already blocked, above its layer-aware EPSS floor.
 is_review(finding) if {
     lib.is_critical(finding)
+    lib.epss_above(finding, review_critical_min_epss(finding))
 }
 
 # HIGH with a fix and consensus: real, but severity label untrustworthy.

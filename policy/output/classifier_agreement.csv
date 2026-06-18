@@ -1,0 +1,10 @@
+image,critical_total,rule_app,rule_os,rule_unknown,agent_app,agent_os,agent_unknown,agreements,disagreements,agreement_pct
+alpine:3.19,0,0,0,0,0,0,0,0,0,100.0
+nginx:1.29.7,0,0,0,0,0,0,0,0,0,100.0
+node:20,33,0,33,0,0,33,0,33,0,100.0
+python:3.12,0,0,0,0,0,0,0,0,0,100.0
+nginx:1.19,42,0,42,0,0,42,0,42,0,100.0
+node:14,23,1,21,1,2,21,0,22,1,95.7
+python:3.8,191,0,190,1,0,191,0,190,1,99.5
+vulnerables/web-dvwa,328,0,328,0,123,205,0,205,123,62.5
+bkimminich/juice-shop,9,9,0,0,9,0,0,9,0,100.0
