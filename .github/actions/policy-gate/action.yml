@@ -106,6 +106,8 @@ runs:
             --report "/workspace/${{ inputs.report-path }}" \
             --cache /cache \
             --comment-max-findings "${{ inputs.comment-max-findings }}" \
+            --log-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            ${{ contains(github.event.pull_request.labels.*.name, 'gate-override') && '--override-active' || '' }} \
             ${{ inputs.pr-comment-path != '' && format('--pr-comment-path /workspace/{0}', inputs.pr-comment-path) || '' }} \
             ${{ inputs.exceptions-dir != '' && format('--exceptions-dir /workspace/{0}', inputs.exceptions-dir) || '' }}
         GATE_EXIT=$?

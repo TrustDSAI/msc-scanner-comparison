@@ -209,13 +209,19 @@ def report_markdown(verdict: dict) -> str:
     return "\n".join(lines)
 
 
-def report_pr_comment(verdict: dict, max_findings: int = 20) -> str:
-    """GitHub PR comment body: same content the workflow used to build in
-    inline github-script JS. Kept here so every consumer gets identical
-    formatting and the row cap without re-implementing it per repo.
-
-    Override banner and "full log" link are left out: they need PR-label
-    and run-URL context the tool doesn't have. The workflow appends those.
+def report_pr_comment(
+    verdict: dict,
+    max_findings: int = 20,
+    *,
+    override_active: bool = False,
+    log_url: str | None = None,
+) -> str:
+    """GitHub PR comment body, fully rendered here so the calling workflow
+    never reimplements formatting in inline JS. override_active and log_url
+    are the only two facts the tool cannot know on its own (PR labels, run
+    URL live in the GitHub Actions context) -- the caller passes them in
+    as plain values, and the workflow's job shrinks to "read this file and
+    call createComment", nothing else.
     """
     decision = verdict["decision"]
     emoji = {"block": "🔴", "review": "🟡", "pass": "🟢"}.get(decision, "⚪")
@@ -269,6 +275,11 @@ def report_pr_comment(verdict: dict, max_findings: int = 20) -> str:
         )
         sections.append(f"### Suppressed findings\n{body}")
 
+    if override_active:
+        sections.append(
+            "> ⚠️ **Override active** (`gate-override` label) — build will not be blocked."
+        )
+
     prov = verdict.get("provenance") or {}
     if prov and "error" not in prov:
         tv = prov.get("tool_versions", {})
@@ -277,6 +288,9 @@ def report_pr_comment(verdict: dict, max_findings: int = 20) -> str:
             f"<sub>trivy `{tv.get('trivy', '?')}` · grype `{tv.get('grype', '?')}` · "
             f"opa `{tv.get('opa', '?')}` · bundle `{fp}`</sub>"
         )
+
+    if log_url:
+        sections.append(f"<sub>[full log]({log_url})</sub>")
 
     return "\n\n".join(sections)
 
@@ -515,6 +529,11 @@ def main() -> int:
     p.add_argument("--pr-comment-path", type=Path, default=None,
                    help="also render the pr-comment markdown to this path, "
                         "regardless of --report-format")
+    p.add_argument("--override-active", action="store_true",
+                   help="render the gate-override banner in the pr-comment (caller "
+                        "checks the PR label, e.g. gate-override, and passes this)")
+    p.add_argument("--log-url", default=None,
+                   help="CI run URL to append as a 'full log' link in the pr-comment")
     p.add_argument("--fail-on", choices=["block", "review", "none"], default="review",
                    help="which tiers fail the build (default: review = fail-closed)")
     p.add_argument("--rego-dir", type=Path, default=REGO_DIR,
@@ -540,7 +559,10 @@ def main() -> int:
     )
 
     if args.report_format == "pr-comment":
-        rendered = report_pr_comment(verdict, max_findings=args.comment_max_findings)
+        rendered = report_pr_comment(
+            verdict, max_findings=args.comment_max_findings,
+            override_active=args.override_active, log_url=args.log_url,
+        )
     else:
         rendered = FORMATTERS[args.report_format](verdict)
     if args.report:
@@ -549,7 +571,10 @@ def main() -> int:
         print(rendered)
 
     if args.pr_comment_path is not None:
-        comment = report_pr_comment(verdict, max_findings=args.comment_max_findings)
+        comment = report_pr_comment(
+            verdict, max_findings=args.comment_max_findings,
+            override_active=args.override_active, log_url=args.log_url,
+        )
         args.pr_comment_path.write_text(comment)
 
     print(f"[policy-gate] {args.image}: {verdict['decision'].upper()} "
