@@ -225,9 +225,13 @@ def report_pr_comment(
     """
     decision = verdict["decision"]
     emoji = {"block": "🔴", "review": "🟡", "pass": "🟢"}.get(decision, "⚪")
-    block      = verdict.get("block", [])
-    review     = verdict.get("review", [])
-    suppressed = verdict.get("suppressed", [])
+
+    def by_epss_desc(entries):
+        return sorted(entries, key=lambda f: f.get("epss_score") or 0, reverse=True)
+
+    block      = by_epss_desc(verdict.get("block", []))
+    review     = by_epss_desc(verdict.get("review", []))
+    suppressed = by_epss_desc(verdict.get("suppressed", []))
 
     def table(entries, header, row_fn):
         shown = entries[:max_findings]
