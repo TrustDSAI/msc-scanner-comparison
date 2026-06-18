@@ -1,0 +1,68 @@
+name: Evaluate 9-image dataset
+
+# Runs the full policy pipeline (classify -> enrich -> opa eval) across the
+# study's 9 images, reading pre-committed scanner output from data/raw/ --
+# no live Trivy/Grype scanning, no docker pulls of the 9 target images.
+# That's what keeps this fast and CI-safe, unlike scanning an image live.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "policy/rego/**"
+      - "policy/configs/**"
+      - "policy/classifiers/**"
+      - "policy/evaluate_all.py"
+      - "data/raw/**"
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install OPA
+        run: |
+          curl -sSL -o /usr/local/bin/opa \
+            "https://openpolicyagent.org/downloads/v1.17.0/opa_linux_amd64_static"
+          chmod +x /usr/local/bin/opa
+          opa version
+
+      - name: Install Python deps
+        run: pip install "pyyaml>=6.0,<7.0"
+
+      # Enrichment is cached by CVE ID; only 135 unique CRITICAL CVEs across
+      # all 9 images, but restoring a warm cache still avoids re-querying
+      # NVD/OSV/EPSS/KEV on every run.
+      - name: Restore enrichment cache
+        uses: actions/cache@v4
+        with:
+          path: policy/.cache/enrich
+          key: dataset-enrich-${{ runner.os }}
+          restore-keys: |
+            dataset-enrich-
+
+      - name: Run evaluate_all.py
+        working-directory: policy
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: python3 evaluate_all.py
+
+      - name: Write job summary
+        if: always()
+        run: cat policy/output/summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload result tables
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dataset-results
+          path: |
+            policy/output/*.csv
+            policy/output/summary.md
