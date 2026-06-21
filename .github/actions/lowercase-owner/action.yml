@@ -1,0 +1,19 @@
+name: "Lowercase image owner"
+description: >
+  Docker image references must be lowercase; github.repository_owner
+  preserves the org/user's display casing (e.g. "TrustDSAI"), so it
+  cannot be interpolated directly into an image tag -- GitHub Actions
+  expressions have no built-in lower(). Shared by every workflow/action
+  that builds or pulls ghcr.io/<owner>/policy-gate.
+
+outputs:
+  lower:
+    description: "github.repository_owner, lowercased"
+    value: ${{ steps.compute.outputs.lower }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: compute
+      shell: bash
+      run: echo "lower=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"

@@ -74,14 +74,9 @@ runs:
         restore-keys: |
           policy-gate-enrich-
 
-    # Docker image references must be lowercase; github.repository_owner
-    # preserves the org/user's display casing (e.g. "TrustDSAI"), so it
-    # cannot be interpolated directly -- GitHub Actions expressions have
-    # no built-in lower() function.
     - name: Compute lowercase image owner
       id: owner
-      shell: bash
-      run: echo "lower=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+      uses: ./.github/actions/lowercase-owner
 
     - name: Run policy gate
       id: gate

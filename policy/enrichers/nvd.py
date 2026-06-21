@@ -67,30 +67,36 @@ class NVDEnricher(Enricher):
                 reason=cached.get("reason", ""),
             )
 
-        async with self._lock:
-            exc: Exception | None = None
-            for attempt in range(_MAX_RETRIES):
+        # Each network attempt (and its rate-limit pacing sleep) is
+        # serialized under the lock, like before. The inter-retry backoff
+        # is deliberately NOT held under the lock: it's this finding's own
+        # error-recovery wait, not part of the shared rate-limit budget, so
+        # holding the lock through it would stall every other concurrent
+        # enrichment for up to ~6s on a single flaky CVE for no reason.
+        exc: Exception | None = None
+        for attempt in range(_MAX_RETRIES):
+            async with self._lock:
                 try:
                     payload = await asyncio.to_thread(self._fetch_sync, cve_id)
                     exc = None
-                    break
                 except Exception as e:  # noqa: BLE001 - we want to fail soft
                     exc = e
-                    if not _is_transient(e) or attempt == _MAX_RETRIES - 1:
-                        break
-                    await asyncio.sleep(_RETRY_BACKOFF_BASE * (2 ** attempt))
-            if exc is not None:
-                result = EnrichmentResult(
-                    field_name=self.field_name,
-                    data={"status": None, "rejected": False, "disputed": False},
-                    ok=False,
-                    reason=f"NVD fetch failed: {exc}",
+                await asyncio.sleep(
+                    _RATE_LIMIT_SLEEP_WITH_KEY if self._api_key else _RATE_LIMIT_SLEEP_NO_KEY
                 )
-            else:
-                result = self._parse(cve_id, payload)
-            await asyncio.sleep(
-                _RATE_LIMIT_SLEEP_WITH_KEY if self._api_key else _RATE_LIMIT_SLEEP_NO_KEY
+            if exc is None or not _is_transient(exc) or attempt == _MAX_RETRIES - 1:
+                break
+            await asyncio.sleep(_RETRY_BACKOFF_BASE * (2 ** attempt))
+
+        if exc is not None:
+            result = EnrichmentResult(
+                field_name=self.field_name,
+                data={"status": None, "rejected": False, "disputed": False},
+                ok=False,
+                reason=f"NVD fetch failed: {exc}",
             )
+        else:
+            result = self._parse(cve_id, payload)
 
         cache.put(self.field_name, cve_id, {
             "data":   result.data,

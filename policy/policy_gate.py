@@ -229,6 +229,9 @@ def report_pr_comment(
     def by_epss_desc(entries):
         return sorted(entries, key=lambda f: f.get("epss_score") or 0, reverse=True)
 
+    def epss_str(f):
+        return f"{(f.get('epss_score') or 0):.3f}"
+
     block      = by_epss_desc(verdict.get("block", []))
     review     = by_epss_desc(verdict.get("review", []))
     suppressed = by_epss_desc(verdict.get("suppressed", []))
@@ -252,7 +255,7 @@ def report_pr_comment(
             block,
             "| CVE | Package | Severity | EPSS | |\n|---|---|---|---|---|",
             lambda f: f"| `{f['cve_id']}` | {f['package']} {f['version']} | "
-                      f"{f.get('severity', '-')} | {(f.get('epss_score') or 0):.3f} | "
+                      f"{f.get('severity', '-')} | {epss_str(f)} | "
                       f"{'✅ KEV' if f.get('in_kev') else '—'} |",
         )
         if verdict.get("block_summary"):
@@ -264,7 +267,7 @@ def report_pr_comment(
             review,
             "| CVE | Package | Severity | EPSS |\n|---|---|---|---|",
             lambda f: f"| `{f['cve_id']}` | {f['package']} {f['version']} | "
-                      f"{f.get('severity', '-')} | {(f.get('epss_score') or 0):.3f} |",
+                      f"{f.get('severity', '-')} | {epss_str(f)} |",
         )
         if verdict.get("review_summary"):
             body += f"\n\n> 🤖 **Triage advice:** {verdict['review_summary']}"
@@ -562,24 +565,21 @@ def main() -> int:
         exceptions_dir=args.exceptions_dir,
     )
 
-    if args.report_format == "pr-comment":
-        rendered = report_pr_comment(
+    pr_comment = None
+    if args.report_format == "pr-comment" or args.pr_comment_path is not None:
+        pr_comment = report_pr_comment(
             verdict, max_findings=args.comment_max_findings,
             override_active=args.override_active, log_url=args.log_url,
         )
-    else:
-        rendered = FORMATTERS[args.report_format](verdict)
+
+    rendered = pr_comment if args.report_format == "pr-comment" else FORMATTERS[args.report_format](verdict)
     if args.report:
         args.report.write_text(rendered)
     else:
         print(rendered)
 
     if args.pr_comment_path is not None:
-        comment = report_pr_comment(
-            verdict, max_findings=args.comment_max_findings,
-            override_active=args.override_active, log_url=args.log_url,
-        )
-        args.pr_comment_path.write_text(comment)
+        args.pr_comment_path.write_text(pr_comment)
 
     print(f"[policy-gate] {args.image}: {verdict['decision'].upper()} "
           f"(block={len(verdict['block'])}, review={len(verdict['review'])}, "
