@@ -1,0 +1,6 @@
+{
+  "image": "citizenstig/nowasp:latest",
+  "classifier": "agent",
+  "block_summary": null,
+  "review_summary": "**Triage Summary:**\n\nTwo distinct vulnerabilities affect this image: CVE-2018-11235 (git submodule path traversal) and CVE-2019-3462 (apt package manager integer overflow). Both are HIGH severity with available fixes and are not tracked as actively exploited (KEV=no). The apt vulnerability spans four related packages (apt, apt-utils, libapt-inst1.5, libapt-pkg4.12) but represents a single underlying issue. EPSS scores are moderate (0.492 and 0.146 respectively), indicating exploitability is possible but not trivial.\n\n**Recommended Action:** Approve the build with a requirement to patch both git and apt packages in the next maintenance cycle. If this image is used in production environments handling untrusted git repositories or package installations, prioritize the updates; otherwise, standard patching timelines are acceptable given the absence of active exploitation."
+}

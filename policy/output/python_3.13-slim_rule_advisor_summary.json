@@ -1,0 +1,6 @@
+{
+  "image": "python:3.13-slim",
+  "classifier": "rule",
+  "block_summary": null,
+  "review_summary": "**Triage Summary:**\n\nA CRITICAL CVE (CVE-2026-6100) has been identified in Python 3.13.14 with an extremely low EPSS score (0.005), indicating minimal practical exploitability despite the severity rating. No patch is currently available, and the vulnerability is not listed in CISA's Known Exploited Vulnerabilities catalog, suggesting limited real-world threat activity. The discrepancy between the CRITICAL label and negligible EPSS score warrants investigation into the actual attack surface and applicability to your codebase.\n\n**Recommended Action:** Accept the risk and proceed with deployment. Document the CVE and establish a monitoring plan to apply patches when available, but do not block the release based on this finding alone given the near-zero practical risk score."
+}

@@ -1,0 +1,6 @@
+{
+  "image": "golang:1.23-alpine",
+  "classifier": "agent",
+  "block_summary": null,
+  "review_summary": "**Triage Summary:**\n\nTwenty findings across OpenSSL (libcrypto3/libssl3 3.5.1-r0) and Go stdlib (v1.23.12) are flagged for review. The OpenSSL CVEs are duplicated across libcrypto3 and libssl3 packages but represent 8 distinct vulnerabilities; all are HIGH severity with low-to-moderate EPSS scores (0.009\u20130.487), none are tracked as KEV, and all have available fixes. One CRITICAL Go stdlib CVE (CVE-2025-68121) and one HIGH (CVE-2025-61726) are also present with fixes available. The actionable risk is concentrated in the OpenSSL library version; the Go stdlib CRITICAL warrants immediate attention despite low EPSS.\n\n**Recommended Action:** Approve the upgrade of libcrypto3/libssl3 to the patched version and stdlib to v1.23.12+ to resolve all findings. Prioritize the Go stdlib CRITICAL fix in deployment. No blockers present given fix availability and absence of active exploitation signals."
+}

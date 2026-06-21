@@ -1,0 +1,6 @@
+{
+  "image": "node:22",
+  "classifier": "agent",
+  "block_summary": null,
+  "review_summary": "**Triage Summary:**\n\nFive findings involve unpatched CRITICAL vulnerabilities in system libraries (zlib, OpenEXR, libaom) with extremely low exploit probability (EPSS \u22640.029) and no known active exploitation\u2014these are likely theoretical or require impractical attack conditions. One HIGH-severity finding in picomatch has an available fix and minimal exploit likelihood (EPSS 0.004). \n\n**Recommended Action:** Approve the build with a tracking ticket to upgrade zlib, OpenEXR, and libaom when patches become available; immediately update picomatch to the fixed version since remediation is available and carries negligible risk."
+}

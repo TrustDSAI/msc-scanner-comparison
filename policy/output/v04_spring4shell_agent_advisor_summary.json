@@ -1,0 +1,6 @@
+{
+  "image": "policy-gate-val/v04-spring4shell:latest",
+  "classifier": "agent",
+  "block_summary": "**Triage Summary:**\n\nAll four findings are duplicate reports of the same critical vulnerability (CVE-2022-22965, Spring4Shell) affecting Spring Framework 5.3.17 across beans and web-mvc components. This is a known, actively exploited RCE with EPSS 0.997 and confirmed KEV status, but a fix is available. **Recommended Action:** Upgrade spring-beans and spring-webmvc to version 5.3.18 or later immediately\u2014this is a straightforward dependency update with no hedging needed. Block the build until the upgrade is completed.",
+  "review_summary": null
+}

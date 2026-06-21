@@ -1,0 +1,6 @@
+{
+  "image": "eclipse-temurin:8-jre",
+  "classifier": "agent",
+  "block_summary": null,
+  "review_summary": "**Triage Summary:**\n\nA HIGH severity vulnerability (CVE-2026-42504) exists in stdlib v1.26.3 with a patch available and low exploitability (EPSS 0.004). The vulnerability is not tracked in known exploited vulnerabilities (KEV), indicating limited real-world attack activity. The presence of a fix makes remediation straightforward.\n\n**Recommended Action:**\n\nUpgrade stdlib to the patched version. This is a low-risk, high-confidence remediation that should proceed without blocking the build, but schedule the upgrade in the next routine dependency update cycle."
+}

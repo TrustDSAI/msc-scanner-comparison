@@ -3,5 +3,6 @@
 output/*
 !output/*.csv
 !output/*.md
+!output/*_advisor_summary.json
 __pycache__/
 *.pyc

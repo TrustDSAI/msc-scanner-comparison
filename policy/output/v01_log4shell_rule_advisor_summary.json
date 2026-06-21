@@ -1,0 +1,6 @@
+{
+  "image": "policy-gate-val/v01-log4shell:latest",
+  "classifier": "rule",
+  "block_summary": "**Triage Summary:**\n\nLog4j-core 2.14.1 contains two critical remote code execution vulnerabilities (CVE-2021-44228 and CVE-2021-45046) with maximum EPSS scores and active exploitation in the wild (KEV catalog). Both vulnerabilities have available fixes and appear as duplicate findings across different dependency declarations. This is a high-priority supply chain risk requiring immediate remediation.\n\n**Recommended Action:** Upgrade log4j-core to version 2.17.1 or later without delay. Block this build and flag for immediate patching\u2014do not permit deployment with 2.14.1.",
+  "review_summary": null
+}

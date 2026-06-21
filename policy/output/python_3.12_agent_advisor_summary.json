@@ -1,0 +1,6 @@
+{
+  "image": "python:3.12",
+  "classifier": "agent",
+  "block_summary": null,
+  "review_summary": "**Triage Summary:**\n\nAll 20 findings are duplicate reports of two CVEs (CVE-2026-28693 and CVE-2026-28691) affecting the ImageMagick package suite version 8:7.1.1.43+dfsg1-1+deb13u6 across multiple related packages. Both vulnerabilities are rated HIGH but have extremely low EPSS scores (0.001), indicating minimal practical exploitability despite the severity label. Fixes are available for both CVEs, and neither is currently tracked as a known exploited vulnerability (KEV).\n\n**Recommended Action:**\n\nSchedule an upgrade to the patched ImageMagick version at the next maintenance window. The low EPSS scores and availability of fixes mean this does not require emergency patching, but should not be deferred indefinitely. Verify the fix version is available in your package repository before proceeding."
+}

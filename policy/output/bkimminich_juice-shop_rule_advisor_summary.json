@@ -1,0 +1,6 @@
+{
+  "image": "bkimminich/juice-shop",
+  "classifier": "rule",
+  "block_summary": null,
+  "review_summary": "**Triage Summary:**\n\nThree packages demand immediate attention: **vm2 3.9.17** has two unfixed or partially-fixed critical vulnerabilities (CVE-2023-37903 lacks a fix; CVE-2023-32314 and CVE-2023-37466 are fixable), and **jsonwebtoken 0.1.0** is severely outdated with two critical/high CVEs. The remaining 15 findings are lower-risk HIGH severity issues with available fixes and negligible EPSS scores (<0.01), primarily in utility libraries (lodash, moment, braces, etc.). \n\n**Recommended Action:** Block or escalate the vm2 and jsonwebtoken dependencies for immediate upgrade/replacement\u2014vm2 in particular is known to have sandbox escape issues. For the remaining 15 findings, approve the build contingent on a follow-up ticket to upgrade all fixable dependencies within 2 sprints; the low EPSS scores and availability of patches make these acceptable short-term technical debt."
+}

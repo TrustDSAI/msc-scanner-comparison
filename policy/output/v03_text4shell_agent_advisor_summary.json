@@ -1,0 +1,6 @@
+{
+  "image": "policy-gate-val/v03-text4shell:latest",
+  "classifier": "agent",
+  "block_summary": null,
+  "review_summary": "**Triage Summary**\n\nBoth findings are duplicate reports of the same vulnerability (CVE-2022-42889) in Apache Commons Text 1.9, a critical string interpolation RCE affecting the `StringSubstitutor` class. The EPSS score of 0.999 and availability of a fix indicate this is a high-priority, remediable issue. Despite not being on the KEV catalog, the critical severity and exploit maturity warrant immediate action. \n\n**Recommended Action:** Approve the upgrade to Commons Text 1.10+ (or later patched version) and block the current build until the dependency is updated. This is a straightforward remediation with no expected breaking changes."
+}

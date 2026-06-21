@@ -1,0 +1,6 @@
+{
+  "image": "mcr.microsoft.com/dotnet/runtime:3.1",
+  "classifier": "agent",
+  "block_summary": null,
+  "review_summary": "**Triage Summary:**\n\nThis image contains 20 findings across 10 unique CVEs, predominantly HIGH severity with two CRITICAL issues. The vast majority (18/20) have available fixes; prioritize patching **CVE-2023-44487** (libnghttp2, EPSS 1.0), **CVE-2024-2961** (libc, EPSS 0.883), and the two CRITICAL curl/libcurl instances (CVE-2022-32221) immediately. OpenSSL/libssl1.1 vulnerabilities cluster across four CVEs but all have patches available. The only unfixed issue is **CVE-2019-8457** in libdb5.3 (CRITICAL, EPSS 0.454)\u2014assess whether this package is actively used or can be removed/isolated.\n\n**Recommended Action:** Approve the build conditionally with a requirement to apply available patches for all HIGH/CRITICAL findings within 48 hours, with special attention to curl, libc, and nghttp2. Flag libdb5.3 for architecture review to determine if it can be eliminated or safely deprecated given the lack of a fix."
+}

@@ -1,0 +1,6 @@
+{
+  "image": "mcr.microsoft.com/dotnet/runtime:8.0",
+  "classifier": "agent",
+  "block_summary": null,
+  "review_summary": "# Triage Summary\n\nA critical zlib vulnerability (CVE-2023-45853) is present in zlib1g 1.2.13.dfsg-1 with no available patch. Despite the CRITICAL severity rating, the EPSS score of 0.029 indicates very low real-world exploitability, suggesting this is likely a theoretical or edge-case vulnerability with minimal practical risk in your deployment context.\n\n**Recommended Action:** Accept this finding as a known limitation. Document the CVE and EPSS mismatch, monitor for patch availability, and plan an upgrade when zlib is updated. If zlib can be isolated or its attack surface minimized in your application, prioritize that mitigation over blocking the build."
+}

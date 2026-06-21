@@ -1,0 +1,6 @@
+{
+  "image": "node:20",
+  "classifier": "rule",
+  "block_summary": null,
+  "review_summary": "**Triage Summary:**\n\nTwo distinct risk profiles emerge: zlib1g (both variants) carries a CRITICAL CVE-2023-45853 with no available fix and minimal exploit probability (EPSS \u22640.029), while 11 HIGH-severity findings across tar, minimatch, cross-spawn, and glob all have fixes available and negligible exploit scores (EPSS \u22640.001). The zlib issue is a legacy system library that likely requires upstream patching or architectural workaround; the remaining findings are standard dependency updates with low practical risk. None are tracked as known exploited vulnerabilities (KEV).\n\n**Recommended Action:** Approve the build with conditions\u2014update tar, minimatch, cross-spawn, and glob to patched versions immediately (low effort, eliminates HIGH findings). For zlib1g, document the unfixed CRITICAL as a known accepted risk pending upstream resolution or plan a mitigation strategy (e.g., sandboxing, input validation). Re-scan after dependency updates to confirm remediation."
+}

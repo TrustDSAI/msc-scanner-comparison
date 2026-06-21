@@ -1,0 +1,6 @@
+{
+  "image": "rust:1.56-slim",
+  "classifier": "agent",
+  "block_summary": null,
+  "review_summary": "**Triage Summary:**\n\nAll 20 findings are HIGH severity across four core system libraries (OpenSSL/libssl, glibc, systemd) with fixes available and no KEV entries. The findings cluster into five distinct CVEs: three in OpenSSL (CVE-2022-2068, CVE-2022-1292, CVE-2022-0778, CVE-2023-0286), two in glibc (CVE-2024-2961, CVE-2023-4911), and two in systemd (CVE-2023-50387, CVE-2023-50868). EPSS scores range from 0.62\u20131.0, indicating exploitability concern, but the absence of KEV designation and availability of patches suggests these are not actively exploited in the wild.\n\n**Recommended Action:** Approve the build with a requirement to schedule patching within 30 days. Prioritize OpenSSL (1.1.1k \u2192 1.1.1w+) and glibc (2.31-13+deb11u2 \u2192 latest deb11 patch) updates in the next maintenance window. These are foundational libraries; delaying patches introduces cumulative risk, but the lack of active exploitation allows controlled remediation rather than emergency response."
+}

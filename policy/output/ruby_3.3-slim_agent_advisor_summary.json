@@ -1,0 +1,6 @@
+{
+  "image": "ruby:3.3-slim",
+  "classifier": "agent",
+  "block_summary": null,
+  "review_summary": "**Triage Summary:**\n\nThree HIGH-severity CVEs are present across two Ruby standard library packages: one in erb 4.0.3 and two in net-imap 0.4.21. All three have fixes available and carry very low exploitation probability (EPSS \u22640.005) with no known public exploits. The net-imap findings are duplicates affecting the same package version, suggesting a coordinated disclosure or related vulnerability class.\n\n**Recommended Action:** Approve the build and schedule routine patching within your next maintenance window. Prioritize updating net-imap 0.4.21 to the latest patched version (addresses two CVEs simultaneously), then erb 4.0.3. No immediate blocking is warranted given the minimal real-world risk profile and availability of fixes."
+}
