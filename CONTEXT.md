@@ -25,9 +25,11 @@ The act of excluding a Finding from `block`/`review` because it matches an unexp
 _Avoid_: exemption, waiver, allowlist
 
 **Exception**:
-A YAML record (CVE ID + expiry + approval) that authorizes Suppression of a specific Finding. Distinct from a `gate-override`, which bypasses the build-failure step entirely without touching the gate's own verdict.
+A YAML record (CVE ID + expiry + approval) that authorizes Suppression of a specific Finding. Distinct from a `gate-override`, which bypasses the build-failure step entirely without touching the gate's own verdict. The `approval` field is an audit-trail record, not an enforcement mechanism — see Decisions below.
 _Avoid_: waiver, allowlist entry
 
 ## Decisions
 
 - **Block-tier asymmetry is intentional and stays, but the corroborated-CRITICAL review floor is configurable.** Default: a fully Corroborated CRITICAL always reaches `review` regardless of EPSS — a missed real RCE silently passed is worse than a few minutes of reviewer time, and reviewer fatigue is primarily addressed by compressing the queue (the LLM advisor's top-20-by-EPSS batch summary), not by weakening the evidence bar. But `corroborated_critical_min_epss` (default `null` = no floor) lets an operator opt into trading some recall for less review-tier volume if they decide that trade is right for their team — a visible, deliberate config choice, not the gate's default behaviour.
+
+- **Exception/Suppression has no built approval enforcement, and is documented as such, not implied otherwise.** The shipped mechanism is YAML-stored exceptions, the `lib.suppressed` predicate, and expiry-by-date or by-fix-available — the audit-trail half of the design. The governance half (LLM-drafted proposals, auto-opened exception PRs, CODEOWNERS or cryptographic approval verification) was deliberately not built; PR review is the only real control, same scope-boundary treatment as the reachability-analysis gap. `docs/notes_suppression_workflow_design.md` carries an explicit implementation-status note rather than reading as a description of what's running.
