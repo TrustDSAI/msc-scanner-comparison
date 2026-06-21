@@ -11,11 +11,11 @@ Classifiers: rule, agent
 | C | nginx:1.29.7 | 0 | 0/0/0 | pass (0) | pass (0) | pass (0) | pass (0) | pass (0) | pass (0) | pass (0) |
 | C | node:20 | 33 | 0/33/0 | **B** (33) | pass (0) | **B** (32) | pass (0) | **B** (1) | **B** (1) | **B** (1) |
 | C | python:3.12 | 0 | 0/0/0 | pass (0) | pass (0) | pass (0) | pass (0) | pass (0) | pass (0) | pass (0) |
-| B | nginx:1.19 | 42 | 0/42/0 | **B** (42) | **B** (40) | **B** (41) | pass (0) | **B** (16) | **B** (16) | **B** (22) |
-| B | node:14 | 23 | 1/21/1 | **B** (23) | **B** (18) | **B** (20) | pass (0) | **B** (12) | **B** (12) | **B** (22) |
+| B | nginx:1.19 | 42 | 0/42/0 | **B** (42) | **B** (40) | **B** (41) | pass (0) | **B** (5) | **B** (5) | **B** (11) |
+| B | node:14 | 23 | 1/21/1 | **B** (23) | **B** (18) | **B** (20) | pass (0) | **B** (1) | **B** (1) | **B** (11) |
 | B | python:3.8 | 191 | 0/190/1 | **B** (191) | **B** (158) | **B** (187) | pass (0) | **B** (6) | **B** (6) | **B** (11) |
-| A | vulnerables/web-dvwa | 328 | 0/328/0 | **B** (328) | **B** (266) | **B** (295) | **B** (24) | **B** (198) | **B** (198) | **B** (244) |
-| A | bkimminich/juice-shop | 9 | 9/0/0 | **B** (9) | **B** (7) | **B** (9) | pass (0) | **B** (3) | **B** (1) | **B** (1) |
+| A | vulnerables/web-dvwa | 328 | 0/328/0 | **B** (328) | **B** (266) | **B** (295) | **B** (4) | **B** (30) | **B** (30) | **B** (76) |
+| A | bkimminich/juice-shop | 9 | 9/0/0 | **B** (9) | **B** (7) | **B** (9) | pass (0) | pass (0) | pass (0) | pass (0) |
 
 ## Classifier: agent
 
@@ -25,11 +25,11 @@ Classifiers: rule, agent
 | C | nginx:1.29.7 | 0 | 0/0/0 | pass (0) | pass (0) | pass (0) | pass (0) | pass (0) | pass (0) | pass (0) |
 | C | node:20 | 33 | 0/33/0 | **B** (33) | pass (0) | **B** (32) | pass (0) | **B** (1) | **B** (1) | **B** (1) |
 | C | python:3.12 | 0 | 0/0/0 | pass (0) | pass (0) | pass (0) | pass (0) | pass (0) | pass (0) | pass (0) |
-| B | nginx:1.19 | 42 | 0/42/0 | **B** (42) | **B** (40) | **B** (41) | pass (0) | **B** (16) | **B** (16) | **B** (22) |
-| B | node:14 | 23 | 2/21/0 | **B** (23) | **B** (18) | **B** (20) | pass (0) | **B** (12) | **B** (12) | **B** (22) |
+| B | nginx:1.19 | 42 | 0/42/0 | **B** (42) | **B** (40) | **B** (41) | pass (0) | **B** (5) | **B** (5) | **B** (11) |
+| B | node:14 | 23 | 2/21/0 | **B** (23) | **B** (18) | **B** (20) | pass (0) | **B** (1) | **B** (1) | **B** (11) |
 | B | python:3.8 | 191 | 0/191/0 | **B** (191) | **B** (158) | **B** (187) | pass (0) | **B** (6) | **B** (6) | **B** (11) |
-| A | vulnerables/web-dvwa | 328 | 123/205/0 | **B** (328) | **B** (266) | **B** (295) | **B** (24) | **B** (198) | **B** (116) | **B** (162) |
-| A | bkimminich/juice-shop | 9 | 9/0/0 | **B** (9) | **B** (7) | **B** (9) | pass (0) | **B** (3) | **B** (1) | **B** (1) |
+| A | vulnerables/web-dvwa | 328 | 122/206/0 | **B** (328) | **B** (266) | **B** (295) | **B** (4) | **B** (30) | **B** (22) | **B** (68) |
+| A | bkimminich/juice-shop | 9 | 9/0/0 | **B** (9) | **B** (7) | **B** (9) | pass (0) | pass (0) | pass (0) | pass (0) |
 
 ## Suppression workflow demo (tri-state gate)
 
@@ -57,21 +57,21 @@ Classifiers: rule, agent
 | nginx:1.19 | rule | p_gate_with_exceptions | **BLOCK** | 138 | 0 |
 | nginx:1.19 | agent | p_gate | **BLOCK** | 138 | 0 |
 | nginx:1.19 | agent | p_gate_with_exceptions | **BLOCK** | 138 | 0 |
-| node:14 | rule | p_gate | **BLOCK** | 307 | 0 |
-| node:14 | rule | p_gate_with_exceptions | **BLOCK** | 307 | 0 |
-| node:14 | agent | p_gate | **BLOCK** | 306 | 0 |
-| node:14 | agent | p_gate_with_exceptions | **BLOCK** | 306 | 0 |
-| python:3.8 | rule | p_gate | pass | 489 | 0 |
-| python:3.8 | rule | p_gate_with_exceptions | pass | 489 | 0 |
-| python:3.8 | agent | p_gate | pass | 488 | 0 |
-| python:3.8 | agent | p_gate_with_exceptions | pass | 488 | 0 |
+| node:14 | rule | p_gate | pass | 307 | 0 |
+| node:14 | rule | p_gate_with_exceptions | pass | 307 | 0 |
+| node:14 | agent | p_gate | pass | 306 | 0 |
+| node:14 | agent | p_gate_with_exceptions | pass | 306 | 0 |
+| python:3.8 | rule | p_gate | pass | 490 | 0 |
+| python:3.8 | rule | p_gate_with_exceptions | pass | 490 | 0 |
+| python:3.8 | agent | p_gate | pass | 489 | 0 |
+| python:3.8 | agent | p_gate_with_exceptions | pass | 489 | 0 |
 | vulnerables/web-dvwa | rule | p_gate | **BLOCK** | 707 | 0 |
 | vulnerables/web-dvwa | rule | p_gate_with_exceptions | **BLOCK** | 707 | 0 |
 | vulnerables/web-dvwa | agent | p_gate | **BLOCK** | 625 | 0 |
 | vulnerables/web-dvwa | agent | p_gate_with_exceptions | **BLOCK** | 625 | 0 |
-| bkimminich/juice-shop | rule | p_gate | **BLOCK** | 35 | 0 |
+| bkimminich/juice-shop | rule | p_gate | pass | 35 | 0 |
 | bkimminich/juice-shop | rule | p_gate_with_exceptions | pass | 34 | 1 |
-| bkimminich/juice-shop | agent | p_gate | **BLOCK** | 35 | 0 |
+| bkimminich/juice-shop | agent | p_gate | pass | 35 | 0 |
 | bkimminich/juice-shop | agent | p_gate_with_exceptions | pass | 34 | 1 |
 
 ## Classifier comparison (CRITICAL findings only)
@@ -85,5 +85,5 @@ Classifiers: rule, agent
 | nginx:1.19 | agent | 0/42/0 | 0/42/0 |
 | node:14 | agent | 1/21/1 | 2/21/0 |
 | python:3.8 | agent | 0/190/1 | 0/191/0 |
-| vulnerables/web-dvwa | agent | 0/328/0 | 123/205/0 |
+| vulnerables/web-dvwa | agent | 0/328/0 | 122/206/0 |
 | bkimminich/juice-shop | agent | 9/0/0 | 9/0/0 |
