@@ -58,6 +58,7 @@ from enrichers import ENRICHERS
 from enrichers.cache import configure as configure_cache
 from enrichers.eol import EOLEnricher
 from classifiers import CLASSIFIERS
+from classifiers.advisor import ReviewAdvisor, is_available as advisor_available
 from exceptions_loader import load_exceptions
 
 # --- Configuration ----------------------------------------------------
@@ -75,6 +76,7 @@ EXCEPTIONS_DIR = HERE / "exceptions"
 # Language-runtime EOL (e.g. python 3.8 lifecycle) is not captured by this
 # field and would require an endoflife.date enricher (future work).
 IMAGES = [
+    # --- original 9 (Chapter 5/6 dataset) ---
     ("alpine_3.19",                 "alpine:3.19",                "C"),
     ("nginx_1.29.7",                "nginx:1.29.7",               "C"),
     ("node_20",                     "node:20",                    "C"),
@@ -84,6 +86,32 @@ IMAGES = [
     ("python_3.8",                  "python:3.8",                 "B"),
     ("vulnerables_web-dvwa",        "vulnerables/web-dvwa",       "A"),
     ("bkimminich_juice-shop",       "bkimminich/juice-shop",      "A"),
+
+    # --- expansion: 21 new images, ecosystem diversity (see
+    # docs/notes_dataset_expansion.md at the repo root) ---
+    ("v01_log4shell",               "policy-gate-val/v01-log4shell:latest",   "A"),
+    ("v03_text4shell",              "policy-gate-val/v03-text4shell:latest",  "A"),
+    ("v04_spring4shell",            "policy-gate-val/v04-spring4shell:latest", "A"),
+    ("webgoat_webgoat",             "webgoat/webgoat-8.0",      "A"),
+    ("citizenstig_nowasp",          "citizenstig/nowasp:latest", "A"),
+
+    ("golang_1.16-alpine",          "golang:1.16-alpine",       "B"),
+    ("ruby_2.5-slim",               "ruby:2.5-slim",            "B"),
+    ("eclipse-temurin_8-jre",       "eclipse-temurin:8-jre",    "B"),
+    ("dotnet_runtime_3.1",          "mcr.microsoft.com/dotnet/runtime:3.1", "B"),
+    ("php_7.4-apache",              "php:7.4-apache",           "B"),
+    ("rust_1.56-slim",              "rust:1.56-slim",           "B"),
+    ("node_12",                     "node:12",                  "B"),
+    ("python_2.7",                  "python:2.7",               "B"),
+
+    ("golang_1.23-alpine",          "golang:1.23-alpine",       "C"),
+    ("ruby_3.3-slim",               "ruby:3.3-slim",            "C"),
+    ("eclipse-temurin_21-jre",      "eclipse-temurin:21-jre",   "C"),
+    ("dotnet_runtime_8.0",          "mcr.microsoft.com/dotnet/runtime:8.0", "C"),
+    ("php_8.3-apache",              "php:8.3-apache",           "C"),
+    ("rust_1.82-slim",              "rust:1.82-slim",           "C"),
+    ("node_22",                     "node:22",                  "C"),
+    ("python_3.13-slim",            "python:3.13-slim",         "C"),
 ]
 
 # (display_name, policy_package, config_path_or_None)
@@ -304,6 +332,19 @@ def run() -> None:
                                 len(gate_block) + len(gate_review),
                                 crit_total,
                                 len(gate_suppressed)))
+
+                # LLM advisor triage summary, captured once per image
+                # (the unsuppressed p_gate run only -- p_gate_with_exceptions
+                # would just re-summarise a subset of the same findings).
+                if gate_name == "p_gate" and advisor_available() and (gate_block or gate_review):
+                    advisor = ReviewAdvisor()
+                    summary_path = OUTPUT_DIR / f"{safe}_{clf}_advisor_summary.json"
+                    summary_path.write_text(json.dumps({
+                        "image": label,
+                        "classifier": clf,
+                        "block_summary": advisor.advise_batch(gate_block) if gate_block else None,
+                        "review_summary": advisor.advise_batch(gate_review) if gate_review else None,
+                    }, indent=2))
 
             verdict_summary = {
                 row.policy: {"block": row.block, "deny": row.deny_count}

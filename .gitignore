@@ -1,6 +1,13 @@
 # Grype DB snapshot — too large for git (1.4 GB)
 logs/db_snapshots/
 
+# OSV-Scanner raw output — not consumed by the pipeline (normalisers/
+# only has trivy.py and grype.py; the live osv.py enricher queries
+# OSV.dev directly per-CVE, separate from this bulk dump). Can exceed
+# GitHub's 100MB file limit on noisy images (php/PHP-app scans
+# especially -- one was 263MB).
+data/raw/osv/
+
 # SBOMs — regeneratable via Syft; large (up to 33 MB each)
 sbom/
 
