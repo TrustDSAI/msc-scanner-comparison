@@ -1,78 +1,61 @@
 # Policy-as-Code Gating Layer
 
-Standalone OPA/Rego policy layer for container vulnerability gating in CI/CD pipelines. Consumes raw scanner outputs from Trivy, Grype, and OSV-Scanner; produces a structured gate decision plus an audit-grade classification of every finding.
+Standalone OPA/Rego policy layer for container vulnerability gating in
+CI/CD pipelines. Consumes raw scanner outputs from Trivy and Grype;
+enriches with NVD/OSV/EPSS/KEV; produces a tri-state gate decision
+(block / review / pass) plus an audit-grade classification of every
+finding.
+
+**Full documentation: [`docs/`](./docs/README.md)** — architecture,
+the full policy reference, enrichment/retry/caching behavior, and
+deployment (CLI / API / GitHub Action / image publishing). This README
+is just a quickstart; `docs/` is the code reference, and
+[`../CONTEXT.md`](../CONTEXT.md) is the project's domain glossary and
+design-decision log.
 
 ## Structure
 
 ```
 policy/
-├── normalise.py              Trivy/Grype JSON to unified input schema
-├── enrich.py                 P4 enrichment: NVD, OSV, EPSS; cached by CVE
-├── rego/                     OPA/Rego policy bundle
-│   ├── p1_any_critical.rego
-│   ├── p2_critical_with_fix.rego
-│   ├── p3_consensus_critical.rego
-│   └── p4_enriched_critical.rego
-├── tests/                    OPA unit tests (one per policy)
-│   ├── p1_test.rego
-│   ├── p2_test.rego
-│   ├── p3_test.rego
-│   └── p4_test.rego
-├── examples/                 Sample inputs for manual evaluation
-│   └── sample_input.json
-└── ci/
-    └── github-actions.yml    CI/CD integration example
+├── policy_gate.py     Main CLI / orchestration (run_gate(), all report formatters)
+├── api.py             FastAPI server mode (POST /gate, /gate/verdict, /health)
+├── normalisers/        Trivy/Grype adapters -> unified Finding schema
+├── classifiers/        layer ("app"/"os"/"unknown") classification: rule | agent (LLM)
+├── enrichers/           NVD, OSV, EPSS, KEV; shared retry/cache in _retry.py, cache.py
+├── rego/                policy bundle: p_gate.rego (default) + the P1-P7 research lineage
+├── exceptions_loader.py  suppression YAML loader (see docs/policy-reference.md)
+├── provenance.py        tool-version/bundle-fingerprint self-reporting
+├── tests/               OPA unit tests (opa test rego/ tests/) + pytest (test_*.py)
+├── docs/                code reference (this directory's documentation)
+└── Dockerfile           self-contained image: scanners + opa + this pipeline
 ```
 
-## Policies
+## P1-P7 vs. p_gate
 
-| Policy | Block condition | Adds |
-|--------|-----------------|------|
-| P1 | Any CRITICAL finding | Severity threshold |
-| P2 | CRITICAL with fix available | Fixability filter |
-| P3 | CRITICAL confirmed by both scanners | Cross-scanner consensus |
-| P4 | CRITICAL + NVD-validated + OSV-confirmed + EPSS above threshold | External enrichment, risk-based prioritisation |
-
-See `docs/notes_architectural_decision.md` for the full design rationale.
-
-## Pipeline
-
-```
-[scanners] -> normalise.py -> policy_input.json -> [opa eval] -> verdict
-                                       |
-                                  (P4 only)
-                                       v
-                                  enrich.py
-                                       |
-                                       v
-                              enriched_input.json -> [opa eval] -> verdict
-```
+`rego/p[1-7]*.rego` are the research lineage (Chapter 5's empirical
+study, each adding one signal: severity → consensus → fix → enrichment →
+layer-awareness → EOL → severity-aware thresholds). `rego/p_gate.rego` is
+the delivered tri-state policy that supersedes them — see
+[`docs/policy-reference.md`](./docs/policy-reference.md) for its full
+logic, and `docs/notes_architectural_decision.md` (repo root) for why
+the tri-state design superseded the single deny-set P1-P7 lineage.
 
 ## Quickstart
 
 ```bash
-# Normalise scanner outputs
-python normalise.py \
-    --trivy ../data/raw/trivy/python_3.8_trivy.json \
-    --grype ../data/raw/grype/python_3.8_grype.json \
-    --out policy_input.json
+# Full pipeline, default policy
+python3 policy_gate.py --image alpine:3.21 --report-format markdown
 
-# Run P3 (consensus)
-opa eval --input policy_input.json --data rego/ \
-    "data.vuln.p3.block_build"
+# With suppression and a custom config
+python3 policy_gate.py --image my-app:latest \
+    --policy configs/p_gate.json --exceptions-dir exceptions/
 
-# Enrich and run P4
-python enrich.py --in policy_input.json --out enriched_input.json
-opa eval --input enriched_input.json --data rego/ \
-    "data.vuln.p4.block_build"
-```
-
-## Tests
-
-```bash
+# Tests
 opa test rego/ tests/
+python3 -m pytest
 ```
 
-## Status
-
-Skeleton only. Implementation pending.
+See [`docs/deployment.md`](./docs/deployment.md) for the API server and
+GitHub Action modes, and [`docs/architecture.md`](./docs/architecture.md)
+for how a single image flows through scan → normalise → classify →
+enrich → opa eval → report.
