@@ -22,22 +22,13 @@ import json
 
 from .base import Enricher, EnrichmentResult
 from .cache import get_cache
+from ._retry import is_transient, MAX_RETRIES as _MAX_RETRIES, RETRY_BACKOFF_BASE as _RETRY_BACKOFF_BASE
 
 
 _NVD_URL = "https://services.nvd.nist.gov/rest/json/cves/2.0?cveId={cve_id}"
 _TIMEOUT = 15
 _RATE_LIMIT_SLEEP_NO_KEY = 6.5  # 5 req / 30s -> 6.5s between calls when no key
 _RATE_LIMIT_SLEEP_WITH_KEY = 0.6
-_MAX_RETRIES = 3
-_RETRY_BACKOFF_BASE = 2.0  # seconds; doubles each retry (2s, 4s)
-
-
-def _is_transient(exc: Exception) -> bool:
-    """503/429/timeout are worth retrying; a malformed request or a
-    genuine 404 is not -- retrying those just burns the rate limit."""
-    if isinstance(exc, urllib.error.HTTPError):
-        return exc.code in (429, 500, 502, 503, 504)
-    return isinstance(exc, TimeoutError) or "timed out" in str(exc).lower()
 
 
 class NVDEnricher(Enricher):
@@ -84,7 +75,7 @@ class NVDEnricher(Enricher):
                 await asyncio.sleep(
                     _RATE_LIMIT_SLEEP_WITH_KEY if self._api_key else _RATE_LIMIT_SLEEP_NO_KEY
                 )
-            if exc is None or not _is_transient(exc) or attempt == _MAX_RETRIES - 1:
+            if exc is None or not is_transient(exc) or attempt == _MAX_RETRIES - 1:
                 break
             await asyncio.sleep(_RETRY_BACKOFF_BASE * (2 ** attempt))
 

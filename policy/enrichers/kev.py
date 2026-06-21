@@ -36,6 +36,7 @@ import urllib.request
 
 from .base import Enricher, EnrichmentResult
 from .cache import get_cache
+from ._retry import retry_sync
 
 
 _KEV_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
@@ -61,9 +62,12 @@ def _load_kev_catalog() -> dict[str, dict]:
     if cached is not None:
         catalog = cached
     else:
-        try:
+        def _fetch():
             with urllib.request.urlopen(_KEV_URL, timeout=_TIMEOUT) as resp:
-                catalog = json.loads(resp.read().decode())
+                return json.loads(resp.read().decode())
+
+        try:
+            catalog = retry_sync(_fetch)
             cache.put("kev", "catalog", catalog)
         except Exception:  # noqa: BLE001
             catalog = {"vulnerabilities": []}

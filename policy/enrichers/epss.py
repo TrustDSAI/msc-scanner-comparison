@@ -17,6 +17,7 @@ import urllib.request
 
 from .base import Enricher, EnrichmentResult
 from .cache import get_cache
+from ._retry import retry_async
 
 
 _EPSS_URL = "https://api.first.org/data/v1/epss?cve={cve_id}"
@@ -60,7 +61,7 @@ class EPSSEnricher(Enricher):
             )
 
         try:
-            payload = await asyncio.to_thread(self._fetch_sync, cve_id)
+            payload = await retry_async(lambda: asyncio.to_thread(self._fetch_sync, cve_id))
         except Exception as exc:  # noqa: BLE001
             result = EnrichmentResult(
                 field_name=self.field_name,

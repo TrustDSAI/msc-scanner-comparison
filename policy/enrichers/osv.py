@@ -26,6 +26,7 @@ import urllib.request
 
 from .base import Enricher, EnrichmentResult
 from .cache import get_cache
+from ._retry import retry_async
 
 
 _OSV_VULNS_URL = "https://api.osv.dev/v1/vulns/{cve_id}"
@@ -56,7 +57,7 @@ class OSVEnricher(Enricher):
             )
 
         try:
-            payload = await asyncio.to_thread(self._fetch_sync, cve_id)
+            payload = await retry_async(lambda: asyncio.to_thread(self._fetch_sync, cve_id))
         except urllib.error.HTTPError as exc:
             if exc.code == 404:
                 # OSV has no record. That's a meaningful negative result.
