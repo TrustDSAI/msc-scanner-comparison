@@ -62,8 +62,12 @@ def is_available() -> bool:
 
 
 def _cache_key(provider: str, model: str, finding: dict) -> str:
-    epss = (finding.get("epss") or {}).get("score", "")
-    kev  = (finding.get("kev")  or {}).get("in_kev", "")
+    # block/review entries are lib.make_msg's flat shape (epss_score,
+    # in_kev), not the nested enrichment shape (epss.score, kev.in_kev)
+    # findings carry before reaching the gate -- these are gate output,
+    # not raw enriched findings.
+    epss = finding.get("epss_score", "")
+    kev  = finding.get("in_kev", "")
     return (f"{provider}::{model}::{finding.get('cve_id','')}"
             f"::{finding.get('package','')}"
             f"::{epss}::{kev}")
@@ -87,7 +91,7 @@ class ReviewAdvisor:
             return None
         findings = sorted(
             findings,
-            key=lambda f: (f.get("epss") or {}).get("score", 0),
+            key=lambda f: f.get("epss_score") or 0,
             reverse=True,
         )[:self._BATCH_CAP]
         from enrichers.cache import get_cache
@@ -103,9 +107,9 @@ class ReviewAdvisor:
 
         rows = "\n".join(
             f"- {f.get('cve_id','?')} | {f.get('package','?')} {f.get('version','?')} "
-            f"| {f.get('severity','?')} | EPSS {(f.get('epss') or {}).get('score', 0):.3f} "
+            f"| {f.get('severity','?')} | EPSS {(f.get('epss_score') or 0):.3f} "
             f"| fix={'yes' if f.get('fix_version') else 'no'} "
-            f"| kev={'yes' if (f.get('kev') or {}).get('in_kev') else 'no'}"
+            f"| kev={'yes' if f.get('in_kev') else 'no'}"
             for f in findings
         )
         prompt = _BATCH_TEMPLATE.format(n=len(findings), rows=rows)
