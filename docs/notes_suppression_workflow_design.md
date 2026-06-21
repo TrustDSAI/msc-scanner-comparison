@@ -4,6 +4,19 @@
 **Decision:** Implement governed risk acceptance with LLM advisor, YAML-stored exceptions, expiry automation, and GitHub Actions integration.
 **Status:** Approved for build
 
+**Implementation status (as of this commit):** Only the data model and
+enforcement mechanics shipped -- YAML exception files, the `lib.suppressed`
+Rego predicate, expiry-by-date or expiry-by-fix-available, and the
+`suppressed` audit output with `would_have_been`. **Not built:** the
+LLM-drafted suppression proposal (§4-5), the auto-opened exception PR
+(§10 success criterion 4), and any CODEOWNERS-based or cryptographic
+approval verification (§2.2, §11). What exists today is "suppress via a
+hand-written, PR-reviewed YAML file" -- the actual approval enforcement
+is GitHub branch protection on that PR, not anything this gate checks.
+Read this document as the Phase 2 design target, not a description of
+what's running; the gap is intentional and called out as future work
+in `notes_architectural_decision.md`'s Limitations section.
+
 ---
 
 ## 1. What We Are Building

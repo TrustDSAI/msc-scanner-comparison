@@ -1,5 +1,7 @@
-# Worked example for the suppression workflow (Phase 1).
-# See docs/notes_suppression_workflow_design.md for the governance model.
+# Worked example for the suppression workflow (Phase 1: audit-trail and
+# expiry mechanics only, no automated approval enforcement -- PR review
+# is the actual control). See docs/notes_suppression_workflow_design.md
+# for the full design, including what's not built yet.
 #
 # CVE-2023-32314 (vm2 sandbox escape) is the one finding that blocks
 # bkimminich/juice-shop under the tri-state gate (EPSS 0.70, KEV member,
