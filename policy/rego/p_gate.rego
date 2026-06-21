@@ -151,15 +151,19 @@ nvd_acceptable_statuses := s if {
 # than false, which would silently empty out block/review.
 gate_image := object.get(input, "image", {})
 
-# --- Decision per finding ---------------------------------------------
+# --- Tier per finding ---------------------------------------------
+#
+# "tier" (per-finding) vs. "decision" (per-image aggregate, computed in
+# policy_gate.py as the worst tier across all findings) are deliberately
+# distinct names -- see CONTEXT.md.
 
-# A finding's decision is the highest tier it qualifies for.
-decision(finding) := "block"  if is_block(finding)
-decision(finding) := "review" if {
+# A finding's tier is the highest one it qualifies for.
+tier(finding) := "block"  if is_block(finding)
+tier(finding) := "review" if {
     not is_block(finding)
     is_review(finding)
 }
-decision(finding) := "pass" if {
+tier(finding) := "pass" if {
     not is_block(finding)
     not is_review(finding)
 }

@@ -92,7 +92,7 @@ test_block_set_contains_kev_finding if {
 }
 
 test_block_decision_label if {
-    gate.decision(kev_with_fix) == "block" with input as fx.wrap([kev_with_fix])
+    gate.tier(kev_with_fix) == "block" with input as fx.wrap([kev_with_fix])
 }
 
 
@@ -114,7 +114,7 @@ test_high_with_fix_and_consensus_is_review if {
 }
 
 test_review_decision_label if {
-    gate.decision(crit_review) == "review" with input as fx.wrap([crit_review])
+    gate.tier(crit_review) == "review" with input as fx.wrap([crit_review])
 }
 
 test_kev_no_fix_review_reason if {
@@ -137,7 +137,7 @@ test_low_passes if {
 }
 
 test_pass_decision_label if {
-    gate.decision(medium_pass) == "pass" with input as fx.wrap([medium_pass])
+    gate.tier(medium_pass) == "pass" with input as fx.wrap([medium_pass])
 }
 
 
@@ -213,12 +213,12 @@ crit_unknown_layer := with_kev(
 
 test_app_layer_below_floor_does_not_review if {
     not gate.review_required with input as fx.wrap([crit_app_low_epss])
-    gate.decision(crit_app_low_epss) == "pass" with input as fx.wrap([crit_app_low_epss])
+    gate.tier(crit_app_low_epss) == "pass" with input as fx.wrap([crit_app_low_epss])
 }
 
 test_app_layer_above_floor_reviews if {
     gate.review_required with input as fx.wrap([crit_app_high_epss])
-    gate.decision(crit_app_high_epss) == "review" with input as fx.wrap([crit_app_high_epss])
+    gate.tier(crit_app_high_epss) == "review" with input as fx.wrap([crit_app_high_epss])
 }
 
 test_os_layer_lower_floor_reviews_where_app_would_not if {
@@ -255,7 +255,7 @@ test_corroborated_critical_reviews_even_below_layer_floor if {
     # 0.05 < review_critical_app_min_epss (0.1) -- would fail the floor,
     # but corroboration bypasses it.
     gate.review_required with input as fx.wrap([crit_corroborated_low_epss_app])
-    gate.decision(crit_corroborated_low_epss_app) == "review"
+    gate.tier(crit_corroborated_low_epss_app) == "review"
         with input as fx.wrap([crit_corroborated_low_epss_app])
 }
 
@@ -269,5 +269,5 @@ test_non_corroborated_critical_still_uses_layer_floor if {
     # Same EPSS (0.05), same layer (app), but single-scanner -> not
     # corroborated -> floor applies -> does not review.
     not gate.review_required with input as fx.wrap([crit_app_low_epss])
-    gate.decision(crit_app_low_epss) == "pass" with input as fx.wrap([crit_app_low_epss])
+    gate.tier(crit_app_low_epss) == "pass" with input as fx.wrap([crit_app_low_epss])
 }
