@@ -170,12 +170,18 @@ test_empty_passes if {
 
 
 # ----- Layer-aware review floor (P5_layer folded into review tier) ----
+#
+# The floor only applies to CRITICALs that are NOT fully corroborated --
+# a fully corroborated one always reviews regardless of EPSS (see the
+# corroborated-critical tests below). These fixtures break consensus
+# (single-scanner) to exercise the floor path on purpose.
 
 # app layer needs EPSS > 0.1; below that, no review.
 crit_app_low_epss := with_kev(
     json.patch(fx.critical_full, [
-        {"op": "replace", "path": "/epss/score", "value": 0.05},
-        {"op": "replace", "path": "/layer",      "value": "app"},
+        {"op": "replace", "path": "/epss/score",   "value": 0.05},
+        {"op": "replace", "path": "/layer",        "value": "app"},
+        {"op": "replace", "path": "/detected_by",  "value": ["trivy"]},
     ]),
     kev_absent,
 )
@@ -188,8 +194,9 @@ crit_app_high_epss := json.patch(crit_app_low_epss, [
 # the app floor.
 crit_os_low_epss := with_kev(
     json.patch(fx.critical_full, [
-        {"op": "replace", "path": "/epss/score", "value": 0.05},
-        {"op": "replace", "path": "/layer",      "value": "os"},
+        {"op": "replace", "path": "/epss/score",   "value": 0.05},
+        {"op": "replace", "path": "/layer",        "value": "os"},
+        {"op": "replace", "path": "/detected_by",  "value": ["trivy"]},
     ]),
     kev_absent,
 )
@@ -197,8 +204,9 @@ crit_os_low_epss := with_kev(
 # unknown layer keeps the unconditional 0.0 floor (never silently dropped).
 crit_unknown_layer := with_kev(
     json.patch(fx.critical_full, [
-        {"op": "replace", "path": "/epss/score", "value": 0.001},
-        {"op": "replace", "path": "/layer",      "value": "unknown"},
+        {"op": "replace", "path": "/epss/score",   "value": 0.001},
+        {"op": "replace", "path": "/layer",        "value": "unknown"},
+        {"op": "replace", "path": "/detected_by",  "value": ["trivy"]},
     ]),
     kev_absent,
 )
@@ -225,4 +233,41 @@ test_layer_floor_configurable if {
     # Raise the os floor above 0.05 -> crit_os_low_epss no longer reviews.
     inp := fx.wrap_with_config([crit_os_low_epss], {"review_critical_os_min_epss": 0.1})
     not gate.review_required with input as inp
+}
+
+
+# ----- Corroborated CRITICAL below block EPSS: always review ----------
+#
+# Same evidence as critical_block (consensus, fix, NVD validated, OSV
+# advisory + fix) but EPSS has dropped below block_epss_threshold and
+# below what the app-layer floor would require. Must still review --
+# the layer floor must never suppress a fully-evidenced finding.
+
+crit_corroborated_low_epss_app := with_kev(
+    json.patch(fx.critical_full, [
+        {"op": "replace", "path": "/epss/score", "value": 0.05},
+        {"op": "replace", "path": "/layer",      "value": "app"},
+    ]),
+    kev_absent,
+)
+
+test_corroborated_critical_reviews_even_below_layer_floor if {
+    # 0.05 < review_critical_app_min_epss (0.1) -- would fail the floor,
+    # but corroboration bypasses it.
+    gate.review_required with input as fx.wrap([crit_corroborated_low_epss_app])
+    gate.decision(crit_corroborated_low_epss_app) == "review"
+        with input as fx.wrap([crit_corroborated_low_epss_app])
+}
+
+test_corroborated_critical_review_reason if {
+    msgs := gate.review with input as fx.wrap([crit_corroborated_low_epss_app])
+    some m in msgs
+    m.reason == "CRITICAL fully corroborated, below block EPSS threshold"
+}
+
+test_non_corroborated_critical_still_uses_layer_floor if {
+    # Same EPSS (0.05), same layer (app), but single-scanner -> not
+    # corroborated -> floor applies -> does not review.
+    not gate.review_required with input as fx.wrap([crit_app_low_epss])
+    gate.decision(crit_app_low_epss) == "pass" with input as fx.wrap([crit_app_low_epss])
 }

@@ -40,9 +40,18 @@
 #
 # Review conditions
 # -----------------
-#   - Any CRITICAL finding not already in block (e.g. lower EPSS, missing
-#     OSV advisory, single-scanner), gated by a layer-aware EPSS floor
-#     (see below) so noisy low-EPSS findings don't flood the review queue.
+#   - A fully corroborated CRITICAL (same signals as the block path --
+#     consensus, fix, NVD validated, OSV advisory + fix -- minus the EPSS
+#     bar) that didn't clear block_epss_threshold: ALWAYS review,
+#     unconditionally, no EPSS floor. EPSS is a 30-day exploitation
+#     forecast, not a severity signal; it decays as attacker interest
+#     moves on, but a cross-scanner-confirmed CRITICAL with a confirmed
+#     fix doesn't stop being real just because this week's score is low.
+#   - Any OTHER CRITICAL not already in block or the corroborated case
+#     above (e.g. single-scanner, no OSV advisory, no fix) -- gated by a
+#     layer-aware EPSS floor (see below) so noisy low-confidence findings
+#     don't flood the review queue. This is the only place that floor
+#     applies; it can no longer drop a fully-evidenced finding to pass.
 #   - Any HIGH finding with a fix and consensus (severity label is
 #     untrustworthy across tools, so HIGH never auto-blocks; it is shown
 #     to a human).
@@ -54,8 +63,10 @@
 # P5_layer's empirical result (juice-shop 9->1, web-dvwa 198->116 block
 # reduction) showed per-layer EPSS asymmetry filters review-queue noise
 # without losing real findings. Folded into review only -- the block tier
-# stays layer-agnostic per the rationale above. A CRITICAL finding's EPSS
-# must clear review_critical_app_min_epss if layer=="app",
+# stays layer-agnostic per the rationale above. Applies only to CRITICALs
+# that are NOT fully corroborated (see above); a corroborated-but-low-EPSS
+# finding always reaches review regardless of layer. A CRITICAL finding's
+# EPSS must clear review_critical_app_min_epss if layer=="app",
 # review_critical_os_min_epss if layer=="os", or
 # review_critical_unknown_min_epss if layer is missing/"unknown" (default
 # 0.0 -- unclassified findings are never silently dropped).
@@ -174,22 +185,46 @@ kev_block(finding) if {
     not kev_requires_fix_cfg
 }
 
-# Condition 2: fully corroborated CRITICAL above the high-confidence EPSS bar.
-critical_block(finding) if {
+# Every block-2 signal except EPSS. Shared by critical_block (which adds
+# the high-confidence EPSS bar) and the review tier (which doesn't gate
+# this case on EPSS at all -- see below).
+corroborated_critical(finding) if {
     lib.is_critical(finding)
     lib.is_consensus(finding)
     lib.has_fix(finding)
     lib.nvd_status_in(finding, nvd_acceptable_statuses)
     lib.osv_confirms_advisory(finding)
     lib.osv_has_fix(finding)
+}
+
+# Condition 2: fully corroborated CRITICAL above the high-confidence EPSS bar.
+critical_block(finding) if {
+    corroborated_critical(finding)
     lib.epss_above(finding, block_epss_threshold)
 }
 
 # --- Review tier ------------------------------------------------------
 
-# Any CRITICAL not already blocked, above its layer-aware EPSS floor.
+# Fully corroborated CRITICAL that didn't clear the block EPSS bar: still
+# unconditionally review, regardless of layer or current EPSS. EPSS is a
+# 30-day exploitation forecast, not a severity signal -- it decays as
+# attacker interest moves on, but a cross-scanner-confirmed CRITICAL with
+# a fix and an OSV advisory doesn't stop being a real, cheaply-fixable
+# vulnerability just because this week's score dropped. The layer-aware
+# floor below exists to filter low-confidence noise (single-scanner, no
+# advisory); it should never be the thing that drops a fully-evidenced
+# finding to pass.
+is_review(finding) if {
+    corroborated_critical(finding)
+}
+
+# Any other CRITICAL not already blocked or corroborated-but-low-EPSS:
+# gated by the layer-aware floor (this is where P5_layer's noise
+# reduction actually applies -- low-confidence, single-scanner, or
+# no-advisory findings).
 is_review(finding) if {
     lib.is_critical(finding)
+    not corroborated_critical(finding)
     lib.epss_above(finding, review_critical_min_epss(finding))
 }
 
@@ -271,9 +306,14 @@ review_reason(finding) := "KEV catalog: actively exploited, no fix available" if
     lib.in_kev(finding)
     not lib.has_fix(finding)
 }
+review_reason(finding) := "CRITICAL fully corroborated, below block EPSS threshold" if {
+    not lib.in_kev(finding)
+    corroborated_critical(finding)
+}
 review_reason(finding) := "CRITICAL, needs human decision" if {
     lib.is_critical(finding)
     not lib.in_kev(finding)
+    not corroborated_critical(finding)
 }
 review_reason(finding) := "HIGH with fix and consensus, needs human decision" if {
     not lib.is_critical(finding)
