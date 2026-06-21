@@ -438,6 +438,94 @@ Ten deliberately-crafted images targeting each gate path. All produce the correc
 
 ---
 
+## 10. Dataset Expansion: 30 Images, p_gate Only
+
+**Date of run:** 2026-06-21
+**Images:** 9 (original) + 21 new, ecosystem diversity (Go, Ruby, Java/JVM,
+.NET, PHP, Rust) — see `docs/notes_dataset_expansion.md` for the full image
+list and scan methodology.
+**Total CRITICAL findings normalised across 30 images (P1, rule classifier):** 1,300
+**Total OPA test pass rate:** 82/82
+
+This run targets `p_gate` specifically (the delivered tri-state policy,
+not the P1–P7 research lineage) to test whether its block-tier discipline
+holds at 3x the original dataset size and across ecosystems the original
+9 didn't cover.
+
+### 10.1 Headline: naive severity threshold vs. p_gate
+
+| Metric | Value |
+|---|---|
+| Images that would block under P1 (any CRITICAL) | 26/30 |
+| Images that actually block under `p_gate` | **10/30** |
+
+A naive severity gate fails 87% of the 30-image dataset outright. `p_gate`
+reserves a hard fail for a third of it — consistent with the original
+9-image result (Chapter 5), now demonstrated at 3x the scale and across
+six additional ecosystems.
+
+### 10.2 New-ecosystem highlights
+
+- **`php:8.3-apache`** (modern PHP, new ecosystem): 30 raw CRITICAL
+  findings → **zero** reach block or review. Total noise elimination on
+  an ecosystem the gate was never tuned against — evidence the
+  corroboration-based filtering generalizes, rather than being an
+  artifact of Python/Node-specific CVE patterns.
+- **`python:2.7`** (EOL since 2020): 184 CRITICAL findings, still blocks.
+  The gate's noise tolerance doesn't come at the cost of missing a
+  genuinely unmaintained runtime.
+- **`golang:1.23-alpine`**, **`ruby:3.3-slim`**, **`rust:1.82-slim`**
+  (modern, three ecosystems with zero prior representation): all pass or
+  reach review only, never block — consistent with the "modern base
+  image, low corroborated risk" pattern already established in the
+  original 9's Group C.
+
+### 10.3 KEV path vs. corroboration path: a controlled three-way comparison
+
+`v01-log4shell`, `v03-text4shell`, and `v04-spring4shell`
+(`validation/images/`) are single-CVE Java images with comparably extreme
+EPSS scores. None has cross-scanner consensus (each CVE was detected by
+only one of Trivy/Grype on these minimal images), so none qualify via
+the corroborated-CRITICAL block path. The KEV path is what separates them:
+
+| Image | CVE | EPSS | Consensus | In CISA KEV (this run) | `p_gate` result |
+|---|---|---|---|---|---|
+| v01-log4shell | CVE-2021-44228 | 0.99999 | no | **yes** | **BLOCK** (KEV+fix path) |
+| v04-spring4shell | CVE-2022-22965 | 0.99677 | no | **yes** | **BLOCK** (KEV+fix path) |
+| v03-text4shell | CVE-2022-42889 | 0.99931 | no | no | review only |
+
+Text4Shell's EPSS (0.999) is statistically indistinguishable from the
+other two, and §9 of this document already establishes it was never a
+CISA KEV entry despite comparable media attention at disclosure — this
+is not a volatility effect (contrast with §10.4 below), it's that KEV is
+a narrow catalog of *confirmed* active exploitation, not a proxy for how
+prominent a CVE became in security media. The three-way comparison
+isolates exactly what the KEV path is doing: with consensus absent in
+all three, EPSS alone never crosses the block bar (`block_epss_threshold`
+ignores EPSS magnitude once KEV+fix is satisfied, and conversely no EPSS
+value substitutes for missing KEV+consensus). KEV is corroboration of a
+different kind — direct evidence of exploitation, not a probabilistic
+signal — and the policy treats it as sufficient on its own.
+
+### 10.4 EPSS volatility, demonstrated a second time
+
+`CVE-2023-32314` (vm2 sandbox escape, juice-shop, original 9-image
+dataset) already demonstrated EPSS dropping from 0.70 (March) to 0.056
+(June) with no change to the CVE or its fix (§4, original analysis). This
+expansion run is itself a second data point for the same phenomenon:
+re-running the full 30-image dataset against live EPSS/NVD/KEV data on a
+different day will not reproduce bit-identical numbers to a prior run,
+by design — the gate's inputs are genuinely time-varying external
+signals, not static scanner output. Any reproduction of these results
+should be read as "the gate's logic is reproducible given the same
+enrichment snapshot," not "these exact counts are reproducible on any
+date" — a distinction worth stating explicitly in the thesis's
+reproducibility claims (see `docs/notes_dataset_expansion.md`'s closing
+note and `policy/docs/enrichment.md`'s "EPSS: embedded vs. live"
+section for the mechanism).
+
+---
+
 ## 8. Files Referenced in This Analysis
 
 - `docs/notes_architectural_decision.md` — policy layer design rationale
@@ -452,3 +540,5 @@ Ten deliberately-crafted images targeting each gate path. All produce the correc
 - `policy/policy_gate.py` — single-image CI/CD gate CLI (tri-state: block/review/pass)
 - `policy/evaluate_all.py` — batch orchestrator for the study dataset
 - `policy/configs/` — policy configuration JSON files
+- `docs/notes_dataset_expansion.md` — 9→30 image expansion: rationale, image list, methodology (§10)
+- `policy/docs/` — code reference: architecture, full p_gate tier/config reference, enrichment/retry behavior, deployment modes
