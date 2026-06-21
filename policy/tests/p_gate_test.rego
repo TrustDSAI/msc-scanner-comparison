@@ -271,3 +271,31 @@ test_non_corroborated_critical_still_uses_layer_floor if {
     not gate.review_required with input as fx.wrap([crit_app_low_epss])
     gate.tier(crit_app_low_epss) == "pass" with input as fx.wrap([crit_app_low_epss])
 }
+
+
+# ----- Configurable corroborated-critical floor (opt-in) --------------
+
+test_corroborated_critical_floor_default_is_unconditional if {
+    # No config override -> reviews even at near-zero EPSS.
+    inp := fx.wrap([crit_corroborated_low_epss_app])
+    gate.review_required with input as inp
+}
+
+test_corroborated_critical_floor_can_be_configured if {
+    # Operator opts into a floor above 0.05 -> falls to pass.
+    inp := fx.wrap_with_config(
+        [crit_corroborated_low_epss_app],
+        {"corroborated_critical_min_epss": 0.1},
+    )
+    not gate.review_required with input as inp
+    gate.tier(crit_corroborated_low_epss_app) == "pass" with input as inp
+}
+
+test_corroborated_critical_floor_configured_below_epss_still_reviews if {
+    # Floor set but this finding's EPSS still clears it.
+    inp := fx.wrap_with_config(
+        [crit_corroborated_low_epss_app],
+        {"corroborated_critical_min_epss": 0.01},
+    )
+    gate.review_required with input as inp
+}

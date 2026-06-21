@@ -28,6 +28,6 @@ _Avoid_: exemption, waiver, allowlist
 A YAML record (CVE ID + expiry + approval) that authorizes Suppression of a specific Finding. Distinct from a `gate-override`, which bypasses the build-failure step entirely without touching the gate's own verdict.
 _Avoid_: waiver, allowlist entry
 
-## Open questions
+## Decisions
 
-- **Block-tier asymmetry.** The gate is biased toward pushing ambiguous Findings to `review` rather than risking a wrongly-blocked build. Not yet resolved whether `review`-tier volume (reviewer fatigue) is a real enough cost to pull some borderline corroborated-but-low-EPSS Findings back toward auto-`pass`.
+- **Block-tier asymmetry is intentional and stays, but the corroborated-CRITICAL review floor is configurable.** Default: a fully Corroborated CRITICAL always reaches `review` regardless of EPSS — a missed real RCE silently passed is worse than a few minutes of reviewer time, and reviewer fatigue is primarily addressed by compressing the queue (the LLM advisor's top-20-by-EPSS batch summary), not by weakening the evidence bar. But `corroborated_critical_min_epss` (default `null` = no floor) lets an operator opt into trading some recall for less review-tier volume if they decide that trade is right for their team — a visible, deliberate config choice, not the gate's default behaviour.

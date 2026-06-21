@@ -87,6 +87,11 @@
 #   "review_critical_app_min_epss":     0.1,  # EPSS floor for app-layer CRITICAL review
 #   "review_critical_os_min_epss":      0.01, # EPSS floor for os-layer CRITICAL review
 #   "review_critical_unknown_min_epss": 0.0,  # EPSS floor when layer is missing/unknown
+#   "corroborated_critical_min_epss": null,   # null = always review a fully
+#                                              # corroborated CRITICAL regardless
+#                                              # of EPSS; set a number to opt into
+#                                              # a floor (trades recall for less
+#                                              # review-tier volume)
 #   "nvd_acceptable_statuses": ["Analyzed", "Modified"],
 #   "kev_requires_fix":        true,    # false = block KEV even without a fix
 #   "enable_kev_block":        true,    # false = disable the KEV block path entirely
@@ -122,6 +127,11 @@ review_high_min_epss   := lib.config_value("review_high_min_epss",   0.0)
 enable_kev_block       := lib.config_value("enable_kev_block",       true)
 enable_critical_block  := lib.config_value("enable_critical_block",  true)
 kev_requires_fix_cfg   := lib.config_value("kev_requires_fix",       true)
+
+# null (default) = no floor, a corroborated CRITICAL always reviews
+# regardless of EPSS. Set to opt into trading some recall for less
+# review-tier volume -- see the file docstring's review-conditions note.
+corroborated_critical_min_epss := lib.config_value("corroborated_critical_min_epss", null)
 
 review_critical_app_min_epss     := lib.config_value("review_critical_app_min_epss",     0.1)
 review_critical_os_min_epss      := lib.config_value("review_critical_os_min_epss",      0.01)
@@ -218,8 +228,20 @@ critical_block(finding) if {
 # floor below exists to filter low-confidence noise (single-scanner, no
 # advisory); it should never be the thing that drops a fully-evidenced
 # finding to pass.
+#
+# Configurable opt-out: corroborated_critical_min_epss (default: unset,
+# meaning no floor, always review). If an operator decides reviewer
+# fatigue genuinely outweighs catching very-low-EPSS corroborated
+# findings, they can set a floor here -- but that's a deliberate,
+# visible config choice, not the gate's default behaviour.
 is_review(finding) if {
     corroborated_critical(finding)
+    corroborated_critical_min_epss == null
+}
+is_review(finding) if {
+    corroborated_critical(finding)
+    corroborated_critical_min_epss != null
+    lib.epss_above(finding, corroborated_critical_min_epss)
 }
 
 # Any other CRITICAL not already blocked or corroborated-but-low-EPSS:
