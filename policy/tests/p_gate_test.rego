@@ -299,3 +299,61 @@ test_corroborated_critical_floor_configured_below_epss_still_reviews if {
     )
     gate.review_required with input as inp
 }
+
+
+# ----- Consensus CRITICAL, no fix, below layer floor: always review ---
+#
+# php:8.3-apache regression (dissertation review, Finding 11): consensus
+# (both scanners) CRITICAL, no fix yet, NVD not yet analysed, EPSS below
+# the os-layer floor. Before this branch existed it silently passed,
+# contradicting the chapter's own claim that no-fix/low-EPSS findings are
+# surfaced rather than dropped.
+
+crit_consensus_no_fix_below_floor := json.patch(fx.critical_full, [
+    {"op": "replace", "path": "/fix_version",  "value": null},
+    {"op": "replace", "path": "/osv/fix_version", "value": null},
+    {"op": "replace", "path": "/osv/advisory_found", "value": false},
+    {"op": "replace", "path": "/nvd/status",   "value": "Deferred"},
+    {"op": "replace", "path": "/epss/score",   "value": 0.005},
+    {"op": "replace", "path": "/layer",        "value": "os"},
+])
+
+test_consensus_no_fix_below_floor_still_reviews if {
+    # EPSS 0.005 < review_critical_os_min_epss (0.01) -- would fail the
+    # floor on its own, but consensus bypasses it.
+    gate.review_required with input as fx.wrap([crit_consensus_no_fix_below_floor])
+    gate.tier(crit_consensus_no_fix_below_floor) == "review"
+        with input as fx.wrap([crit_consensus_no_fix_below_floor])
+}
+
+test_consensus_no_fix_review_reason if {
+    msgs := gate.review with input as fx.wrap([crit_consensus_no_fix_below_floor])
+    some m in msgs
+    m.reason == "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision"
+}
+
+test_consensus_no_fix_does_not_block if {
+    # Must never reach block -- this path only adds review coverage.
+    not gate.block_build with input as fx.wrap([crit_consensus_no_fix_below_floor])
+}
+
+test_single_scanner_no_fix_below_floor_still_passes if {
+    # Same evidence but single-scanner: consensus bypass does not apply,
+    # layer floor still governs, falls to pass. Confirms the new branch
+    # is gated on consensus, not just "no fix."
+    single := json.patch(crit_consensus_no_fix_below_floor, [
+        {"op": "replace", "path": "/detected_by", "value": ["trivy"]},
+    ])
+    not gate.review_required with input as fx.wrap([single])
+    gate.tier(single) == "pass" with input as fx.wrap([single])
+}
+
+test_consensus_review_disabled_by_config if {
+    # enable_consensus_review: false restores pre-fix behaviour.
+    inp := fx.wrap_with_config(
+        [crit_consensus_no_fix_below_floor],
+        {"enable_consensus_review": false},
+    )
+    not gate.review_required with input as inp
+    gate.tier(crit_consensus_no_fix_below_floor) == "pass" with input as inp
+}

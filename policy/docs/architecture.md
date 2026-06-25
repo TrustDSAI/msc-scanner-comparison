@@ -55,9 +55,11 @@ in [`CONTEXT.md`](../../CONTEXT.md) for the vocabulary.
   All four retry transient failures (503/429/timeout) via the shared
   `enrichers/_retry.py` helper before giving up.
 - **Classification's effect is deliberately narrow.** `Finding.layer` only
-  changes the EPSS floor for non-corroborated CRITICALs in `review`
-  (`review_critical_min_epss` in `p_gate.rego`). It never affects `block`,
-  never affects a fully corroborated finding, and isn't passed to the LLM
+  changes the EPSS floor for single-scanner, non-corroborated CRITICALs in
+  `review` (`review_critical_min_epss` in `p_gate.rego`). It never affects
+  `block`, never affects a fully corroborated finding, never affects a
+  cross-scanner-consensus finding (`enable_consensus_review` bypasses the
+  floor for those regardless of layer), and isn't passed to the LLM
   advisor. A misclassification's worst case is one finding flipping
   between `review` and `pass` — it can never cause a wrong `block`.
 

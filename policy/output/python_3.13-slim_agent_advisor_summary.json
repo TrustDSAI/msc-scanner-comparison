@@ -1,0 +1,6 @@
+{
+  "image": "python:3.13-slim",
+  "classifier": "agent",
+  "block_summary": null,
+  "review_summary": "**Triage Summary:**\n\nFive CRITICAL CVEs are flagged across two packages: three distinct vulnerabilities in perl-base (5.40.1-6) and one duplicate CVE affecting both libc-bin and libc6 (2.41-12+deb13u3). All findings share extremely low EPSS scores (0.004\u20130.005), no available fixes, and no KEV catalog inclusion\u2014indicating these are likely low-risk or potentially false-positive entries. The CRITICAL severity labels appear misaligned with the negligible exploit probability metrics.\n\n**Recommended Action:** Request clarification on CVE severity assignment methodology; verify these CVEs against upstream NVD/MITRE records for accuracy. If confirmed as legitimate but unfixed, document as accepted risk given minimal exploitability. If these are data quality issues, suppress and escalate to the vulnerability feed provider."
+}

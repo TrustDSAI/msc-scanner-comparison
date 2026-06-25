@@ -47,11 +47,23 @@
 #     forecast, not a severity signal; it decays as attacker interest
 #     moves on, but a cross-scanner-confirmed CRITICAL with a confirmed
 #     fix doesn't stop being real just because this week's score is low.
-#   - Any OTHER CRITICAL not already in block or the corroborated case
-#     above (e.g. single-scanner, no OSV advisory, no fix) -- gated by a
-#     layer-aware EPSS floor (see below) so noisy low-confidence findings
-#     don't flood the review queue. This is the only place that floor
-#     applies; it can no longer drop a fully-evidenced finding to pass.
+#   - Any CRITICAL detected by both scanners (consensus) but missing a
+#     fix, an acceptable NVD status, or an OSV advisory -- i.e. it fails
+#     corroborated_critical on something other than EPSS -- ALWAYS
+#     review, EPSS-independent, same rationale as the corroborated-but-
+#     low-EPSS case above: two independent tools agreeing is itself a
+#     corroboration signal, and a finding stuck below the layer-aware
+#     floor (e.g. because NVD has not analysed it yet) should not be
+#     able to sit below that floor indefinitely and never surface. Found
+#     during dissertation review on php:8.3-apache: 9 consensus
+#     CRITICALs, no fix yet, NVD status "Deferred", EPSS 0.004-0.007,
+#     all silently passed under the floor-only rule below.
+#   - Any OTHER CRITICAL not already in block or one of the two
+#     corroborated/consensus cases above (i.e. single-scanner only) --
+#     gated by a layer-aware EPSS floor (see below) so noisy
+#     low-confidence findings don't flood the review queue. This is the
+#     only place that floor applies; it can no longer drop a
+#     fully-evidenced or consensus finding to pass.
 #   - Any HIGH finding with a fix and consensus (severity label is
 #     untrustworthy across tools, so HIGH never auto-blocks; it is shown
 #     to a human).
@@ -95,7 +107,10 @@
 #   "nvd_acceptable_statuses": ["Analyzed", "Modified"],
 #   "kev_requires_fix":        true,    # false = block KEV even without a fix
 #   "enable_kev_block":        true,    # false = disable the KEV block path entirely
-#   "enable_critical_block":   true     # false = disable the corroborated-CRITICAL path
+#   "enable_critical_block":   true,    # false = disable the corroborated-CRITICAL path
+#   "enable_consensus_review": true     # false = let layer-floor-only rule decide
+#                                        # consensus-but-not-fully-corroborated
+#                                        # CRITICALs instead (pre-review fix behaviour)
 # }
 #
 # Custom policy: supply --rego-dir and --policy-package to replace this
@@ -126,6 +141,7 @@ block_epss_threshold    := lib.config_value("block_epss_threshold",  0.5)
 review_high_min_epss   := lib.config_value("review_high_min_epss",   0.0)
 enable_kev_block       := lib.config_value("enable_kev_block",       true)
 enable_critical_block  := lib.config_value("enable_critical_block",  true)
+enable_consensus_review := lib.config_value("enable_consensus_review", true)
 kev_requires_fix_cfg   := lib.config_value("kev_requires_fix",       true)
 
 # null (default) = no floor, a corroborated CRITICAL always reviews
@@ -244,10 +260,23 @@ is_review(finding) if {
     lib.epss_above(finding, corroborated_critical_min_epss)
 }
 
-# Any other CRITICAL not already blocked or corroborated-but-low-EPSS:
-# gated by the layer-aware floor (this is where P5_layer's noise
-# reduction actually applies -- low-confidence, single-scanner, or
-# no-advisory findings).
+# Cross-scanner consensus CRITICAL that fails corroborated_critical on
+# something other than EPSS (no fix, NVD status not yet acceptable, or no
+# OSV advisory): always review, EPSS-independent. Without this, a finding
+# stuck below the layer-aware floor below (e.g. awaiting NVD analysis)
+# never surfaces -- see file docstring, found on php:8.3-apache during
+# dissertation review.
+is_review(finding) if {
+    enable_consensus_review
+    lib.is_critical(finding)
+    not corroborated_critical(finding)
+    lib.is_consensus(finding)
+}
+
+# Any other CRITICAL not already blocked or one of the two
+# corroborated/consensus cases above (single-scanner only): gated by the
+# layer-aware floor (this is where P5_layer's noise reduction actually
+# applies -- low-confidence, single-scanner, no-advisory findings).
 is_review(finding) if {
     lib.is_critical(finding)
     not corroborated_critical(finding)
@@ -336,10 +365,17 @@ review_reason(finding) := "CRITICAL fully corroborated, below block EPSS thresho
     not lib.in_kev(finding)
     corroborated_critical(finding)
 }
+review_reason(finding) := "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision" if {
+    lib.is_critical(finding)
+    not lib.in_kev(finding)
+    not corroborated_critical(finding)
+    lib.is_consensus(finding)
+}
 review_reason(finding) := "CRITICAL, needs human decision" if {
     lib.is_critical(finding)
     not lib.in_kev(finding)
     not corroborated_critical(finding)
+    not lib.is_consensus(finding)
 }
 review_reason(finding) := "HIGH with fix and consensus, needs human decision" if {
     not lib.is_critical(finding)

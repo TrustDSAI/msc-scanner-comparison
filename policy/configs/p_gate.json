@@ -11,5 +11,6 @@
   "nvd_acceptable_statuses": ["Analyzed", "Modified"],
   "kev_requires_fix":        true,
   "enable_kev_block":        true,
-  "enable_critical_block":   true
+  "enable_critical_block":   true,
+  "enable_consensus_review": true
 }

@@ -1,0 +1,6 @@
+{
+  "image": "php:8.3-apache",
+  "classifier": "agent",
+  "block_summary": null,
+  "review_summary": "**Triage Summary:**\n\nAll 20 findings are marked CRITICAL by severity but carry extremely low EPSS scores (0.005\u20130.007), indicating minimal real-world exploitation risk. The CVEs cluster into three package groups: Apache2 (12 findings across 3 CVEs), Perl (5 findings across 2 CVEs), and libssh2 (1 finding). Critically, none have available fixes and none are tracked in known exploited vulnerabilities (KEV), suggesting these are either recently disclosed, disputed, or low-priority issues. The CRITICAL label appears to be a severity classification mismatch rather than a reflection of actual threat.\n\n**Recommended Action:** Approve the build. Request that the security team review their CVE severity scoring methodology\u2014CRITICAL ratings with sub-0.01 EPSS scores and no fixes available should be downgraded or suppressed to reduce noise. If blocking is desired, wait for patch availability rather than holding the build on unfixable issues."
+}

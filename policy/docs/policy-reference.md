@@ -24,7 +24,7 @@ regardless of whether it's app or OS layer.
 
 ## Review tier
 
-Three independent paths reach `review`:
+Four independent paths reach `review`:
 
 1. **Corroborated CRITICAL below the block EPSS bar** — same five
    signals as the block path's condition 2, minus the EPSS requirement.
@@ -37,26 +37,40 @@ Three independent paths reach `review`:
    `corroborated_critical_min_epss` (default `null` = no floor) lets an
    operator trade some recall for less review-tier volume — a deliberate,
    visible config choice, not the default.
-2. **Any other CRITICAL** (single-scanner, no OSV advisory, no fix —
-   i.e. NOT fully corroborated) — gated by a **layer-aware EPSS floor**:
-   `review_critical_app_min_epss` (default 0.1), `review_critical_os_min_epss`
-   (default 0.01), or `review_critical_unknown_min_epss` (default 0.0) when
-   `Finding.layer` is missing/unknown. This is the only place layer
-   classification has any effect on the gate — see
-   [`architecture.md`](./architecture.md). The asymmetry is sourced from
-   the P5_layer experiment (Chapter 5, P1-P7 architecture), which showed
-   per-layer EPSS asymmetry cuts noise without losing real findings
-   (block-tier reduction there: juice-shop 9→1, web-dvwa 198→116). Folding
-   the same asymmetry into p_gate's review floor produced an analogous
-   effect at the review tier: python:3.8's review count dropped 669→489
-   once the floor applied (verified via direct `opa eval` against the
-   batch dataset's enriched input, not yet re-run end-to-end through
-   `evaluate_all.py`).
-3. **HIGH with a fix and consensus** — severity labels are untrustworthy
+2. **Consensus CRITICAL that fails corroboration on something other than
+   EPSS** — cross-scanner consensus, but no fix, NVD status not in
+   `nvd_acceptable_statuses`, or no OSV advisory — reviews
+   **unconditionally**, EPSS-independent (`enable_consensus_review`,
+   default `true`). Two independent tools agreeing is itself a
+   corroboration signal; without this path, a finding stuck below the
+   layer floor below (e.g. awaiting NVD analysis) could sit there
+   indefinitely and never surface. Found during dissertation review on
+   `php:8.3-apache`: 9 consensus CRITICALs, no fix yet, NVD status
+   `"Deferred"`, EPSS 0.004–0.007 (all below the 0.01 os-layer floor),
+   silently passing under the layer-floor-only rule below. Confirmed via
+   full re-evaluation: adds 313 review-tier findings dataset-wide,
+   changes zero block-tier decisions, flips exactly one image's decision
+   (`php:8.3-apache` PASS→REVIEW).
+3. **Any other CRITICAL** (single-scanner, no OSV advisory, no fix —
+   i.e. NOT fully corroborated and NOT consensus) — gated by a
+   **layer-aware EPSS floor**: `review_critical_app_min_epss` (default
+   0.1), `review_critical_os_min_epss` (default 0.01), or
+   `review_critical_unknown_min_epss` (default 0.0) when `Finding.layer`
+   is missing/unknown. This is the only place layer classification has
+   any effect on the gate — see [`architecture.md`](./architecture.md).
+   The asymmetry is sourced from the P5_layer experiment (Chapter 5,
+   P1-P7 architecture), which showed per-layer EPSS asymmetry cuts noise
+   without losing real findings (block-tier reduction there: juice-shop
+   9→1, web-dvwa 198→116). Folding the same asymmetry into p_gate's
+   review floor produced an analogous effect at the review tier:
+   python:3.8's review count dropped 669→489 once the floor applied
+   (verified via direct `opa eval` against the batch dataset's enriched
+   input, not yet re-run end-to-end through `evaluate_all.py`).
+4. **HIGH with a fix and consensus** — severity labels are untrustworthy
    across scanners, so HIGH never auto-blocks regardless of evidence
    quality; it's always surfaced. `review_high_min_epss` (default 0.0) can
    raise the bar to suppress noisy low-EPSS HIGH findings.
-4. **KEV without a fix** — actively exploited, no remediation path. Can't
+5. **KEV without a fix** — actively exploited, no remediation path. Can't
    block (the build could never pass), must surface.
 
 ## Pass
@@ -91,7 +105,8 @@ override any subset.
   "nvd_acceptable_statuses":          ["Analyzed", "Modified"],
   "kev_requires_fix":                 true,
   "enable_kev_block":                 true,
-  "enable_critical_block":            true
+  "enable_critical_block":            true,
+  "enable_consensus_review":          true
 }
 ```
 
