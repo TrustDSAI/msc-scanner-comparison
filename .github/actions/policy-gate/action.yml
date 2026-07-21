@@ -76,7 +76,8 @@ runs:
 
     - name: Compute lowercase image owner
       id: owner
-      uses: ./.github/actions/lowercase-owner
+      shell: bash
+      run: echo "lower=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
 
     - name: Run policy gate
       id: gate
