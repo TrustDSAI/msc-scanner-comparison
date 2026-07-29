@@ -392,3 +392,22 @@ Memory-safety weaknesses (CWE-476, 416, 125, 787) account for the top four posit
 | 8 | P1/P2/P3 policies produce identical outcomes in this dataset. All images with CRITICAL findings had at least one fix available; no tool-specific CRITICAL discrepancies were observed. |
 | 9 | OS base age is the primary driver of CRITICAL count — web-dvwa (Debian 9.5, 254 CRITICAL) vs juice-shop (Debian 13.4, 10 CRITICAL), both intentionally vulnerable applications. |
 | 10 | OSV-Scanner advisory-level output is not directly comparable to Trivy/Grype CVE-level counts for Debian images. OSV is most comparable for npm/python ecosystems. |
+
+---
+
+## 10. Database-Drift Check (2026-07-29)
+
+Re-scanned the same 9 design-set images (identical pinned digests) against
+live Trivy/Grype/OSV-Scanner databases as of 2026-07-29, to test whether
+the OS-only-vs-mixed Jaccard split reported above is stable under
+database drift alone.
+
+| | OS-only mean (n=4) | Mixed mean (n=5) | Mann-Whitney (one-sided) |
+| - | - | - | - |
+| Original (2026-03-31 DB) | 0.708 | 0.415 | U=16, p=0.095 |
+| Re-scan (2026-07-29 DB) | 0.769 | 0.353 | U=17, p=0.056 |
+
+Pattern held and strengthened on this exact 9-image set under a newer
+database — database drift alone does not reverse or weaken it. Full
+detail: `docs/rescan_2026-07-29_findings.md`. Raw output isolated to
+`data/raw_rescan_2026-07-29/` (original baseline untouched).
