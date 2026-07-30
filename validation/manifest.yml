@@ -169,3 +169,36 @@ images:
       control: a genuinely current image the gate was not tuned against.
       Expected PASS. Provides a lightweight second PASS data point and
       confirms the gate behaves identically on Alpine 3.21 vs 3.19.
+
+  - id: v11-corroborated-critical
+    tag: policy-gate-val/v11-corroborated-critical:latest
+    dockerfile: images/v11-corroborated-critical/Dockerfile
+    incident: "N/A - built to exercise the corroborated-CRITICAL block path"
+    target_cve: "CVE-2022-37434"
+    ecosystem: os-deb
+    expected_tier: block
+    gate_path: corroborated_critical
+    notes: >
+      Added 2026-07-30. Every other blocking image in this suite reaches the
+      block tier through the KEV path, leaving the six-condition
+      corroborated-CRITICAL conjunction untested by construction. Base is
+      debian:11-slim, whose own CRITICAL findings all lack a fix and so
+      cannot satisfy either block condition. Injected zlib1g
+      1:1.2.11.dfsg-2+deb11u1 (CVE-2022-37434, fixed in +deb11u2) and
+      libcurl4 7.74.0-1.3+deb11u10, both dpkg-registered so both scanners
+      enumerate them and consensus holds.
+
+      OUTCOME: reached REVIEW, not the specified BLOCK. The gate confirms
+      CVE-2022-37434 as "CRITICAL fully corroborated", so all six conjunction
+      conditions (critical, consensus, fix, NVD status, OSV advisory, OSV fix)
+      are satisfied and validated by construction. It failed only the EPSS
+      comparison: the score was 0.925 in the June enrichment snapshot used to
+      select it and 0.155 when the image was evaluated on 2026-07-30, below
+      the 0.5 block threshold. The expectation is deliberately NOT revised to
+      match the observed tier, unlike v06 and v07, because the mismatch is
+      informative rather than a design error.
+
+      Note: libcurl4 was included as a second target for CVE-2023-38545
+      (EPSS 0.785), but neither scanner flags 7.74.0-1.3+deb11u10 for it, so
+      it contributes nothing. Retained because it is part of the built and
+      scanned artifact.

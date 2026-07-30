@@ -1,0 +1,372 @@
+{
+  "image": "policy-gate-val/v11-corroborated-critical:latest",
+  "decision": "review",
+  "image_eol": false,
+  "image_eol_source": "trivy:os-eosl",
+  "block": [],
+  "block_summary": null,
+  "review": [
+    {
+      "cve_id": "CVE-2019-8457",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.45426,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libdb5.3",
+      "policy": "gate",
+      "reason": "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "5.3.28+dfsg1-0.8"
+    },
+    {
+      "cve_id": "CVE-2022-37434",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.15502,
+      "fix_version": "1:1.2.11.dfsg-2+deb11u2",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "zlib1g",
+      "policy": "gate",
+      "reason": "CRITICAL fully corroborated, below block EPSS threshold",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "1:1.2.11.dfsg-2+deb11u1"
+    },
+    {
+      "cve_id": "CVE-2023-23914",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00858,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libcurl4",
+      "policy": "gate",
+      "reason": "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "7.74.0-1.3+deb11u10"
+    },
+    {
+      "cve_id": "CVE-2023-45853",
+      "detected_by": [
+        "trivy"
+      ],
+      "epss_score": 0.02918,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "zlib1g",
+      "policy": "gate",
+      "reason": "CRITICAL, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "1:1.2.11.dfsg-2+deb11u1"
+    },
+    {
+      "cve_id": "CVE-2024-2398",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.36081,
+      "fix_version": "7.74.0-1.3+deb11u12",
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "skipped",
+      "package": "libcurl4",
+      "policy": "gate",
+      "reason": "HIGH with fix and consensus, needs human decision",
+      "severity": "HIGH",
+      "tier": "review",
+      "version": "7.74.0-1.3+deb11u10"
+    },
+    {
+      "cve_id": "CVE-2026-11856",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00604,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libcurl4",
+      "policy": "gate",
+      "reason": "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "7.74.0-1.3+deb11u10"
+    },
+    {
+      "cve_id": "CVE-2026-12087",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00374,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "perl-base",
+      "policy": "gate",
+      "reason": "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "5.32.1-4+deb11u5"
+    },
+    {
+      "cve_id": "CVE-2026-13221",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00432,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "perl-base",
+      "policy": "gate",
+      "reason": "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "5.32.1-4+deb11u5"
+    },
+    {
+      "cve_id": "CVE-2026-42496",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.0043,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "perl-base",
+      "policy": "gate",
+      "reason": "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "5.32.1-4+deb11u5"
+    },
+    {
+      "cve_id": "CVE-2026-5450",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00502,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc-bin",
+      "policy": "gate",
+      "reason": "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.31-13+deb11u14"
+    },
+    {
+      "cve_id": "CVE-2026-5450",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00502,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libc6",
+      "policy": "gate",
+      "reason": "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "2.31-13+deb11u14"
+    },
+    {
+      "cve_id": "CVE-2026-57433",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00357,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "perl-base",
+      "policy": "gate",
+      "reason": "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "5.32.1-4+deb11u5"
+    },
+    {
+      "cve_id": "CVE-2026-7598",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00466,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libssh2-1",
+      "policy": "gate",
+      "reason": "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "1.9.0-2+deb11u1"
+    },
+    {
+      "cve_id": "CVE-2026-8376",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.00443,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "perl-base",
+      "policy": "gate",
+      "reason": "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "5.32.1-4+deb11u5"
+    },
+    {
+      "cve_id": "CVE-2026-8924",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.0056,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libcurl4",
+      "policy": "gate",
+      "reason": "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "7.74.0-1.3+deb11u10"
+    },
+    {
+      "cve_id": "CVE-2026-8927",
+      "detected_by": [
+        "trivy",
+        "grype"
+      ],
+      "epss_score": 0.0044,
+      "fix_version": null,
+      "image_eol": false,
+      "image_eol_source": "trivy:os-eosl",
+      "image_label": "policy-gate-val/v11-corroborated-critical:latest",
+      "in_kev": false,
+      "layer": "os",
+      "package": "libcurl4",
+      "policy": "gate",
+      "reason": "CRITICAL, cross-scanner consensus but not fully corroborated, needs human decision",
+      "severity": "CRITICAL",
+      "tier": "review",
+      "version": "7.74.0-1.3+deb11u10"
+    }
+  ],
+  "review_summary": "**Triage Summary:**\n\nThe findings split into two actionable categories: (1) **Fixable vulnerabilities** \u2014 CVE-2024-2398 (libcurl HIGH) and CVE-2022-37434 (zlib CRITICAL) both have available patches and should be prioritized for immediate dependency updates; (2) **Unfixable or low-risk findings** \u2014 the majority are either unfixed CVEs from 2026 (likely false positives or future-dated entries requiring validation) or have negligible EPSS scores (<0.03), including CVE-2019-8457 (libdb5.3, no fix available but rarely exploited in practice). The perl-base and libc findings all show EPSS <0.005 with no fixes, indicating minimal practical risk.\n\n**Recommended Action:** Approve this build with conditions \u2014 immediately schedule updates for libcurl and zlib in the next release cycle, validate the 2026-dated CVEs against your scanner's data source (likely data quality issues), and defer the unfixed legacy CVEs (libdb5.3, libc, libssh2, perl) unless your threat model specifically requires them.",
+  "suppressed": [],
+  "summary": {
+    "total_findings": 245,
+    "severity_counts": {
+      "CRITICAL": 15,
+      "HIGH": 41,
+      "MEDIUM": 72,
+      "LOW": 117
+    },
+    "evaluated_findings": 56,
+    "suppressed_count": 0,
+    "reason": "review tier reached; see block/review for details"
+  },
+  "provenance": {
+    "tool_versions": {
+      "trivy": "0.69.3",
+      "grype": "0.110.0",
+      "opa": "1.17.0"
+    },
+    "policy_bundle_fingerprint": "sha256:3eb27584927c5ed305c2fe6983de06f7a5da8c73a5e90aaeffa0c0968e533e73",
+    "policy_package": "vuln.gate",
+    "rego_dir": "/root/msc-scanner-comparison/policy/rego",
+    "classifier": "rule",
+    "config": {
+      "block_epss_threshold": 0.5,
+      "review_high_min_epss": 0.0,
+      "review_critical_app_min_epss": 0.1,
+      "review_critical_os_min_epss": 0.01,
+      "review_critical_unknown_min_epss": 0.0,
+      "corroborated_critical_min_epss": null,
+      "nvd_acceptable_statuses": [
+        "Analyzed",
+        "Modified"
+      ],
+      "kev_requires_fix": true,
+      "enable_kev_block": true,
+      "enable_critical_block": true,
+      "enable_consensus_review": true
+    },
+    "build_sha": null,
+    "scan_timestamp": "2026-07-30T23:01:06Z"
+  }
+}
