@@ -79,8 +79,10 @@ def opa_eval(input_path: Path, query: str):
     return expressions[0].get("value")
 
 
-def verdict_for(safe: str, config: dict, mutate_finding=None) -> str:
-    enriched = json.loads((OUTPUT_DIR / f"{safe}_enriched_rule.json").read_text())
+def verdict_for(safe: str, config: dict, mutate_finding=None,
+                classifier: str = "rule") -> str:
+    enriched = json.loads(
+        (OUTPUT_DIR / f"{safe}_enriched_{classifier}.json").read_text())
     if mutate_finding is not None:
         enriched = copy.deepcopy(enriched)
         for f in enriched["findings"]:
@@ -101,7 +103,21 @@ def verdict_for(safe: str, config: dict, mutate_finding=None) -> str:
     return "PASS"
 
 
-# --- Ablations: each is (label, config_override, finding_mutator) -----
+# --- Ablations ---------------------------------------------------------
+#
+# Direction rule. The gate's block condition is a disjunction of two paths:
+# the KEV path, and the corroborated-CRITICAL path, which is itself a
+# conjunction of six conditions (is_critical, is_consensus, has_fix,
+# nvd_status_in, osv_confirms_advisory, osv_has_fix) plus an EPSS bar.
+#
+#   * A CONJUNCT of the corroborated path is neutralised PERMISSIVELY:
+#     set it always-true, asking "what was this condition filtering out?"
+#   * The DISJUNCTIVE KEV path is neutralised RESTRICTIVELY: delete the
+#     path, asking "what was this path letting through?" Making KEV
+#     always-true would block everything and measure nothing.
+#
+# Each ablation below records its direction so the reported table can
+# state per signal which operation was applied.
 
 def no_op(f):
     pass
@@ -109,6 +125,14 @@ def no_op(f):
 
 def disable_consensus(f):
     f["detected_by"] = ["trivy", "grype"]  # every finding treated as consensus
+
+
+def disable_fix_requirement(f):
+    f["fix_version"] = "ablated-fix-signal"
+
+
+def disable_nvd_status(f):
+    f["nvd"] = {"status": "Analyzed", "rejected": False, "disputed": False}
 
 
 def disable_osv(f):
@@ -129,17 +153,28 @@ def disable_layer_routing(f):
 
 BASE_CONFIG = json.loads(CONFIG_PATH.read_text())
 
+EPSS_OFF_CONFIG = {**BASE_CONFIG, "block_epss_threshold": 0.0,
+                   "review_critical_app_min_epss": 0.0,
+                   "review_critical_os_min_epss": 0.0,
+                   "review_critical_unknown_min_epss": 0.0}
+
+# (label, config_override, finding_mutator, direction, classifier)
 ABLATIONS = [
-    ("baseline (unmodified)", BASE_CONFIG, no_op),
-    ("disable consensus requirement", BASE_CONFIG, disable_consensus),
-    ("disable OSV confirmation", BASE_CONFIG, disable_osv),
-    ("disable KEV", BASE_CONFIG, disable_kev),
-    ("disable EPSS threshold (block_epss_threshold=0)",
-     {**BASE_CONFIG, "block_epss_threshold": 0.0,
-      "review_critical_app_min_epss": 0.0,
-      "review_critical_os_min_epss": 0.0,
-      "review_critical_unknown_min_epss": 0.0}, no_op),
-    ("disable layer routing (app floor = os floor)", BASE_CONFIG, disable_layer_routing),
+    ("baseline (unmodified)", BASE_CONFIG, no_op, "--", "rule"),
+    ("consensus requirement", BASE_CONFIG, disable_consensus, "permissive", "rule"),
+    ("fix availability", BASE_CONFIG, disable_fix_requirement, "permissive", "rule"),
+    ("NVD status", BASE_CONFIG, disable_nvd_status, "permissive", "rule"),
+    ("OSV confirmation", BASE_CONFIG, disable_osv, "permissive", "rule"),
+    ("EPSS threshold", EPSS_OFF_CONFIG, no_op, "permissive", "rule"),
+    ("KEV block path", BASE_CONFIG, disable_kev, "restrictive", "rule"),
+    ("layer routing (rule classifier)", BASE_CONFIG, disable_layer_routing,
+     "permissive", "rule"),
+    # The rule classifier labels every CRITICAL finding os-layer on the one
+    # image where routing has any effect (Section 5.5.4), so the rule-classifier
+    # row above cannot distinguish "routing is inert" from "classifier produced
+    # uniform labels". Re-run under the LLM classifier to separate the two.
+    ("layer routing (LLM classifier)", BASE_CONFIG, disable_layer_routing,
+     "permissive", "agent"),
 ]
 
 
@@ -160,27 +195,59 @@ def main():
     print(f"Self-check passed: opa eval reproduces all {len(SAFE_NAMES)} "
           f"published Table 5.6 verdicts exactly.\n")
 
+    # Per-classifier baselines: the LLM-classifier row must be compared to
+    # the LLM-classifier baseline, not the rule-classifier one.
+    baselines = {}
+    for clf in ("rule", "agent"):
+        baselines[clf] = {safe: verdict_for(safe, BASE_CONFIG, no_op, clf)
+                          for safe in SAFE_NAMES}
+
     results = {}
-    for label, config, mutator in ABLATIONS:
+    print(f"{'Signal':<34}{'Direction':<13}{'BLOCK':>6}{'REVIEW':>7}{'PASS':>6}{'Moved':>7}")
+    for label, config, mutator, direction, clf in ABLATIONS:
         counts = {"BLOCK": 0, "REVIEW": 0, "PASS": 0}
         per_image = {}
         for safe in SAFE_NAMES:
-            v = verdict_for(safe, config, mutator)
+            v = verdict_for(safe, config, mutator, clf)
             counts[v] += 1
             per_image[safe] = v
-        results[label] = (counts, per_image)
-        print(f"{label:<50} BLOCK={counts['BLOCK']:>2}  REVIEW={counts['REVIEW']:>2}  PASS={counts['PASS']:>2}")
+        base = baselines[clf]
+        moved = [(s, base[s], per_image[s]) for s in SAFE_NAMES
+                 if per_image[s] != base[s]]
+        results[label] = (counts, per_image, direction, clf, moved)
+        n_moved = "--" if label.startswith("baseline") else str(len(moved))
+        print(f"{label:<34}{direction:<13}{counts['BLOCK']:>6}"
+              f"{counts['REVIEW']:>7}{counts['PASS']:>6}{n_moved:>7}")
 
-    baseline_per_image = results["baseline (unmodified)"][1]
-    print("\nPer-image tier movement vs baseline (images whose verdict changed):")
-    for label, (counts, per_image) in results.items():
-        if label == "baseline (unmodified)":
+    print("\nPer-image tier movement vs the matching per-classifier baseline:")
+    for label, (counts, per_image, direction, clf, moved) in results.items():
+        if label.startswith("baseline"):
             continue
-        moved = [(safe, baseline_per_image[safe], per_image[safe])
-                 for safe in SAFE_NAMES if per_image[safe] != baseline_per_image[safe]]
-        print(f"\n  {label}: {len(moved)} image(s) moved")
+        print(f"\n  {label} [{direction}, {clf} classifier]: {len(moved)} image(s) moved")
         for safe, before, after in moved:
             print(f"    {safe:<28} {before} -> {after}")
+
+    # Layer routing changes finding counts even where it changes no verdict.
+    # Report the deny-set size on web-dvwa under both classifiers so the
+    # "no verdict moved" result cannot be misread as "routing is inert".
+    print("\nLayer-routing deny-set size on vulnerables_web-dvwa "
+          "(verdict stays BLOCK in every case):")
+    for clf in ("rule", "agent"):
+        for lbl, mut in (("routing on ", no_op), ("routing off", disable_layer_routing)):
+            enriched = json.loads(
+                (OUTPUT_DIR / f"vulnerables_web-dvwa_enriched_{clf}.json").read_text())
+            enriched = copy.deepcopy(enriched)
+            for f in enriched["findings"]:
+                mut(f)
+            payload = dict(enriched)
+            payload["config"] = {k: v for k, v in BASE_CONFIG.items()
+                                 if not k.startswith("_")}
+            TMP_DIR.mkdir(parents=True, exist_ok=True)
+            p = TMP_DIR / "layer_probe_input.json"
+            p.write_text(json.dumps(payload))
+            block = opa_eval(p, "data.vuln.gate.block") or []
+            review = opa_eval(p, "data.vuln.gate.review") or []
+            print(f"    {clf:<6} {lbl}: block={len(block):>3}  review={len(review):>4}")
 
 
 if __name__ == "__main__":
