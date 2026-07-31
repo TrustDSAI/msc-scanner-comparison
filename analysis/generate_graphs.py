@@ -69,6 +69,16 @@ LABEL = {
 # group background spans (index ranges, inclusive)
 SPANS = {"C": (0, 3), "B": (4, 6), "A": (7, 8)}
 
+# Boundaries between maintenance-state groups, drawn as thin rules. The
+# group labels alone left nothing marking where one group ends and the
+# next begins.
+GROUP_EDGES = [3.5, 6.5]
+
+def group_rules(ax, offset=0.0):
+    for e in GROUP_EDGES:
+        ax.axvline(e + offset, color="#B8B8B8", linewidth=0.8,
+                   linestyle=":", alpha=0.9, zorder=1)
+
 def group_bg(ax, n_bars=1, pad=0.5):
     """Shade group regions on ax."""
     for grp, (lo, hi) in SPANS.items():
@@ -156,6 +166,7 @@ for i, (tool, col, lbl) in enumerate(tools_cfg):
     ax.bar(x + i*width, means, width, label=lbl, color=col, alpha=0.85, zorder=3)
     ax.errorbar(x + i*width, means, yerr=sds, fmt="none",
                 color="black", capsize=3, linewidth=1, zorder=4)
+group_rules(ax, offset=width)
 for grp, (lo, hi) in SPANS.items():
     ax.text((lo+hi)/2 + 0.15, -0.24, f"Group {grp}",
             transform=ax.get_xaxis_transform(), ha="center", va="top",
@@ -217,6 +228,12 @@ for i in range(len(ORDER)):
 
 ax.set_yscale("log")
 ax.set_ylim(top=max(totals_t.max(), totals_g.max()) * 4.0)
+group_rules(ax)
+for grp, (lo, hi) in SPANS.items():
+    ax.text((lo+hi)/2, -0.34, f"Group {grp}",
+            transform=ax.get_xaxis_transform(), ha="center", va="top",
+            fontsize=9, color=GROUP_COLOUR[grp], fontweight="bold",
+            clip_on=False)
 ax.set_ylabel("Findings per image (log scale)", fontsize=9)
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=10)
@@ -251,6 +268,7 @@ ax.set_xticks(range(len(ORDER)))
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=40, ha="right", fontsize=10)
 ax.set_ylim(0, 1.12)
 ax.yaxis.grid(True, linestyle="-", alpha=0.18); ax.set_axisbelow(True)
+group_rules(ax)
 for grp, (lo, hi) in SPANS.items():
     ax.text((lo+hi)/2, -0.34, f"Group {grp}",
             transform=ax.get_xaxis_transform(), ha="center", va="top",
@@ -271,9 +289,10 @@ ax.set_ylim(0, 112); ax.legend(fontsize=10, loc="upper center", frameon=False,
                               ncol=3, bbox_to_anchor=(0.5, 1.13),
                               columnspacing=1.4, handlelength=1.4)
 ax.yaxis.grid(True, linestyle="-", alpha=0.18); ax.set_axisbelow(True)
-# same group markers as the left panel: the right panel's bars are coloured
-# by set membership, not by group, so without these the maintenance-state
-# split is only readable on one of the two panels.
+# same group markers and rules as the left panel: the right panel's bars
+# are coloured by set membership, not by group, so without these the
+# maintenance-state split is only readable on one of the two panels.
+group_rules(ax)
 for grp, (lo, hi) in SPANS.items():
     ax.text((lo+hi)/2, -0.34, f"Group {grp}",
             transform=ax.get_xaxis_transform(), ha="center", va="top",
@@ -301,8 +320,6 @@ ax.bar(x - width, ag_pct, width, label="Same severity",  color="#6B7280", alpha=
 ax.bar(x,         th_pct, width, label="Trivy higher",   color=C_TRIVY,   alpha=0.85)
 ax.bar(x + width, gh_pct, width, label="Grype higher",   color=C_GRYPE,   alpha=0.85)
 
-for grp, (lo, hi) in SPANS.items():
-    ax.axvspan(lo - 0.5, hi + 0.95, alpha=0.06, color=GROUP_COLOUR[grp], zorder=0)
 
 # annotate agree% and shared count
 for i, (v, n) in enumerate(zip(ag_pct, shared_n)):
@@ -328,8 +345,6 @@ ax.bar(x - width/2, [RAW_TRIVY_FIX[s] for s in ORDER], width,
 ax.bar(x + width/2, [RAW_GRYPE_FIX[s] for s in ORDER], width,
        label="Grype fix%", color=C_GRYPE, alpha=0.85)
 
-for grp, (lo, hi) in SPANS.items():
-    ax.axvspan(lo - 0.55, hi + 0.85, alpha=0.06, color=GROUP_COLOUR[grp], zorder=0)
 
 for i, s in enumerate(ORDER):
     tv, gv = RAW_TRIVY_FIX[s], RAW_GRYPE_FIX[s]
@@ -342,6 +357,12 @@ ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=10)
 ax.legend(fontsize=11)
 ax.yaxis.grid(True, linestyle="-", alpha=0.18); ax.set_axisbelow(True)
+group_rules(ax)
+for grp, (lo, hi) in SPANS.items():
+    ax.text((lo+hi)/2, -0.34, f"Group {grp}",
+            transform=ax.get_xaxis_transform(), ha="center", va="top",
+            fontsize=9, color=GROUP_COLOUR[grp], fontweight="bold",
+            clip_on=False)
 save(fig, "fig5_fix_rates.png")
 
 # ── Fig 6: CRITICAL counts ────────────────────────────────────────────────────
@@ -355,8 +376,6 @@ ax.bar(x - width/2, [RAW_TRIVY_CRIT[s] for s in ORDER], width,
 ax.bar(x + width/2, [RAW_GRYPE_CRIT[s] for s in ORDER], width,
        label="Grype CRITICAL", color=C_GRYPE, alpha=0.85)
 
-for grp, (lo, hi) in SPANS.items():
-    ax.axvspan(lo - 0.55, hi + 0.85, alpha=0.06, color=GROUP_COLOUR[grp], zorder=0)
 
 for i, s in enumerate(ORDER):
     tv, gv = RAW_TRIVY_CRIT[s], RAW_GRYPE_CRIT[s]
