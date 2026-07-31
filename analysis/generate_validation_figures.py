@@ -60,9 +60,11 @@ IMAGES = [
     ("v08-eol-stretch",   "v08: Debian 9 EOL\n(multiple CVEs)", "review"),
     ("v09-distroless",    "v09: Distroless\n(no findings)",     "pass"),
     ("v10-alpine-current","v10: Alpine 3.21\n(no findings)",    "pass"),
+    ("v11-corroborated-critical", "v11: zlib\n(CVE-2022-37434)", "block"),
 ]
 
-TIER_COLOUR = {"block": C_BLOCK, "review": C_REVIEW, "pass": C_PASS}
+TIER_COLOUR = {"block": C_BLOCK, "review": C_REVIEW, "pass": C_PASS,
+               "unknown": "#9CA3AF"}
 
 def load_result(image_id):
     path = os.path.join(RESULTS, f"{image_id}.json")
@@ -75,14 +77,15 @@ def load_result(image_id):
 # ── Figure 11: Tier summary (categorical heatmap-style) ─────────────────────
 print("Fig 11: Validation tier summary…")
 
-fig, axes = plt.subplots(1, 2, figsize=(7.8, 3.8),
+fig, axes = plt.subplots(1, 2, figsize=(7.8, 6.2),
                          gridspec_kw={"width_ratios": [1, 2.2]})
 
 # Left panel: tier indicator per image
 ax_tier = axes[0]
 tier_order = list(reversed(IMAGES))  # top = v01
 tier_labels = [label for _, label, _ in tier_order]
-tier_values  = [tier for _, _, tier in tier_order]
+tier_values  = [load_result(img_id).get("decision", "unknown")
+                for img_id, _, _ in tier_order]
 tier_colours  = [TIER_COLOUR[t] for t in tier_values]
 
 y_pos = np.arange(len(tier_order))
@@ -142,12 +145,10 @@ ax_bar.set_title("(b) Block and review finding counts", fontsize=14, fontweight=
 ax_bar.legend(handles=[
     mpatches.Patch(color=C_BLOCK,  alpha=0.85, label="Block tier"),
     mpatches.Patch(color=C_REVIEW, alpha=0.7,  label="Review tier"),
-], loc="lower right", fontsize=12)
+], loc="upper right", fontsize=12, framealpha=0.95)
 for spine in ["top", "right"]:
     ax_bar.spines[spine].set_visible(False)
 
-fig.suptitle("Group V validation suite: gate decisions and finding counts (10 images)",
-             fontsize=16, fontweight="bold", y=1.01)
 plt.tight_layout()
 fig.savefig(os.path.join(OUT, "fig11_validation_outcomes.png"),
             dpi=150, bbox_inches="tight")
@@ -165,6 +166,7 @@ PATH_LABELS = {
     "review_crit":           "REVIEW: CRITICAL not block-qualifying\n(no KEV, EPSS < 0.5 or consensus missing)",
     "review_high":           "REVIEW: HIGH + consensus\n(P7 path, severity-agnostic EPSS gate)",
     "review_crit_eol_context":"REVIEW: CRITICAL + EOL context\n(EOL as metadata, not gate trigger)",
+    "review_corroborated":   "REVIEW: corroborated CRITICAL\n(all six signals, EPSS below the block bar)",
     "pass_clean":            "PASS: no actionable findings",
 }
 
@@ -179,6 +181,7 @@ IMAGE_PATHS = [
     ("v08-eol-stretch",   "review_crit_eol_context"),
     ("v09-distroless",    "pass_clean"),
     ("v10-alpine-current","pass_clean"),
+    ("v11-corroborated-critical", "review_corroborated"),
 ]
 
 # Count images per gate path
@@ -186,11 +189,13 @@ from collections import Counter
 path_counts = Counter(p for _, p in IMAGE_PATHS)
 
 # Use a horizontal bar chart ordered by path group (block > review > pass)
-path_order = ["kev_fix", "review_crit", "review_high", "review_crit_eol_context", "pass_clean"]
+path_order = ["kev_fix", "review_corroborated", "review_crit", "review_high",
+              "review_crit_eol_context", "pass_clean"]
 path_tiers  = {"kev_fix": "block", "review_crit": "review", "review_high": "review",
+               "review_corroborated": "review",
                "review_crit_eol_context": "review", "pass_clean": "pass"}
 
-fig, ax = plt.subplots(figsize=(7.5, 3.4))
+fig, ax = plt.subplots(figsize=(7.5, 4.4))
 
 y_pos = np.arange(len(path_order))
 counts = [path_counts.get(p, 0) for p in path_order]
@@ -207,13 +212,11 @@ ax.set_yticklabels(labels, fontsize=13)
 ax.set_xlim(0, max(counts) + 1.5)
 ax.set_xlabel("Number of validation images", fontsize=13)
 ax.set_xticks(range(max(counts) + 2))
-ax.set_title("Gate path coverage across the validation suite",
-             fontsize=16, fontweight="bold")
 ax.legend(handles=[
     mpatches.Patch(color=C_BLOCK,  alpha=0.85, label="BLOCK tier"),
     mpatches.Patch(color=C_REVIEW, alpha=0.85, label="REVIEW tier"),
     mpatches.Patch(color=C_PASS,   alpha=0.85, label="PASS tier"),
-], loc="lower right", fontsize=12)
+], loc="upper right", fontsize=12, framealpha=0.95)
 for spine in ["top", "right"]:
     ax.spines[spine].set_visible(False)
 

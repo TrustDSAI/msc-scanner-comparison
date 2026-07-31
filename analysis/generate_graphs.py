@@ -169,11 +169,10 @@ for grp, (lo, hi) in SPANS.items():
 
 ax.set_yscale("log")
 ax.set_ylabel("Scan time (seconds, log scale)", fontsize=16)
-ax.set_title("Fig 1 — Scan Performance (mean ± SD, 30 runs)",
-             fontsize=12, fontweight="bold")
 ax.set_xticks(x + width)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=13)
-ax.legend(fontsize=14)
+ax.legend(fontsize=13, loc="upper center", ncol=3, frameon=False,
+          bbox_to_anchor=(0.5, 1.12))
 ax.yaxis.grid(True, which="both", linestyle="--", alpha=0.4, zorder=0)
 ax.set_axisbelow(True)
 save(fig, "fig1_performance.png")
@@ -227,8 +226,6 @@ for i in range(len(ORDER)):
 
 ax.set_yscale("log")
 ax.set_ylabel("Findings per image (log scale)", fontsize=16)
-ax.set_title("Fig 2 — Findings by Severity per Image  (T=Trivy, G=Grype)",
-             fontsize=12, fontweight="bold")
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=13)
 ax.legend(fontsize=13, loc="upper left", ncol=4, frameon=False)
@@ -257,7 +254,7 @@ ax = axes[0]
 bars = ax.bar(range(len(ORDER)), jaccards, color=bar_col, alpha=0.85, zorder=3)
 ax.axhline(0.5, color="grey", linestyle="--", linewidth=1.2, alpha=0.7, label="0.5")
 ax.set_ylabel("Jaccard similarity", fontsize=16)
-ax.set_title("CVE-Level Overlap (Jaccard = |T∩G|/|T∪G|)", fontsize=16, fontweight="bold")
+ax.set_title("(a) Jaccard similarity", fontsize=13, fontweight="bold", pad=26)
 ax.set_xticks(range(len(ORDER)))
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=40, ha="right", fontsize=13)
 ax.set_ylim(0, 1.12)
@@ -269,7 +266,8 @@ ax.legend(handles=[
     mpatches.Patch(color=C_A, label="Group A"),
     mpatches.Patch(color=C_B, label="Group B"),
     mpatches.Patch(color=C_C, label="Group C"),
-], fontsize=13)
+], fontsize=12, loc="upper left", frameon=False, ncol=3,
+   bbox_to_anchor=(0.0, 1.26), columnspacing=1.0, handlelength=1.2)
 
 # right: stacked composition
 ax = axes[1]
@@ -279,14 +277,13 @@ ax.bar(range(len(ORDER)), g_pct,
        bottom=[b+t for b,t in zip(both_pct, t_pct)],
        color=C_GRYPE, alpha=0.75, label="Grype only")
 ax.set_ylabel("% of unique CVEs", fontsize=16)
-ax.set_title("CVE Set Composition (Shared / Trivy-only / Grype-only)", fontsize=16, fontweight="bold")
+ax.set_title("(b) CVE set composition", fontsize=13, fontweight="bold", pad=26)
 ax.set_xticks(range(len(ORDER)))
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=40, ha="right", fontsize=13)
-ax.set_ylim(0, 110); ax.legend(fontsize=13)
+ax.set_ylim(0, 118); ax.legend(fontsize=12, loc="upper left", frameon=False,
+                              ncol=3, bbox_to_anchor=(0.0, 1.26),
+                              columnspacing=1.0, handlelength=1.2)
 ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
-
-fig.suptitle("Fig 3 — CVE-Level Overlap: Trivy vs Grype",
-             fontsize=13, fontweight="bold", y=1.01)
 save(fig, "fig3_cve_overlap.png")
 
 # ── Fig 4: Severity agreement ─────────────────────────────────────────────────
@@ -319,8 +316,6 @@ for i, (v, n) in enumerate(zip(ag_pct, shared_n)):
 
 ax.set_ylabel("% of shared CVEs", fontsize=16)
 ax.set_ylim(0, 115)
-ax.set_title("Fig 4 — Severity Agreement on Shared CVEs",
-             fontsize=12, fontweight="bold")
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=13)
 ax.legend(fontsize=14)
@@ -348,8 +343,6 @@ for i, s in enumerate(ORDER):
 
 ax.set_ylabel("% of findings with a fix available", fontsize=16)
 ax.set_ylim(0, 115)
-ax.set_title("Fig 5 — Fix Rate per Image",
-             fontsize=12, fontweight="bold")
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=13)
 ax.legend(fontsize=14)
@@ -376,8 +369,6 @@ for i, s in enumerate(ORDER):
     if gv > 0: ax.text(i + width/2, gv + 3, str(gv), ha="center", va="bottom", fontsize=12)
 
 ax.set_ylabel("CRITICAL vulnerability count", fontsize=16)
-ax.set_title("Fig 6 — CRITICAL Findings: Trivy vs Grype",
-             fontsize=12, fontweight="bold")
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=13)
 ax.legend(fontsize=14)
@@ -419,11 +410,10 @@ for i, (tv, gv) in enumerate(zip(t_vals, g_vals)):
             ha="center", va="bottom", fontsize=12, fontweight="bold")
 
 ax.set_ylabel("Occurrence count (all 9 images)", fontsize=16)
-ax.set_title("Fig 7 — Top 10 CWE Types (Trivy + Grype, all images)",
-             fontsize=12, fontweight="bold")
 ax.set_xticks(x)
-ax.set_xticklabels(xlabels, fontsize=13)
-ax.legend(fontsize=14)
+ax.set_xticklabels([l.replace("\n", " ") for l in xlabels], rotation=35,
+                   ha="right", fontsize=12)
+ax.legend(fontsize=13, loc="upper right", framealpha=0.95)
 ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
 save(fig, "fig7_cwe_top10.png")
 
@@ -453,16 +443,25 @@ for means, col, lbl in [(t_means, C_TRIVY, "Trivy"),
     xs = np.linspace(0, max(sizes)*1.05, 200)
     ax.plot(xs, np.polyval(coeffs, xs), color=col, linestyle="--", alpha=0.5, linewidth=1.2)
 
-for i, s in enumerate(ORDER):
-    top = max(t_means[i], g_means[i], o_means[i])
-    ax.annotate(LABEL[s], (sizes[i], top),
-                textcoords="offset points", xytext=(5, 4), fontsize=10.5, color="#444444")
-
-ax.set_xlabel("Compressed image size (MB)", fontsize=16)
+ax.set_xlabel("Image size (MB)", fontsize=16)
 ax.set_ylabel("Mean scan time (seconds)", fontsize=16)
-ax.set_title("Fig 8 — Scan Time vs Image Size",
-             fontsize=12, fontweight="bold")
-ax.legend(fontsize=14)
+ax.legend(fontsize=13, loc="upper left", framealpha=0.95)
+
+# Image names on a top axis rather than beside each point: at this width the
+# per-point annotations collided with each other and ran outside the axes.
+# Two alternating rows: node:20 and python:3.12 differ by 11 MB on a
+# 1,100 MB axis, so a single row of labels overlaps no matter the rotation.
+_pairs = sorted(zip(sizes, [LABEL[s] for s in ORDER]))
+for _row, _pad in ((0, 2), (1, 82)):
+    _ax = ax.twiny()
+    _ax.set_xlim(ax.get_xlim())
+    _ax.set_xticks([p[0] for p in _pairs[_row::2]])
+    _ax.set_xticklabels([p[1] for p in _pairs[_row::2]], rotation=90,
+                        ha="center", va="bottom", fontsize=11, color="#444444")
+    _ax.tick_params(axis="x", length=3, pad=_pad)
+    _ax.grid(False)
+    for side in ("top", "right", "left", "bottom"):
+        _ax.spines[side].set_visible(False)
 ax.yaxis.grid(True, linestyle="--", alpha=0.4)
 ax.xaxis.grid(True, linestyle="--", alpha=0.4)
 ax.set_axisbelow(True)
@@ -529,9 +528,6 @@ for grp, lo_i, hi_i in [("C", 0, 3), ("B", 4, 6), ("A", 7, 8)]:
                  transform=axes[0].get_xaxis_transform(),
                  ha="center", va="bottom", fontsize=14,
                  fontweight="bold", color=GROUP_COLOUR[grp])
-
-fig.suptitle("Fig 9 — Scan Time Distribution (30 runs per image)",
-             fontsize=12, fontweight="bold")
 
 save(fig, "fig9_scan_boxplot.png")
 
@@ -615,14 +611,14 @@ t_mat, t_cols = _build_matrix(top_t_pkgs, 0)
 g_mat, g_cols = _build_matrix(top_g_pkgs, 1)
 
 fig, (ax_t, ax_g) = plt.subplots(1, 2, figsize=(8.0, 4.4))
-fig.subplots_adjust(wspace=0.35)
+fig.subplots_adjust(wspace=0.45)
 
 ylabels = [LABEL[s] for s in ORDER]
 
-for ax, mat, cols, cmap_name, title in [
+for idx, (ax, mat, cols, cmap_name, title) in enumerate([
     (ax_t, t_mat, t_cols, "Reds",  "Trivy-exclusive CVEs (T-only)\nby source package"),
     (ax_g, g_mat, g_cols, "Blues", "Grype-exclusive CVEs (G-only)\nby source package"),
-]:
+]):
     masked = np.where(mat == 0, np.nan, mat)
     pos_vals = mat[mat > 0]
     norm = _LogNorm(vmin=max(1, pos_vals.min()), vmax=pos_vals.max()) if len(pos_vals) else None
@@ -631,7 +627,9 @@ for ax, mat, cols, cmap_name, title in [
     cmap.set_bad("white")
 
     im = ax.imshow(masked, cmap=cmap, norm=norm, aspect="auto")
-    plt.colorbar(im, ax=ax, label="CVE count (log scale)", shrink=0.85)
+    _cb = plt.colorbar(im, ax=ax, shrink=0.85)
+    if idx == 1:
+        _cb.set_label("CVE count (log scale)")
 
     ax.set_xticks(range(len(cols)))
     ax.set_xticklabels(cols, rotation=35, ha="right", fontsize=13)
@@ -661,9 +659,6 @@ for ax, mat, cols, cmap_name, title in [
             txt_col = "white" if norm_v > 0.55 else "black"
             ax.text(j, i, f"{val:,}", ha="center", va="center",
                     fontsize=12, color=txt_col)
-
-fig.suptitle("Fig 10 — Source Packages Driving CVE-Set Divergence (Trivy vs Grype)",
-             fontsize=12, fontweight="bold")
 save(fig, "fig10_jaccard_packages.png")
 
 print(f"\nDone — 10 graphs saved to {OUT}/")
