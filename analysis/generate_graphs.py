@@ -27,7 +27,7 @@ plt.rcParams.update({
     "axes.spines.top":   False,
     "axes.spines.right": False,
     "axes.grid":         True,
-    "grid.color":        "#D8D8D8",
+    "grid.color":        "#E4E4E4",
     "grid.linewidth":    0.5,
     "axes.axisbelow":    True,
     "xtick.color":       "#333333",
@@ -156,13 +156,7 @@ for i, (tool, col, lbl) in enumerate(tools_cfg):
     ax.bar(x + i*width, means, width, label=lbl, color=col, alpha=0.85, zorder=3)
     ax.errorbar(x + i*width, means, yerr=sds, fmt="none",
                 color="black", capsize=3, linewidth=1, zorder=4)
-    if tool == "trivy":
-        for j, (m, s_) in enumerate(zip(means, sds)):
-            ax.text(j + i*width, m * 1.5,
-                    f"{m*1000:.0f}ms", ha="center", va="bottom", fontsize=12, color=col)
-
 for grp, (lo, hi) in SPANS.items():
-    ax.axvspan(lo - 0.4, hi + 0.9, alpha=0.06, color=GROUP_COLOUR[grp], zorder=0)
     ax.text((lo+hi)/2 + 0.15, -0.30, f"Group {grp}",
             transform=ax.get_xaxis_transform(), ha="center", va="top",
             fontsize=15, color=GROUP_COLOUR[grp], fontweight="bold",
@@ -174,7 +168,7 @@ ax.set_xticks(x + width)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=16)
 ax.legend(fontsize=16, loc="upper center", ncol=3, frameon=False,
           bbox_to_anchor=(0.5, 1.12))
-ax.yaxis.grid(True, which="both", linestyle="--", alpha=0.4, zorder=0)
+ax.yaxis.grid(True, which="major", linestyle="-", alpha=0.18, zorder=0)
 ax.set_axisbelow(True)
 save(fig, "fig1_performance.png")
 
@@ -211,10 +205,6 @@ for i, sev in enumerate(SEV_ORDER):
            color=SEV_COLOUR[sev], edgecolor="white", linewidth=0.4)
     bottom_t += trivy_stacks[:, i]
     bottom_g += grype_stacks[:, i]
-
-# group background shading
-for grp, (lo, hi) in SPANS.items():
-    ax.axvspan(lo - 0.55, hi + 0.55, alpha=0.06, color=GROUP_COLOUR[grp], zorder=0)
 
 # annotate tool label above each bar
 totals_t = trivy_stacks.sum(axis=1)
@@ -255,20 +245,15 @@ ax = axes[0]
 bars = ax.bar(range(len(ORDER)), jaccards, color=bar_col, alpha=0.85, zorder=3)
 ax.axhline(0.5, color="grey", linestyle="--", linewidth=1.2, alpha=0.7, label="0.5")
 ax.set_ylabel("Jaccard similarity", fontsize=19)
-ax.set_title("(a) Jaccard similarity", fontsize=16, fontweight="bold", pad=26)
 ax.set_xticks(range(len(ORDER)))
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=40, ha="right", fontsize=16)
 ax.set_ylim(0, 1.12)
-ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
-for bar, val in zip(bars, jaccards):
-    ax.text(bar.get_x()+bar.get_width()/2, val+0.02,
-            f"{val:.3f}", ha="center", va="bottom", fontsize=16, fontweight="bold")
-ax.legend(handles=[
-    mpatches.Patch(color=C_A, label="Group A"),
-    mpatches.Patch(color=C_B, label="Group B"),
-    mpatches.Patch(color=C_C, label="Group C"),
-], fontsize=15, loc="upper left", frameon=False, ncol=3,
-   bbox_to_anchor=(0.0, 1.26), columnspacing=1.0, handlelength=1.2)
+ax.yaxis.grid(True, linestyle="-", alpha=0.18); ax.set_axisbelow(True)
+for grp, (lo, hi) in SPANS.items():
+    ax.text((lo+hi)/2, -0.42, f"Group {grp}",
+            transform=ax.get_xaxis_transform(), ha="center", va="top",
+            fontsize=14, color=GROUP_COLOUR[grp], fontweight="bold",
+            clip_on=False)
 
 # right: stacked composition
 ax = axes[1]
@@ -278,13 +263,12 @@ ax.bar(range(len(ORDER)), g_pct,
        bottom=[b+t for b,t in zip(both_pct, t_pct)],
        color=C_GRYPE, alpha=0.75, label="Grype only")
 ax.set_ylabel("% of unique CVEs", fontsize=19)
-ax.set_title("(b) CVE set composition", fontsize=16, fontweight="bold", pad=26)
 ax.set_xticks(range(len(ORDER)))
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=40, ha="right", fontsize=16)
-ax.set_ylim(0, 118); ax.legend(fontsize=15, loc="upper left", frameon=False,
-                              ncol=3, bbox_to_anchor=(0.0, 1.26),
-                              columnspacing=1.0, handlelength=1.2)
-ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
+ax.set_ylim(0, 112); ax.legend(fontsize=15, loc="upper center", frameon=False,
+                              ncol=3, bbox_to_anchor=(0.5, 1.13),
+                              columnspacing=1.4, handlelength=1.4)
+ax.yaxis.grid(True, linestyle="-", alpha=0.18); ax.set_axisbelow(True)
 save(fig, "fig3_cve_overlap.png")
 
 # ── Fig 4: Severity agreement ─────────────────────────────────────────────────
@@ -320,7 +304,7 @@ ax.set_ylim(0, 115)
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=16)
 ax.legend(fontsize=17)
-ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
+ax.yaxis.grid(True, linestyle="-", alpha=0.18); ax.set_axisbelow(True)
 save(fig, "fig4_severity_agreement.png")
 
 # ── Fig 5: Fix rates ──────────────────────────────────────────────────────────
@@ -347,7 +331,7 @@ ax.set_ylim(0, 115)
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=16)
 ax.legend(fontsize=17)
-ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
+ax.yaxis.grid(True, linestyle="-", alpha=0.18); ax.set_axisbelow(True)
 save(fig, "fig5_fix_rates.png")
 
 # ── Fig 6: CRITICAL counts ────────────────────────────────────────────────────
@@ -373,7 +357,7 @@ ax.set_ylabel("CRITICAL vulnerability count", fontsize=19)
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=16)
 ax.legend(fontsize=17)
-ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
+ax.yaxis.grid(True, linestyle="-", alpha=0.18); ax.set_axisbelow(True)
 save(fig, "fig6_critical_counts.png")
 
 # ── Fig 7: CWE top 10 ─────────────────────────────────────────────────────────
@@ -415,7 +399,7 @@ ax.set_xticks(x)
 ax.set_xticklabels([l.replace("\n", " ") for l in xlabels], rotation=35,
                    ha="right", fontsize=15)
 ax.legend(fontsize=16, loc="upper right", framealpha=0.95)
-ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
+ax.yaxis.grid(True, linestyle="-", alpha=0.18); ax.set_axisbelow(True)
 save(fig, "fig7_cwe_top10.png")
 
 # ── Fig 8: Scan time vs image size scatter ───────────────────────────────────
@@ -463,8 +447,8 @@ for _row, _pad in ((0, 2), (1, 30)):
     _ax.grid(False)
     for side in ("top", "right", "left", "bottom"):
         _ax.spines[side].set_visible(False)
-ax.yaxis.grid(True, linestyle="--", alpha=0.4)
-ax.xaxis.grid(True, linestyle="--", alpha=0.4)
+ax.yaxis.grid(True, linestyle="-", alpha=0.18)
+ax.xaxis.grid(False)
 ax.set_axisbelow(True)
 save(fig, "fig8_time_vs_size.png")
 
@@ -505,7 +489,7 @@ for ax, (tool, col_hex, tool_lbl) in zip(axes, tools_cfg):
     ax.set_yscale("log")
     ax.set_ylabel("Scan time", fontsize=17)
     ax.yaxis.set_major_formatter(fmt9)
-    ax.yaxis.grid(True, which="both", linestyle="--", alpha=0.4, zorder=0)
+    ax.yaxis.grid(True, which="major", linestyle="-", alpha=0.18, zorder=0)
     ax.set_axisbelow(True)
 
     # group background bands
