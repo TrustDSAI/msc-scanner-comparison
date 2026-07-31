@@ -117,11 +117,11 @@ All Rego policies are validated by 60 OPA unit tests in `policy/tests/`.
 | C     | nginx:1.29.7           |    0 | pass     | pass     | pass     | pass      | pass       | pass     |
 | C     | node:20                |   33 | **33**   | pass     | **32**   | pass      | **1**      | **1**    |
 | C     | python:3.12            |    0 | pass     | pass     | pass     | pass      | pass       | pass     |
-| B     | nginx:1.19             |   42 | **42**   | **40**   | **41**   | pass      | **16**     | **16**   |
+| B     | nginx:1.19             |   42 | **42**   | **40**   | **41**   | pass      | **10**     | **10**   |
 | B     | node:14                |   23 | **23**   | **18**   | **20**   | pass      | **12**     | **12**   |
 | B     | python:3.8             |  191 | **191**  | **158**  | **187**  | pass      | **6**      | **6**    |
-| A     | vulnerables/web-dvwa   |  328 | **328**  | **266**  | **295**  | **24**    | **198**    | **198**  |
-| A     | bkimminich/juice-shop  |    9 | **9**    | **7**    | **9**    | pass      | **3**      | pass     |
+| A     | vulnerables/web-dvwa   |  328 | **328**  | **266**  | **295**  | **15**    | **87**     | **87**   |
+| A     | bkimminich/juice-shop  |    9 | **9**    | **7**    | **9**    | pass      | **1**      | pass     |
 
 Cells in bold are blocking decisions (deny_count).
 
@@ -130,15 +130,15 @@ Cells in bold are blocking decisions (deny_count).
 | Group | Image                  | CRIT | P1       | P2       | P3       | P4_strict | P4_relaxed | P5_layer    |
 |-------|------------------------|-----:|---------:|---------:|---------:|----------:|-----------:|------------:|
 | C     | node:20                |   33 | **33**   | pass     | **32**   | pass      | **1**      | **1**       |
-| B     | nginx:1.19             |   42 | **42**   | **40**   | **41**   | pass      | **16**     | **16**      |
+| B     | nginx:1.19             |   42 | **42**   | **40**   | **41**   | pass      | **10**     | **10**      |
 | B     | node:14                |   23 | **23**   | **18**   | **20**   | pass      | **12**     | **12**      |
 | B     | python:3.8             |  191 | **191**  | **158**  | **187**  | pass      | **6**      | **6**       |
-| A     | vulnerables/web-dvwa   |  328 | **328**  | **266**  | **295**  | **24**    | **198**    | **116** (▼) |
-| A     | bkimminich/juice-shop  |    9 | **9**    | **7**    | **9**    | pass      | **3**      | **1**       |
+| A     | vulnerables/web-dvwa   |  328 | **328**  | **266**  | **295**  | **15**    | **87**     | **62** (▼)  |
+| A     | bkimminich/juice-shop  |    9 | **9**    | **7**    | **9**    | pass      | **1**      | pass        |
 
 (Rows for images with 0 CRITICAL findings omitted.)
 
-P1, P2, P3, P4_strict, P4_relaxed are classifier-independent and identical to the rule-classifier results. **Two rows differ between classifiers**: web-dvwa P5_layer (198 → 116, a 41% reduction) and juice-shop P5_layer (0 → 1, the rule classifier missed a high-EPSS vm2 finding).
+P1, P2, P3, P4_strict, P4_relaxed are classifier-independent and identical to the rule-classifier results. **One row differs between classifiers**: web-dvwa P5_layer (87 → 62, a 29% reduction). The rule classifier labels all 328 CRITICAL findings on that image os-layer; the agent classifier splits them 122 app / 206 os.
 
 ### 2.3 P6_eol Outcomes (Design Iteration — Not a Delivered Policy)
 
@@ -152,11 +152,11 @@ P6 outcomes across classifiers, shown for completeness:
 | nginx:1.29.7           | False | 0                | 0           | 0               |
 | node:20                | True  | 1                | **1 (EOL)** | 1               |
 | python:3.12            | False | 0                | 0           | 0               |
-| nginx:1.19             | True  | 16               | **1 (EOL)** | 16              |
+| nginx:1.19             | True  | 10               | **1 (EOL)** | 10              |
 | node:14                | True  | 12               | **1 (EOL)** | 12              |
 | python:3.8             | True  | 6                | **1 (EOL)** | 6               |
-| vulnerables/web-dvwa   | True  | 116              | **1 (EOL)** | 116             |
-| bkimminich/juice-shop  | False | 1                | 1           | 1               |
+| vulnerables/web-dvwa   | True  | 62               | **1 (EOL)** | 62              |
+| bkimminich/juice-shop  | False | 0                | 0           | 0               |
 
 P6_strict collapses every EOL image to a single deny message ("EOL, do not deploy") regardless of CVE volume. P6_permissive disables the short-circuit; for those same images the gate decision matches the P5_layer outcome. Non-EOL images are unaffected by the toggle.
 
@@ -164,7 +164,18 @@ This is the configuration-driven dial referenced in the architectural decision: 
 
 ### 2.4 Iteration: NVD "Modified" Is Not an Invalidity Signal
 
-An earlier configuration of P5 required `nvd.status == "Analyzed"` for app-layer findings. This caused juice-shop's `vm2` sandbox escape CVE (CVE-2023-32314, EPSS 0.7) to pass the gate, because NVD's status for that record is "Modified". On inspection, "Modified" is a normal lifecycle status (NVD updated the record after initial analysis), not an invalidity signal. Only `Rejected` and `Disputed` indicate that the CVE itself should not gate. The app-layer config was updated to accept `["Analyzed", "Modified"]`, matching the OS-layer setting. After this change, P5_layer correctly blocks CVE-2023-32314 on juice-shop while still passing the eight other lower-EPSS or no-fix findings. The fix is a one-line config edit in `configs/p5_layer_aware.json`; no Rego or Python changes were required. This iteration illustrates the value of the config-driven policy design.
+An earlier configuration of P5 required `nvd.status == "Analyzed"` for app-layer findings. This caused juice-shop's `vm2` sandbox escape CVE (CVE-2023-32314, EPSS 0.70) to pass the gate, because NVD's status for that record was "Modified". On inspection, "Modified" is a normal lifecycle status (NVD updated the record after initial analysis), not an invalidity signal. Only `Rejected` and `Disputed` indicate that the CVE itself should not gate. The app-layer config was updated to accept `["Analyzed", "Modified"]`, matching the OS-layer setting, a one-line edit in `configs/p5_layer_aware.json` with no Rego or Python change. That iteration illustrates the value of the config-driven design.
+
+The finding nevertheless passes P5_layer in the run recorded above, for a
+different reason. NVD returned **no status at all** for CVE-2023-32314 on
+this run: the enriched input carries `nvd.status: null`, which the
+configured set `["Analyzed", "Modified"]` does not accept, so
+`lib.nvd_status_in` fails and the app-layer strict route rejects it. EPSS
+is unchanged at 0.70028, consensus holds, OSV confirms both advisory and
+fix. The single condition standing between this finding and a block is an
+enrichment field that was populated on an earlier run and empty on this
+one. It is the same class of non-reproducibility as the EPSS movement
+recorded in section 10.4, arriving through a different field.
 
 ### 2.5 Classifier Agreement on CRITICAL Findings
 
@@ -212,33 +223,74 @@ All ten packages are Debian-packaged but execute application-layer code reachabl
 
 ### 2.8 P5_layer Block Composition (web-dvwa)
 
-#### Rule classifier (198 blocks, all OS-labelled)
+#### Rule classifier (87 blocks, all os-labelled)
 
 | Count | Package                  |
 |------:|--------------------------|
-|    13 | libapache2-mod-php7.0    |
-|    13 | php7.0                   |
-|    13 | php7.0-cli               |
-|    13 | php7.0-common            |
-|    13 | php7.0-gd                |
-|    13 | php7.0-json              |
-|    13 | php7.0-mysql             |
-|    13 | php7.0-opcache           |
+|     6 | libapache2-mod-php7.0    |
+|     6 | php7.0                   |
+|     6 | php7.0-cli               |
+|     6 | php7.0-common            |
+|     6 | php7.0-gd                |
+|     6 | php7.0-json              |
+|     6 | php7.0-mysql             |
+|     6 | php7.0-opcache           |
+|     6 | php7.0-pgsql             |
+|     6 | php7.0-readline          |
+|     6 | php7.0-xml               |
+|     4 | libexpat1                |
+|     2 | rsync                    |
+|     1 | apache2                  |
+|     1 | apache2-bin              |
+|     1 | apache2-data             |
+|     1 | apache2-utils            |
+|     1 | libidn11                 |
+|     1 | libldap-2.4-2            |
+|     1 | libldap-common           |
+|     1 | libmariadbclient18       |
+|     1 | libxslt1.1               |
+|     1 | mariadb-client-10.1      |
+|     1 | mariadb-client-core-10.1 |
+|     1 | mariadb-common           |
+|     1 | mariadb-server           |
+|     1 | mariadb-server-10.1      |
+|     1 | mariadb-server-core-10.1 |
 
-#### Agent classifier (102 blocks: 96 OS + 6 app)
+#### Agent classifier (62 blocks: 43 os, 19 app)
 
 | Count | Package                  | Layer |
 |------:|--------------------------|------:|
-|    13 | php7.0                   |  os * |
-|    13 | php7.0-common            |  os * |
-|     8 | php7.0-json              |  app  |
-|     6 | libexpat1                |   os  |
-|     4 | libperl5.24              |   os  |
-|     4 | perl                     |   os  |
-|     4 | perl-base                |   os  |
-|     4 | perl-modules-5.24        |   os  |
-
-(*) `php7.0` and `php7.0-common` remained OS-classified by the agent; the included content is closer to runtime/interpreter than to application code.
+|     6 | php7.0                   |    os |
+|     6 | php7.0-common            |    os |
+|     4 | libexpat1                |    os |
+|     4 | php7.0-json              |    os |
+|     3 | libapache2-mod-php7.0    |   app |
+|     3 | php7.0-cli               |    os |
+|     3 | php7.0-gd                |   app |
+|     3 | php7.0-mysql             |   app |
+|     3 | php7.0-opcache           |   app |
+|     3 | php7.0-pgsql             |   app |
+|     2 | php7.0-readline          |   app |
+|     2 | php7.0-xml               |    os |
+|     2 | rsync                    |    os |
+|     1 | apache2                  |    os |
+|     1 | apache2-bin              |    os |
+|     1 | apache2-data             |    os |
+|     1 | apache2-utils            |    os |
+|     1 | libidn11                 |    os |
+|     1 | libldap-2.4-2            |    os |
+|     1 | libldap-common           |    os |
+|     1 | libmariadbclient18       |    os |
+|     1 | libxslt1.1               |    os |
+|     1 | mariadb-client-10.1      |    os |
+|     1 | mariadb-client-core-10.1 |    os |
+|     1 | mariadb-common           |    os |
+|     1 | mariadb-server           |    os |
+|     1 | mariadb-server-10.1      |    os |
+|     1 | mariadb-server-core-10.1 |    os |
+|     1 | php7.0-cli               |   app |
+|     1 | php7.0-readline          |    os |
+|     1 | php7.0-xml               |   app |
 
 ### 2.9 Block Set Difference (rule-P5 minus agent-P5)
 
@@ -306,14 +358,14 @@ On web-dvwa, the six policies produce a clear gradient:
 | P1            | 328    | Maximum recall, every CRITICAL                                |
 | P3            | 295    | Filters scanner-specific false positives                      |
 | P2            | 266    | Filters unfixable findings                                    |
-| P4_relaxed    | 198    | Adds EPSS + OSV filters at low threshold                      |
-| P5_layer(rule)| 198    | Identical to P4_relaxed (rule cannot distinguish app from os) |
-| **P5_layer(agent) | 116** | **Asymmetric thresholds via semantic classification**     |
-| P4_strict     | 24     | Highest precision, may miss real issues                       |
+| P4_relaxed    | 87     | Adds EPSS + OSV filters at low threshold                      |
+| P5_layer(rule)| 87     | Identical to P4_relaxed (rule cannot distinguish app from os) |
+| **P5_layer(agent) | 62** | **Asymmetric thresholds via semantic classification**      |
+| P4_strict     | 15     | Highest precision, may miss real issues                       |
 
-P5_layer(agent) sits between P4_relaxed (too permissive) and P4_strict (too aggressive). It applies stricter thresholds where the agent identifies real application code, and relaxed thresholds where it sees infrastructure packages. The block reduction from 198 to 116 is concentrated on PHP CVEs with low EPSS scores, which are unlikely to be exploited and arguably should not block deployment.
+P5_layer(agent) sits between P4_relaxed (too permissive) and P4_strict (too aggressive). It applies stricter thresholds where the agent identifies real application code, and relaxed thresholds where it sees infrastructure packages. The block reduction from 87 to 62 is concentrated on PHP CVEs with low EPSS scores, which are unlikely to be exploited and arguably should not block deployment.
 
-On juice-shop, the gradient is even sharper. All 9 CRITICAL findings are npm packages and Claude correctly classifies all of them as `app`. The strict app-layer thresholds then filter on EPSS, NVD status, OSV advisory and fix availability. Only CVE-2023-32314 (vm2 sandbox escape, EPSS 0.7) survives all five conditions, and P5_layer correctly blocks it. The other eight findings have either low EPSS, missing OSV advisories, or no fix recorded, and correctly pass. This is the strongest demonstration of layer-aware gating: 9 raw CRITICAL findings reduced to 1 actionable block, with the block being a real known-exploited sandbox escape.
+On juice-shop the routing works in the opposite direction, and is the clearer demonstration of what layer awareness does. All 9 CRITICAL findings are npm packages, and both classifiers label all of them `app`. P4_relaxed, applying one threshold to every finding, blocks 1 of them. P5_layer routes those app-layer findings to the strict configuration instead, and none clears it, so the image passes under both classifiers. Layer routing therefore removes a block here rather than adding one: the same signal that leaves 87 blocks standing on web-dvwa takes the last one off juice-shop. Whether that is the right outcome is not established by this dataset; CVE-2023-32314 is a real vm2 sandbox escape, and the strict app-layer threshold is what stops it blocking.
 
 ### 4.2 Where Layer Information Comes From
 
