@@ -30,10 +30,9 @@ import os
 import urllib.request
 from typing import Any
 
+from . import _llm_client
 from .base import Classifier, Label
 
-_ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
-_OPENAI_URL    = "https://api.openai.com/v1/chat/completions"
 # Local Ollama instance (for testing / development without hitting external APIs)
 _OLLAMA_URL    = "http://192.168.2.61:11434/api/chat"
 _DEFAULT_OLLAMA_MODEL    = "qwen2.5:3b"
@@ -78,9 +77,6 @@ def _provider() -> tuple[str, str]:
                 os.environ.get("CLASSIFIER_MODEL") or _DEFAULT_OLLAMA_MODEL)
     return ("", "")
 
-
-def is_available() -> bool:
-    return bool(_provider()[0])
 
 def is_available() -> bool:
     return bool(_provider()[0])
@@ -147,40 +143,11 @@ class AgentClassifier(Classifier):
     # --- HTTP calls -----------------------------------------------------
 
     def _call_anthropic(self, user_prompt: str) -> str:
-        # Lazy import so the module loads when the SDK is missing and
-        # only the anthropic-using path requires it.
-        from anthropic import Anthropic
-
-        client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-        resp = client.messages.create(
-            model=self.model,
-            max_tokens=300,
-            temperature=0,
-            system=_PROMPT_SYSTEM,
-            messages=[{"role": "user", "content": user_prompt}],
-        )
-        for block in resp.content:
-            if block.type == "text":
-                return block.text
-        return ""
+        return _llm_client.call_anthropic(self.model, _PROMPT_SYSTEM, user_prompt, max_tokens=300)
 
     def _call_openai(self, user_prompt: str) -> str:
-        body = json.dumps({
-            "model":       self.model,
-            "temperature": 0,
-            "messages": [
-                {"role": "system", "content": _PROMPT_SYSTEM},
-                {"role": "user",   "content": user_prompt},
-            ],
-            "response_format": {"type": "json_object"},
-        }).encode()
-        req = urllib.request.Request(_OPENAI_URL, data=body, headers={
-            "authorization": f"Bearer {os.environ['OPENAI_API_KEY']}",
-            "content-type":  "application/json",
-        })
-        with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
-            payload = json.loads(resp.read().decode())
-        return payload["choices"][0]["message"]["content"]
+        return _llm_client.call_openai(self.model, _PROMPT_SYSTEM, user_prompt,
+                                        max_tokens=300, json_mode=True)
 
     def _call_ollama(self, user_prompt: str) -> str:
         ollama_url = os.environ.get("OLLAMA_HOST", "http://192.168.2.61:11434")

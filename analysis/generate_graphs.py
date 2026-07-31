@@ -17,11 +17,33 @@ TABLES = os.path.join(ROOT, "data", "derived", "analysis_tables.json")
 OUT    = os.path.join(ROOT, "figures")
 os.makedirs(OUT, exist_ok=True)
 
+# ── typography & chart style (print-oriented, matches thesis body serif) ────
+plt.rcParams.update({
+    "font.family":       "serif",
+    "font.serif":        ["Palatino", "Palatino Linotype", "URW Palladio L", "STIXGeneral", "DejaVu Serif"],
+    "mathtext.fontset":  "stix",
+    "axes.edgecolor":    "#4A4A4A",
+    "axes.linewidth":    0.8,
+    "axes.spines.top":   False,
+    "axes.spines.right": False,
+    "axes.grid":         True,
+    "grid.color":        "#D8D8D8",
+    "grid.linewidth":    0.5,
+    "axes.axisbelow":    True,
+    "xtick.color":       "#333333",
+    "ytick.color":       "#333333",
+    "text.color":        "#1A1A1A",
+    "axes.labelcolor":   "#1A1A1A",
+})
+
 # ── colour palette ───────────────────────────────────────────────────────────
-C_TRIVY = "#2563EB"
-C_GRYPE = "#16A34A"
-C_OSV   = "#DC2626"
-C_A, C_B, C_C = "#7C3AED", "#EA580C", "#0891B2"
+# Okabe & Ito (2008) colourblind-safe qualitative palette, the de facto
+# standard for scientific figures; validated with the project's palette
+# checker (CVD separation, contrast, chroma floor all pass).
+C_TRIVY = "#0072B2"  # blue
+C_GRYPE = "#009E73"  # bluish green
+C_OSV   = "#D55E00"  # vermillion
+C_A, C_B, C_C = "#A6447A", "#B36A00", "#0B72A8"  # plum, ochre, steel blue
 GROUP_COLOUR = {"A": C_A, "B": C_B, "C": C_C}
 
 ORDER = [

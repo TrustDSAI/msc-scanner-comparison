@@ -26,29 +26,9 @@ _TIMEOUT = 5
 _tool_versions_cache: Optional[dict] = None
 
 
-def _probe_trivy() -> Optional[str]:
+def _probe(cmd: list[str]) -> Optional[str]:
     try:
-        out = subprocess.run(["trivy", "--version"], capture_output=True,
-                              text=True, timeout=_TIMEOUT, check=True).stdout
-        m = re.search(r"Version:\s*(\S+)", out)
-        return m.group(1) if m else None
-    except Exception:
-        return None
-
-
-def _probe_grype() -> Optional[str]:
-    try:
-        out = subprocess.run(["grype", "version"], capture_output=True,
-                              text=True, timeout=_TIMEOUT, check=True).stdout
-        m = re.search(r"Version:\s*(\S+)", out)
-        return m.group(1) if m else None
-    except Exception:
-        return None
-
-
-def _probe_opa() -> Optional[str]:
-    try:
-        out = subprocess.run(["opa", "version"], capture_output=True,
+        out = subprocess.run(cmd, capture_output=True,
                               text=True, timeout=_TIMEOUT, check=True).stdout
         m = re.search(r"Version:\s*(\S+)", out)
         return m.group(1) if m else None
@@ -66,9 +46,9 @@ def get_tool_versions() -> dict:
     global _tool_versions_cache
     if _tool_versions_cache is None:
         _tool_versions_cache = {
-            "trivy": _probe_trivy(),
-            "grype": _probe_grype(),
-            "opa":   _probe_opa(),
+            "trivy": _probe(["trivy", "--version"]),
+            "grype": _probe(["grype", "version"]),
+            "opa":   _probe(["opa", "version"]),
         }
     return _tool_versions_cache
 

@@ -262,11 +262,11 @@
     },
     "overlap": {
       "t_total": 1127,
-      "g_total": 347,
+      "g_total": 333,
       "t_only": 798,
       "both": 329,
-      "g_only": 18,
-      "jaccard": 0.287
+      "g_only": 4,
+      "jaccard": 0.291
     },
     "sev_agreement": {
       "shared": 329,
@@ -515,11 +515,11 @@
     },
     "overlap": {
       "t_total": 630,
-      "g_total": 284,
+      "g_total": 282,
       "t_only": 348,
       "both": 282,
-      "g_only": 2,
-      "jaccard": 0.446
+      "g_only": 0,
+      "jaccard": 0.448
     },
     "sev_agreement": {
       "shared": 282,
@@ -988,11 +988,11 @@
     },
     "overlap": {
       "t_total": 709,
-      "g_total": 553,
+      "g_total": 529,
       "t_only": 469,
       "both": 240,
-      "g_only": 313,
-      "jaccard": 0.235
+      "g_only": 289,
+      "jaccard": 0.24
     },
     "sev_agreement": {
       "shared": 240,
@@ -1282,11 +1282,11 @@
     },
     "overlap": {
       "t_total": 3684,
-      "g_total": 544,
+      "g_total": 537,
       "t_only": 3154,
       "both": 530,
-      "g_only": 14,
-      "jaccard": 0.143
+      "g_only": 7,
+      "jaccard": 0.144
     },
     "sev_agreement": {
       "shared": 530,
@@ -1870,11 +1870,11 @@
     },
     "overlap": {
       "t_total": 83,
-      "g_total": 143,
+      "g_total": 79,
       "t_only": 4,
       "both": 79,
-      "g_only": 64,
-      "jaccard": 0.537
+      "g_only": 0,
+      "jaccard": 0.952
     },
     "sev_agreement": {
       "shared": 79,

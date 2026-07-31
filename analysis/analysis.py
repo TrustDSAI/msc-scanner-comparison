@@ -229,9 +229,9 @@ def table_severity_agreement(data):
         print(f"  {d['group']}   {d['image']:<32}  {n:>7} {sa['same']:>7} {pct:>8} "
               f"{sa['t_higher']:>10} {sa['g_higher']:>10}")
     print()
-    print("  Key finding: severity agreement on shared CVEs ranges from 8% (juice-shop) to 96% (nginx:1.19,")
-    print("  web-dvwa). nginx:1.29.7, node:20, and python:3.12 agree on only ~33% of shared CVEs,")
-    print("  with Trivy consistently assigning higher severity than Grype.")
+    print("  Key finding: severity agreement on shared CVEs ranges from 33% (nginx:1.29.7) to 96%")
+    print("  (nginx:1.19, web-dvwa). nginx:1.29.7, node:20, and python:3.12 agree on only ~33-38%")
+    print("  of shared CVEs, with Trivy consistently assigning higher severity than Grype.")
 
 # ---------------------------------------------------------------------------
 # TABLE 5: CWE pivot — top 15 CWEs × Tools × Images
@@ -499,11 +499,30 @@ def main():
              if v["fixed"] and v.get("fix_versions")), "—"
         )
 
-        # CVE overlap (expand Grype GHSA aliases to CVE IDs)
+        # CVE overlap (GHSA IDs canonicalised to a CVE alias, one per match).
+        # Each Grype match keeps exactly one canonical identifier: itself if
+        # already a CVE, else its first CVE-prefixed related vulnerability,
+        # else the raw GHSA ID (structurally absent from Trivy's CVE-only
+        # output). This mirrors normalisers/grype.py's _canonical_cve_id.
+        # A prior version unioned *all* CVE-prefixed related IDs per match
+        # into the comparison set, which double-counts a single Grype
+        # finding as multiple "unique" CVEs whenever its advisory
+        # cross-references more than one CVE record, inflating g_total and
+        # depressing the reported Jaccard similarity.
+        # g_by_canon is keyed by the SAME canonical identifier used for the
+        # set comparison below. g_vulns is keyed by Grype's raw primary id,
+        # which is a GHSA for many npm findings; looking a record up there by
+        # canonical CVE misses every aliased match and silently yields
+        # "UNKNOWN".
         t_ids = set(t_vulns.keys())
-        g_ids_exp = set(g_vulns.keys())
-        for gv in g_vulns.values():
-            g_ids_exp.update(gv.get("related", []))
+        g_by_canon = {}
+        for vid, gv in g_vulns.items():
+            if vid.startswith("CVE-"):
+                g_by_canon[vid] = gv
+            else:
+                related = gv.get("related") or []
+                g_by_canon[related[0] if related else vid] = gv
+        g_ids_exp = set(g_by_canon)
         both   = t_ids & g_ids_exp
         t_only = t_ids - g_ids_exp
         g_only = g_ids_exp - t_ids
@@ -514,7 +533,7 @@ def main():
         same = t_higher = g_higher = 0
         for cve in both:
             ts = t_vulns.get(cve, {}).get("severity", "UNKNOWN")
-            gs = g_vulns.get(cve, {}).get("severity", "UNKNOWN")
+            gs = g_by_canon.get(cve, {}).get("severity", "UNKNOWN")
             if ts == gs:
                 same += 1
             elif SEV_RANK.get(ts, 0) > SEV_RANK.get(gs, 0):

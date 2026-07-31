@@ -19,32 +19,32 @@ def _completed(stdout: str):
 def test_probe_trivy_parses_version():
     provenance._tool_versions_cache = None
     with patch("subprocess.run", return_value=_completed("Version: 0.69.3\nVulnerability DB:\n")):
-        assert provenance._probe_trivy() == "0.69.3"
+        assert provenance._probe(["trivy", "--version"]) == "0.69.3"
 
 
 def test_probe_grype_parses_version():
     with patch("subprocess.run", return_value=_completed("Application: grype\nVersion: 0.110.0\n")):
-        assert provenance._probe_grype() == "0.110.0"
+        assert provenance._probe(["grype", "version"]) == "0.110.0"
 
 
 def test_probe_opa_parses_version():
     with patch("subprocess.run", return_value=_completed("Version: 1.17.0\nBuild Commit: abc\n")):
-        assert provenance._probe_opa() == "1.17.0"
+        assert provenance._probe(["opa", "version"]) == "1.17.0"
 
 
 def test_probe_returns_none_on_malformed_output():
     with patch("subprocess.run", return_value=_completed("nonsense output, no version here")):
-        assert provenance._probe_trivy() is None
+        assert provenance._probe(["trivy", "--version"]) is None
 
 
 def test_probe_returns_none_on_subprocess_error():
     with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, ["trivy"])):
-        assert provenance._probe_trivy() is None
+        assert provenance._probe(["trivy", "--version"]) is None
 
 
 def test_probe_returns_none_on_missing_binary():
     with patch("subprocess.run", side_effect=FileNotFoundError):
-        assert provenance._probe_grype() is None
+        assert provenance._probe(["grype", "version"]) is None
 
 
 def test_get_tool_versions_is_cached():

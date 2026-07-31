@@ -72,11 +72,7 @@ app = FastAPI(
 
 
 class GateRequest(BaseModel):
-    """Request model for the /gate endpoint.
-
-    Args:
-        BaseModel (pydantic.BaseModel): Pydantic BaseModel for data validation and serialization.
-    """
+    """Request model for the /gate endpoint."""
     image: str = Field(..., description="Container image reference to scan.")
     classifier: str = Field("rule", description="Layer classifier: rule | agent.")
     policy_package: str = Field(DEFAULT_GATE_PKG,
@@ -113,11 +109,6 @@ class GateSummary(BaseModel):
                                           "including why a PASS was reached.")
 
 
-class Provenance(BaseModel):
-    """What produced this verdict: tool versions, policy bundle, config, timestamp."""
-    model_config = {"extra": "allow"}
-
-
 class GateResponse(BaseModel):
     image: str
     decision: str = Field(..., description="block | review | pass")
@@ -127,7 +118,9 @@ class GateResponse(BaseModel):
     review: List[Finding]
     suppressed: List[Finding] = []
     summary: GateSummary
-    provenance: Provenance
+    provenance: Dict[str, Any] = Field(
+        ..., description="What produced this verdict: tool versions, policy bundle, config, timestamp."
+    )
 
 
 def _load_default_config() -> dict:
@@ -212,21 +205,6 @@ async def gate_from_scans(
     Upload Trivy and Grype JSON files directly; the gate skips scanner
     invocation and runs only enrich + OPA. Useful when scanners run in a
     separate CI step or on a different host.
-
-    Args:
-        image (str, optional): The image reference for labelling. Defaults to Form(..., description="Image reference (for labelling).").
-        trivy (UploadFile, optional): The Trivy JSON output file. Defaults to File(..., description="Trivy JSON output.").
-        grype (UploadFile, optional): The Grype JSON output file. Defaults to File(..., description="Grype JSON output.").
-        classifier (str, optional): The classifier to use. Defaults to Form("rule").
-        policy_package (str, optional): The policy package to use. Defaults to Form(DEFAULT_GATE_PKG).
-        config_json (Optional[str], optional): JSON config override string. Defaults to Form(None, description="JSON config override string.").
-
-    Raises:
-        HTTPException: Raised if an error occurs during the gate evaluation.
-        HTTPException: Raised if the config_json is not valid JSON.
-
-    Returns:
-        GateResponse: The response object containing the tri-state verdict and associated findings.
     """
     cfg = None
     if config_json:

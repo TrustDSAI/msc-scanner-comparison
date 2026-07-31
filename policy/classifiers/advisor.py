@@ -15,15 +15,12 @@ the field from the report. The gate functions normally without it.
 
 from __future__ import annotations
 
-import json
 import os
-import urllib.request
 
-_ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
-_OPENAI_URL    = "https://api.openai.com/v1/chat/completions"
+from . import _llm_client
+
 _DEFAULT_ANTHROPIC_MODEL = "claude-haiku-4-5"
 _DEFAULT_OPENAI_MODEL    = "gpt-4o-mini"
-_TIMEOUT = 30
 
 _BATCH_SYSTEM = (
     "You are a security triage assistant embedded in a CI/CD vulnerability gate. "
@@ -126,34 +123,7 @@ class ReviewAdvisor:
         return text
 
     def _call_anthropic(self, user_prompt: str, system: str, max_tokens: int = 150) -> str:
-        from anthropic import Anthropic
-        client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-        resp = client.messages.create(
-            model=self.model,
-            max_tokens=max_tokens,
-            temperature=0,
-            system=system,
-            messages=[{"role": "user", "content": user_prompt}],
-        )
-        for block in resp.content:
-            if block.type == "text":
-                return block.text
-        return ""
+        return _llm_client.call_anthropic(self.model, system, user_prompt, max_tokens=max_tokens)
 
     def _call_openai(self, user_prompt: str, system: str, max_tokens: int = 150) -> str:
-        body = json.dumps({
-            "model":       self.model,
-            "temperature": 0,
-            "max_tokens":  max_tokens,
-            "messages": [
-                {"role": "system", "content": system},
-                {"role": "user",   "content": user_prompt},
-            ],
-        }).encode()
-        req = urllib.request.Request(_OPENAI_URL, data=body, headers={
-            "authorization": f"Bearer {os.environ['OPENAI_API_KEY']}",
-            "content-type":  "application/json",
-        })
-        with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
-            payload = json.loads(resp.read().decode())
-        return payload["choices"][0]["message"]["content"]
+        return _llm_client.call_openai(self.model, system, user_prompt, max_tokens=max_tokens)

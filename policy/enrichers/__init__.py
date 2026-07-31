@@ -27,6 +27,18 @@ ENRICHERS: list[Enricher] = [
     KEVEnricher(),
 ]
 
+_EMPTY_PAYLOADS: dict[str, dict] = {
+    "nvd":  {"status": None, "rejected": False, "disputed": False},
+    "osv":  {"advisory_found": False, "fix_version": None, "affected_ecosystems": []},
+    "epss": {"score": None, "percentile": None, "as_of": None},
+    "kev":  {"in_kev": False, "date_added": None, "due_date": None, "ransomware_use": None},
+}
+
+
+def empty_payload(field_name: str) -> dict:
+    """Default-empty payload for a skipped enrichment (schema stays uniform)."""
+    return _EMPTY_PAYLOADS.get(field_name, {})
+
 
 __all__ = [
     "Enricher",
@@ -36,4 +48,5 @@ __all__ = [
     "OSVEnricher",
     "EPSSEnricher",
     "KEVEnricher",
+    "empty_payload",
 ]

@@ -24,7 +24,7 @@ import asyncio
 import json
 from pathlib import Path
 
-from enrichers import ENRICHERS
+from enrichers import ENRICHERS, empty_payload
 from enrichers.cache import configure as configure_cache
 
 
@@ -32,7 +32,7 @@ async def _enrich_one(finding: dict, *, restrict_to_critical: bool) -> dict:
     if restrict_to_critical and finding.get("severity") != "CRITICAL":
         # Attach default-empty payloads so downstream schema is uniform.
         for er in ENRICHERS:
-            finding.setdefault(er.field_name, _empty_payload(er.field_name))
+            finding.setdefault(er.field_name, empty_payload(er.field_name))
         return finding
 
     log: list[dict] = []
@@ -44,17 +44,6 @@ async def _enrich_one(finding: dict, *, restrict_to_critical: bool) -> dict:
     if log:
         finding["enrichment_log"] = log
     return finding
-
-
-def _empty_payload(field_name: str) -> dict:
-    if field_name == "nvd":
-        return {"status": None, "rejected": False, "disputed": False}
-    if field_name == "osv":
-        return {"advisory_found": False, "fix_version": None,
-                "affected_ecosystems": []}
-    if field_name == "epss":
-        return {"score": None, "percentile": None, "as_of": None}
-    return {}
 
 
 async def enrich_async(payload: dict, *, restrict_to_critical: bool) -> dict:

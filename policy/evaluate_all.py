@@ -31,22 +31,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 
-def _load_dotenv(path: Path) -> None:
-    """Minimal .env loader. Reads KEY=VALUE lines, skips comments/blank,
-    and only sets variables that aren't already in the environment."""
-    import os as _os
-    if not path.exists():
-        return
-    for line in path.read_text().splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        k, _, v = line.partition("=")
-        k = k.strip()
-        v = v.strip().strip('"').strip("'")
-        if k and v and k not in _os.environ:
-            _os.environ[k] = v
-
+from policy_gate import _load_dotenv
 
 _load_dotenv(HERE / ".env")
 
@@ -54,7 +39,7 @@ _load_dotenv(HERE / ".env")
 from normalisers import ADAPTERS
 from normalisers.merge import merge
 from normalisers.trivy import os_metadata as trivy_os_metadata
-from enrichers import ENRICHERS
+from enrichers import ENRICHERS, empty_payload
 from enrichers.cache import configure as configure_cache
 from enrichers.eol import EOLEnricher
 from classifiers import CLASSIFIERS
@@ -197,20 +182,8 @@ async def enrich_critical_only(payload: dict, network_ok: bool) -> dict:
             await _enrich_one(f)
         else:
             for er in ENRICHERS:
-                f.setdefault(er.field_name, _empty(er.field_name))
+                f.setdefault(er.field_name, empty_payload(er.field_name))
     return payload
-
-
-def _empty(field_name: str) -> dict:
-    if field_name == "nvd":
-        return {"status": None, "rejected": False, "disputed": False}
-    if field_name == "osv":
-        return {"advisory_found": False, "fix_version": None, "affected_ecosystems": []}
-    if field_name == "epss":
-        return {"score": None, "percentile": None, "as_of": None}
-    if field_name == "kev":
-        return {"in_kev": False, "date_added": None, "due_date": None, "ransomware_use": None}
-    return {}
 
 
 def opa_eval(input_path: Path, query: str) -> object:

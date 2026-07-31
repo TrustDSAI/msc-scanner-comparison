@@ -60,7 +60,7 @@ _load_dotenv(HERE / ".env")
 from normalisers import ADAPTERS
 from normalisers.merge import merge
 from normalisers.trivy import os_metadata as trivy_os_metadata
-from enrichers import ENRICHERS
+from enrichers import ENRICHERS, empty_payload
 from enrichers.cache import configure as configure_cache
 from enrichers.eol import EOLEnricher
 from classifiers import get as get_classifier
@@ -125,17 +125,8 @@ async def enrich_critical_and_high(payload: dict) -> dict:
             await _enrich_one(f)
         else:
             for er in ENRICHERS:
-                f.setdefault(er.field_name, _empty(er.field_name))
+                f.setdefault(er.field_name, empty_payload(er.field_name))
     return payload
-
-
-def _empty(field: str) -> dict:
-    return {
-        "nvd":  {"status": None, "rejected": False, "disputed": False},
-        "osv":  {"advisory_found": False, "fix_version": None, "affected_ecosystems": []},
-        "epss": {"score": None, "percentile": None, "as_of": None},
-        "kev":  {"in_kev": False, "date_added": None, "due_date": None, "ransomware_use": None},
-    }.get(field, {})
 
 
 def opa_eval(input_path: Path, query: str, rego_dir: Path) -> object:

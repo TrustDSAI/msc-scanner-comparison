@@ -62,6 +62,11 @@ def parse(log_path: str) -> dict:
 
     session_lines = lines[last_start + 1:] if (last_start is not None and has_end) else lines
 
+    # nginx:latest was retagged to nginx:1.29.7 after these logs were recorded
+    # (commit "relabel nginx:latest to nginx:1.29.7 throughout"); the log
+    # lines still carry the pre-relabel safe-name.
+    SAFE_ALIASES = {"nginx_latest": "nginx_1.29.7"}
+
     runs: dict = {}
     for line in session_lines:
         if line.startswith("benchmark_end"):
@@ -70,6 +75,7 @@ def parse(log_path: str) -> dict:
         if not m:
             continue
         safe, tool, _run, ms = m.group(1), m.group(2), m.group(3), int(m.group(4))
+        safe = SAFE_ALIASES.get(safe, safe)
         runs.setdefault(safe, {}).setdefault(tool, []).append(ms)
     return runs
 
@@ -104,6 +110,8 @@ def parse_trivy_log(log_path: str) -> dict:
     has_end = any(l.startswith("benchmark_trivy_end") for l in lines[last_start + 1:]) if last_start is not None else False
     session_lines = lines[last_start + 1:] if (last_start is not None and has_end) else lines
 
+    SAFE_ALIASES = {"nginx_latest": "nginx_1.29.7"}
+
     trivy: dict = {}
     for line in session_lines:
         if line.startswith("benchmark_trivy_end"):
@@ -111,6 +119,7 @@ def parse_trivy_log(log_path: str) -> dict:
         m = LINE_RE.match(line.strip())
         if m and m.group(2) == "trivy":
             safe, ms = m.group(1), int(m.group(4))
+            safe = SAFE_ALIASES.get(safe, safe)
             trivy.setdefault(safe, []).append(ms)
     return trivy
 

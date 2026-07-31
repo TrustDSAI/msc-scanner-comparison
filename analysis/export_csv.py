@@ -152,11 +152,22 @@ for safe, image, group in IMAGES:
     g_cnts["total"] = len(g_vulns)
     g_cnts["fixed"] = sum(1 for v in g_vulns.values() if v["fixed"])
 
-    # CVE overlap
+    # CVE overlap. One canonical identifier per Grype match, matching
+    # analysis.py and normalisers/grype.py: the match's own id if it is
+    # already a CVE, else its first CVE-prefixed alias, else the raw GHSA.
+    # Unioning every alias instead would count one Grype finding as several
+    # unique CVEs whenever its advisory cross-references more than one
+    # record. g_by_canon is keyed the same way, so the severity lookup below
+    # cannot miss an aliased match.
     t_ids = set(t_vulns)
-    g_ids_exp = set(g_vulns)
-    for gv in g_vulns.values():
-        g_ids_exp.update(gv.get("related", []))
+    g_by_canon = {}
+    for vid, gv in g_vulns.items():
+        if vid.startswith("CVE-"):
+            g_by_canon[vid] = gv
+        else:
+            related = gv.get("related") or []
+            g_by_canon[related[0] if related else vid] = gv
+    g_ids_exp = set(g_by_canon)
     both   = t_ids & g_ids_exp
     t_only = t_ids - g_ids_exp
     g_only = g_ids_exp - t_ids
@@ -166,7 +177,7 @@ for safe, image, group in IMAGES:
     same = t_higher = g_higher = 0
     for cve in both:
         ts = t_vulns.get(cve, {}).get("severity", "UNKNOWN")
-        gs = g_vulns.get(cve, {}).get("severity", "UNKNOWN")
+        gs = g_by_canon.get(cve, {}).get("severity", "UNKNOWN")
         if ts == gs:          same += 1
         elif SEV_RANK.get(ts, 0) > SEV_RANK.get(gs, 0): t_higher += 1
         else:                 g_higher += 1

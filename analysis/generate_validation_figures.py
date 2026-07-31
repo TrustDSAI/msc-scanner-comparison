@@ -14,12 +14,34 @@ RESULTS = os.path.join(ROOT, "validation", "results")
 OUT     = os.path.join(ROOT, "figures")
 os.makedirs(OUT, exist_ok=True)
 
+# ── typography & chart style (print-oriented, matches thesis body serif) ────
+plt.rcParams.update({
+    "font.family":       "serif",
+    "font.serif":        ["Palatino", "Palatino Linotype", "URW Palladio L", "STIXGeneral", "DejaVu Serif"],
+    "mathtext.fontset":  "stix",
+    "axes.edgecolor":    "#4A4A4A",
+    "axes.linewidth":    0.8,
+    "axes.spines.top":   False,
+    "axes.spines.right": False,
+    "axes.grid":         True,
+    "grid.color":        "#D8D8D8",
+    "grid.linewidth":    0.5,
+    "axes.axisbelow":    True,
+    "xtick.color":       "#333333",
+    "ytick.color":       "#333333",
+    "text.color":        "#1A1A1A",
+    "axes.labelcolor":   "#1A1A1A",
+})
+
 # ── palette (matches generate_graphs.py) ──────────────────────────────────────
-C_BLOCK  = "#DC2626"   # red
-C_REVIEW = "#D97706"   # amber
-C_PASS   = "#16A34A"   # green
-C_BLOCK_LIGHT  = "#FCA5A5"
-C_REVIEW_LIGHT = "#FDE68A"
+# Deepened traffic-light status triple (reserved semantics: block/review/pass).
+# CVD separation is in the WARN band (6.9 protan) - acceptable here because
+# every bar/region already carries a direct text label, not colour alone.
+C_BLOCK  = "#B23A2E"   # deep red
+C_REVIEW = "#B8860B"   # dark goldenrod
+C_PASS   = "#1E8E5A"   # deep green
+C_BLOCK_LIGHT  = "#E8A99F"
+C_REVIEW_LIGHT = "#E8CE8A"
 
 IMAGES = [
     ("v01-log4shell",     "v01: Log4Shell\n(CVE-2021-44228)",   "block"),
