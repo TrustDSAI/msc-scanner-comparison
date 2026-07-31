@@ -343,3 +343,5 @@ TABLE 8: CWE → MITRE ATT&CK MAPPING (top CWEs by total alert count)
   Key finding: Execution (T1203) and Impact/DoS (T1499) dominate — memory-safety
   weaknesses in OS-layer C/C++ packages map almost entirely to these two tactics.
   Privilege Escalation (T1068) appears via race conditions (CWE-362) in shared libs.
+
+Saved: /root/msc-scanner-comparison/data/derived/analysis_tables.json

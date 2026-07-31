@@ -270,8 +270,8 @@
     },
     "sev_agreement": {
       "shared": 329,
-      "same": 111,
-      "t_higher": 203,
+      "same": 125,
+      "t_higher": 189,
       "g_higher": 15
     },
     "trivy_cwes": {
@@ -523,8 +523,8 @@
     },
     "sev_agreement": {
       "shared": 282,
-      "same": 95,
-      "t_higher": 174,
+      "same": 97,
+      "t_higher": 172,
       "g_higher": 13
     },
     "trivy_cwes": {
@@ -996,8 +996,8 @@
     },
     "sev_agreement": {
       "shared": 240,
-      "same": 196,
-      "t_higher": 37,
+      "same": 220,
+      "t_higher": 13,
       "g_higher": 7
     },
     "trivy_cwes": {
@@ -1290,8 +1290,8 @@
     },
     "sev_agreement": {
       "shared": 530,
-      "same": 291,
-      "t_higher": 213,
+      "same": 298,
+      "t_higher": 206,
       "g_higher": 26
     },
     "trivy_cwes": {
@@ -1878,9 +1878,9 @@
     },
     "sev_agreement": {
       "shared": 79,
-      "same": 6,
-      "t_higher": 71,
-      "g_higher": 2
+      "same": 69,
+      "t_higher": 7,
+      "g_higher": 3
     },
     "trivy_cwes": {
       "CWE-125": 1,
