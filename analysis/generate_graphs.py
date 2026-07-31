@@ -271,6 +271,14 @@ ax.set_ylim(0, 112); ax.legend(fontsize=10, loc="upper center", frameon=False,
                               ncol=3, bbox_to_anchor=(0.5, 1.13),
                               columnspacing=1.4, handlelength=1.4)
 ax.yaxis.grid(True, linestyle="-", alpha=0.18); ax.set_axisbelow(True)
+# same group markers as the left panel: the right panel's bars are coloured
+# by set membership, not by group, so without these the maintenance-state
+# split is only readable on one of the two panels.
+for grp, (lo, hi) in SPANS.items():
+    ax.text((lo+hi)/2, -0.34, f"Group {grp}",
+            transform=ax.get_xaxis_transform(), ha="center", va="top",
+            fontsize=9, color=GROUP_COLOUR[grp], fontweight="bold",
+            clip_on=False)
 save(fig, "fig3_cve_overlap.png")
 
 # ── Fig 4: Severity agreement ─────────────────────────────────────────────────
