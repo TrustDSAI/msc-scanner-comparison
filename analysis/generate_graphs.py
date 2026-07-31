@@ -34,6 +34,12 @@ plt.rcParams.update({
     "ytick.color":       "#333333",
     "text.color":        "#1A1A1A",
     "axes.labelcolor":   "#1A1A1A",
+    "font.size":         13,
+    "axes.titlesize":    15,
+    "axes.labelsize":    14,
+    "xtick.labelsize":   13,
+    "ytick.labelsize":   13,
+    "legend.fontsize":   13,
 })
 
 # ── colour palette ───────────────────────────────────────────────────────────
@@ -72,6 +78,7 @@ def group_bg(ax, n_bars=1, pad=0.5):
 def save(fig, name):
     path = os.path.join(OUT, name)
     fig.savefig(path, dpi=150, bbox_inches="tight")
+    fig.savefig(os.path.splitext(path)[0] + ".pdf", bbox_inches="tight")
     plt.close(fig)
     print(f"  Saved {name}")
 
@@ -134,7 +141,7 @@ tools_cfg = [("trivy", C_TRIVY, "Trivy"),
 x = np.arange(len(ORDER))
 width = 0.26
 
-fig, ax = plt.subplots(figsize=(14, 6))
+fig, ax = plt.subplots(figsize=(7.5, 4.2))
 for i, (tool, col, lbl) in enumerate(tools_cfg):
     means, sds = [], []
     for safe in ORDER:
@@ -152,21 +159,21 @@ for i, (tool, col, lbl) in enumerate(tools_cfg):
     if tool == "trivy":
         for j, (m, s_) in enumerate(zip(means, sds)):
             ax.text(j + i*width, m * 1.5,
-                    f"{m*1000:.0f}ms", ha="center", va="bottom", fontsize=7, color=col)
+                    f"{m*1000:.0f}ms", ha="center", va="bottom", fontsize=10, color=col)
 
 for grp, (lo, hi) in SPANS.items():
     ax.axvspan(lo - 0.4, hi + 0.9, alpha=0.06, color=GROUP_COLOUR[grp], zorder=0)
     ax.text((lo+hi)/2 + 0.15, 0.008,
             f"Grp {grp}", ha="center", va="bottom",
-            fontsize=9, color=GROUP_COLOUR[grp], fontweight="bold")
+            fontsize=13, color=GROUP_COLOUR[grp], fontweight="bold")
 
 ax.set_yscale("log")
-ax.set_ylabel("Scan time (seconds, log scale)", fontsize=11)
+ax.set_ylabel("Scan time (seconds, log scale)", fontsize=16)
 ax.set_title("Fig 1 — Scan Performance (mean ± SD, 30 runs)",
              fontsize=12, fontweight="bold")
 ax.set_xticks(x + width)
-ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
-ax.legend(fontsize=10)
+ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=13)
+ax.legend(fontsize=14)
 ax.yaxis.grid(True, which="both", linestyle="--", alpha=0.4, zorder=0)
 ax.set_axisbelow(True)
 save(fig, "fig1_performance.png")
@@ -189,7 +196,7 @@ def sev_stack(counts):
 
 x = np.arange(len(ORDER))
 width = 0.38
-fig, ax = plt.subplots(figsize=(14, 6))
+fig, ax = plt.subplots(figsize=(7.5, 4.2))
 
 trivy_stacks = np.array([sev_stack(by_safe[s]["trivy_counts"]) for s in ORDER])
 grype_stacks = np.array([sev_stack(by_safe[s]["grype_counts"]) for s in ORDER])
@@ -214,17 +221,17 @@ totals_t = trivy_stacks.sum(axis=1)
 totals_g = grype_stacks.sum(axis=1)
 for i in range(len(ORDER)):
     ax.text(i - width/2, totals_t[i] * 1.05, "T", ha="center", va="bottom",
-            fontsize=7, color=C_TRIVY, fontweight="bold")
+            fontsize=10, color=C_TRIVY, fontweight="bold")
     ax.text(i + width/2, totals_g[i] * 1.05, "G", ha="center", va="bottom",
-            fontsize=7, color=C_GRYPE, fontweight="bold")
+            fontsize=10, color=C_GRYPE, fontweight="bold")
 
 ax.set_yscale("log")
-ax.set_ylabel("Findings per image (log scale)", fontsize=11)
+ax.set_ylabel("Findings per image (log scale)", fontsize=16)
 ax.set_title("Fig 2 — Findings by Severity per Image  (T=Trivy, G=Grype)",
              fontsize=12, fontweight="bold")
 ax.set_xticks(x)
-ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
-ax.legend(fontsize=9, loc="upper left", ncol=4, frameon=False)
+ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=13)
+ax.legend(fontsize=13, loc="upper left", ncol=4, frameon=False)
 ax.yaxis.grid(True, which="both", linestyle="--", alpha=0.4)
 ax.set_axisbelow(True)
 save(fig, "fig2_total_findings.png")
@@ -243,26 +250,26 @@ t_pct      = [t/tot*100 if tot else 0 for t,tot in zip(t_only, totals_ov)]
 g_pct      = [g/tot*100 if tot else 0 for g,tot in zip(g_only, totals_ov)]
 bar_col    = [GROUP_COLOUR[by_safe[s]["group"]] for s in ORDER]
 
-fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+fig, axes = plt.subplots(1, 2, figsize=(8.0, 4.2))
 
 # left: Jaccard bars
 ax = axes[0]
 bars = ax.bar(range(len(ORDER)), jaccards, color=bar_col, alpha=0.85, zorder=3)
 ax.axhline(0.5, color="grey", linestyle="--", linewidth=1.2, alpha=0.7, label="0.5")
-ax.set_ylabel("Jaccard similarity", fontsize=11)
-ax.set_title("CVE-Level Overlap (Jaccard = |T∩G|/|T∪G|)", fontsize=11, fontweight="bold")
+ax.set_ylabel("Jaccard similarity", fontsize=16)
+ax.set_title("CVE-Level Overlap (Jaccard = |T∩G|/|T∪G|)", fontsize=16, fontweight="bold")
 ax.set_xticks(range(len(ORDER)))
-ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=40, ha="right", fontsize=9)
+ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=40, ha="right", fontsize=13)
 ax.set_ylim(0, 1.12)
 ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
 for bar, val in zip(bars, jaccards):
     ax.text(bar.get_x()+bar.get_width()/2, val+0.02,
-            f"{val:.3f}", ha="center", va="bottom", fontsize=9, fontweight="bold")
+            f"{val:.3f}", ha="center", va="bottom", fontsize=13, fontweight="bold")
 ax.legend(handles=[
     mpatches.Patch(color=C_A, label="Group A"),
     mpatches.Patch(color=C_B, label="Group B"),
     mpatches.Patch(color=C_C, label="Group C"),
-], fontsize=9)
+], fontsize=13)
 
 # right: stacked composition
 ax = axes[1]
@@ -271,11 +278,11 @@ ax.bar(range(len(ORDER)), t_pct, bottom=both_pct, color=C_TRIVY, alpha=0.75, lab
 ax.bar(range(len(ORDER)), g_pct,
        bottom=[b+t for b,t in zip(both_pct, t_pct)],
        color=C_GRYPE, alpha=0.75, label="Grype only")
-ax.set_ylabel("% of unique CVEs", fontsize=11)
-ax.set_title("CVE Set Composition (Shared / Trivy-only / Grype-only)", fontsize=11, fontweight="bold")
+ax.set_ylabel("% of unique CVEs", fontsize=16)
+ax.set_title("CVE Set Composition (Shared / Trivy-only / Grype-only)", fontsize=16, fontweight="bold")
 ax.set_xticks(range(len(ORDER)))
-ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=40, ha="right", fontsize=9)
-ax.set_ylim(0, 110); ax.legend(fontsize=9)
+ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=40, ha="right", fontsize=13)
+ax.set_ylim(0, 110); ax.legend(fontsize=13)
 ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
 
 fig.suptitle("Fig 3 — CVE-Level Overlap: Trivy vs Grype",
@@ -297,7 +304,7 @@ gh_pct  = [gh/sh*100 if sh else 0 for gh,sh in zip(g_high_n, shared_n)]
 x = np.arange(len(ORDER))
 width = 0.28
 
-fig, ax = plt.subplots(figsize=(14, 6))
+fig, ax = plt.subplots(figsize=(7.5, 4.2))
 ax.bar(x - width, ag_pct, width, label="Same severity",  color="#6B7280", alpha=0.85)
 ax.bar(x,         th_pct, width, label="Trivy higher",   color=C_TRIVY,   alpha=0.85)
 ax.bar(x + width, gh_pct, width, label="Grype higher",   color=C_GRYPE,   alpha=0.85)
@@ -307,16 +314,16 @@ for grp, (lo, hi) in SPANS.items():
 
 # annotate agree% and shared count
 for i, (v, n) in enumerate(zip(ag_pct, shared_n)):
-    ax.text(i - width, v + 1.5, f"{v:.0f}%", ha="center", va="bottom", fontsize=8)
-    ax.text(i, -7, f"n={n}", ha="center", va="top", fontsize=7, color="grey")
+    ax.text(i - width, v + 1.5, f"{v:.0f}%", ha="center", va="bottom", fontsize=12)
+    ax.text(i, -7, f"n={n}", ha="center", va="top", fontsize=10, color="grey")
 
-ax.set_ylabel("% of shared CVEs", fontsize=11)
+ax.set_ylabel("% of shared CVEs", fontsize=16)
 ax.set_ylim(0, 115)
 ax.set_title("Fig 4 — Severity Agreement on Shared CVEs",
              fontsize=12, fontweight="bold")
 ax.set_xticks(x)
-ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
-ax.legend(fontsize=10)
+ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=13)
+ax.legend(fontsize=14)
 ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
 save(fig, "fig4_severity_agreement.png")
 
@@ -325,7 +332,7 @@ print("Fig 5: Fix rates…")
 x = np.arange(len(ORDER))
 width = 0.35
 
-fig, ax = plt.subplots(figsize=(13, 6))
+fig, ax = plt.subplots(figsize=(7.5, 4.2))
 ax.bar(x - width/2, [RAW_TRIVY_FIX[s] for s in ORDER], width,
        label="Trivy fix%", color=C_TRIVY, alpha=0.85)
 ax.bar(x + width/2, [RAW_GRYPE_FIX[s] for s in ORDER], width,
@@ -336,16 +343,16 @@ for grp, (lo, hi) in SPANS.items():
 
 for i, s in enumerate(ORDER):
     tv, gv = RAW_TRIVY_FIX[s], RAW_GRYPE_FIX[s]
-    ax.text(i - width/2, tv + 1.5, f"{tv}%", ha="center", va="bottom", fontsize=8)
-    ax.text(i + width/2, gv + 1.5, f"{gv}%", ha="center", va="bottom", fontsize=8)
+    ax.text(i - width/2, tv + 1.5, f"{tv}%", ha="center", va="bottom", fontsize=12)
+    ax.text(i + width/2, gv + 1.5, f"{gv}%", ha="center", va="bottom", fontsize=12)
 
-ax.set_ylabel("% of findings with a fix available", fontsize=11)
+ax.set_ylabel("% of findings with a fix available", fontsize=16)
 ax.set_ylim(0, 115)
 ax.set_title("Fig 5 — Fix Rate per Image",
              fontsize=12, fontweight="bold")
 ax.set_xticks(x)
-ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
-ax.legend(fontsize=10)
+ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=13)
+ax.legend(fontsize=14)
 ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
 save(fig, "fig5_fix_rates.png")
 
@@ -354,7 +361,7 @@ print("Fig 6: CRITICAL counts…")
 x = np.arange(len(ORDER))
 width = 0.35
 
-fig, ax = plt.subplots(figsize=(13, 5))
+fig, ax = plt.subplots(figsize=(7.5, 3.6))
 ax.bar(x - width/2, [RAW_TRIVY_CRIT[s] for s in ORDER], width,
        label="Trivy CRITICAL", color=C_TRIVY, alpha=0.85)
 ax.bar(x + width/2, [RAW_GRYPE_CRIT[s] for s in ORDER], width,
@@ -365,15 +372,15 @@ for grp, (lo, hi) in SPANS.items():
 
 for i, s in enumerate(ORDER):
     tv, gv = RAW_TRIVY_CRIT[s], RAW_GRYPE_CRIT[s]
-    if tv > 0: ax.text(i - width/2, tv + 3, str(tv), ha="center", va="bottom", fontsize=8)
-    if gv > 0: ax.text(i + width/2, gv + 3, str(gv), ha="center", va="bottom", fontsize=8)
+    if tv > 0: ax.text(i - width/2, tv + 3, str(tv), ha="center", va="bottom", fontsize=12)
+    if gv > 0: ax.text(i + width/2, gv + 3, str(gv), ha="center", va="bottom", fontsize=12)
 
-ax.set_ylabel("CRITICAL vulnerability count", fontsize=11)
+ax.set_ylabel("CRITICAL vulnerability count", fontsize=16)
 ax.set_title("Fig 6 — CRITICAL Findings: Trivy vs Grype",
              fontsize=12, fontweight="bold")
 ax.set_xticks(x)
-ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=9)
-ax.legend(fontsize=10)
+ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=13)
+ax.legend(fontsize=14)
 ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
 save(fig, "fig6_critical_counts.png")
 
@@ -402,21 +409,21 @@ g_vals  = [grype_cwe_agg[c] for c in top10_cwes]
 x = np.arange(len(top10_cwes))
 width = 0.35
 
-fig, ax = plt.subplots(figsize=(14, 6))
+fig, ax = plt.subplots(figsize=(7.5, 4.2))
 ax.bar(x - width/2, t_vals, width, label="Trivy", color=C_TRIVY, alpha=0.85)
 ax.bar(x + width/2, g_vals, width, label="Grype", color=C_GRYPE, alpha=0.85)
 
 for i, (tv, gv) in enumerate(zip(t_vals, g_vals)):
     tot = tv + gv
     ax.text(i, max(tv, gv) + 15, f"Σ{tot}",
-            ha="center", va="bottom", fontsize=8, fontweight="bold")
+            ha="center", va="bottom", fontsize=12, fontweight="bold")
 
-ax.set_ylabel("Occurrence count (all 9 images)", fontsize=11)
+ax.set_ylabel("Occurrence count (all 9 images)", fontsize=16)
 ax.set_title("Fig 7 — Top 10 CWE Types (Trivy + Grype, all images)",
              fontsize=12, fontweight="bold")
 ax.set_xticks(x)
-ax.set_xticklabels(xlabels, fontsize=9)
-ax.legend(fontsize=10)
+ax.set_xticklabels(xlabels, fontsize=13)
+ax.legend(fontsize=14)
 ax.yaxis.grid(True, linestyle="--", alpha=0.4); ax.set_axisbelow(True)
 save(fig, "fig7_cwe_top10.png")
 
@@ -437,7 +444,7 @@ for s in ORDER:
         g_means.append(b["grype"]["mean_ms"] / 1000)
     o_means.append(b["osv"]["mean_ms"] / 1000)
 
-fig, ax = plt.subplots(figsize=(10, 7))
+fig, ax = plt.subplots(figsize=(7.0, 5.0))
 for means, col, lbl in [(t_means, C_TRIVY, "Trivy"),
                          (g_means, C_GRYPE, "Grype"),
                          (o_means, C_OSV,   "OSV-Scanner")]:
@@ -449,13 +456,13 @@ for means, col, lbl in [(t_means, C_TRIVY, "Trivy"),
 for i, s in enumerate(ORDER):
     top = max(t_means[i], g_means[i], o_means[i])
     ax.annotate(LABEL[s], (sizes[i], top),
-                textcoords="offset points", xytext=(5, 4), fontsize=7.5, color="#444444")
+                textcoords="offset points", xytext=(5, 4), fontsize=10.5, color="#444444")
 
-ax.set_xlabel("Compressed image size (MB)", fontsize=11)
-ax.set_ylabel("Mean scan time (seconds)", fontsize=11)
+ax.set_xlabel("Compressed image size (MB)", fontsize=16)
+ax.set_ylabel("Mean scan time (seconds)", fontsize=16)
 ax.set_title("Fig 8 — Scan Time vs Image Size",
              fontsize=12, fontweight="bold")
-ax.legend(fontsize=10)
+ax.legend(fontsize=14)
 ax.yaxis.grid(True, linestyle="--", alpha=0.4)
 ax.xaxis.grid(True, linestyle="--", alpha=0.4)
 ax.set_axisbelow(True)
@@ -471,7 +478,7 @@ tools_cfg = [("trivy", C_TRIVY, "Trivy"),
              ("osv",    C_OSV,   "OSV-Scanner")]
 IMG_GROUPS = ["C","C","C","C","B","B","B","A","A"]
 
-fig, axes = plt.subplots(3, 1, figsize=(16, 12), sharex=True)
+fig, axes = plt.subplots(3, 1, figsize=(8.0, 7.5), sharex=True)
 fig.subplots_adjust(hspace=0.12)
 
 fmt9 = matplotlib.ticker.FuncFormatter(
@@ -496,7 +503,7 @@ for ax, (tool, col_hex, tool_lbl) in zip(axes, tools_cfg):
         zorder=3,
     )
     ax.set_yscale("log")
-    ax.set_ylabel("Scan time", fontsize=10)
+    ax.set_ylabel("Scan time", fontsize=14)
     ax.yaxis.set_major_formatter(fmt9)
     ax.yaxis.grid(True, which="both", linestyle="--", alpha=0.4, zorder=0)
     ax.set_axisbelow(True)
@@ -513,14 +520,14 @@ for ax, (tool, col_hex, tool_lbl) in zip(axes, tools_cfg):
 
 # x-axis labels only on bottom panel
 axes[-1].set_xticks(xs)
-axes[-1].set_xticklabels([LABEL[s] for s in ORDER], rotation=30, ha="right", fontsize=10)
+axes[-1].set_xticklabels([LABEL[s] for s in ORDER], rotation=30, ha="right", fontsize=14)
 
 # group labels above the top panel
 for grp, lo_i, hi_i in [("C", 0, 3), ("B", 4, 6), ("A", 7, 8)]:
     mid_x = (lo_i + hi_i) / 2
     axes[0].text(mid_x, 1.02, f"Group {grp}",
                  transform=axes[0].get_xaxis_transform(),
-                 ha="center", va="bottom", fontsize=10,
+                 ha="center", va="bottom", fontsize=14,
                  fontweight="bold", color=GROUP_COLOUR[grp])
 
 fig.suptitle("Fig 9 — Scan Time Distribution (30 runs per image)",
@@ -607,7 +614,7 @@ def _build_matrix(pkg_list, side):
 t_mat, t_cols = _build_matrix(top_t_pkgs, 0)
 g_mat, g_cols = _build_matrix(top_g_pkgs, 1)
 
-fig, (ax_t, ax_g) = plt.subplots(1, 2, figsize=(18, 7))
+fig, (ax_t, ax_g) = plt.subplots(1, 2, figsize=(8.0, 4.4))
 fig.subplots_adjust(wspace=0.35)
 
 ylabels = [LABEL[s] for s in ORDER]
@@ -627,10 +634,10 @@ for ax, mat, cols, cmap_name, title in [
     plt.colorbar(im, ax=ax, label="CVE count (log scale)", shrink=0.85)
 
     ax.set_xticks(range(len(cols)))
-    ax.set_xticklabels(cols, rotation=35, ha="right", fontsize=9)
+    ax.set_xticklabels(cols, rotation=35, ha="right", fontsize=13)
     ax.set_yticks(range(len(ORDER)))
-    ax.set_yticklabels(ylabels, fontsize=9)
-    ax.set_title(title, fontsize=11, fontweight="bold", pad=10)
+    ax.set_yticklabels(ylabels, fontsize=13)
+    ax.set_title(title, fontsize=16, fontweight="bold", pad=10)
 
     # colour y-tick labels by group
     for i, tick in enumerate(ax.get_yticklabels()):
@@ -653,7 +660,7 @@ for ax, mat, cols, cmap_name, title in [
             norm_v = (np.log(val) - vmin_log) / (vmax_log - vmin_log) if vmax_log != vmin_log else 0.5
             txt_col = "white" if norm_v > 0.55 else "black"
             ax.text(j, i, f"{val:,}", ha="center", va="center",
-                    fontsize=8, color=txt_col)
+                    fontsize=12, color=txt_col)
 
 fig.suptitle("Fig 10 — Source Packages Driving CVE-Set Divergence (Trivy vs Grype)",
              fontsize=12, fontweight="bold")

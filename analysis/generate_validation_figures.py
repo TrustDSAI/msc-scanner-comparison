@@ -31,6 +31,12 @@ plt.rcParams.update({
     "ytick.color":       "#333333",
     "text.color":        "#1A1A1A",
     "axes.labelcolor":   "#1A1A1A",
+    "font.size":         13,
+    "axes.titlesize":    15,
+    "axes.labelsize":    14,
+    "xtick.labelsize":   13,
+    "ytick.labelsize":   13,
+    "legend.fontsize":   13,
 })
 
 # ── palette (matches generate_graphs.py) ──────────────────────────────────────
@@ -69,7 +75,7 @@ def load_result(image_id):
 # ── Figure 11: Tier summary (categorical heatmap-style) ─────────────────────
 print("Fig 11: Validation tier summary…")
 
-fig, axes = plt.subplots(1, 2, figsize=(14, 5),
+fig, axes = plt.subplots(1, 2, figsize=(7.8, 3.8),
                          gridspec_kw={"width_ratios": [1, 2.2]})
 
 # Left panel: tier indicator per image
@@ -85,14 +91,14 @@ bars = ax_tier.barh(y_pos, [1]*len(tier_order), height=0.7,
 
 for i, (yp, tier) in enumerate(zip(y_pos, tier_values)):
     ax_tier.text(0.5, yp, tier.upper(), ha="center", va="center",
-                 color="white", fontweight="bold", fontsize=9)
+                 color="white", fontweight="bold", fontsize=13)
 
 ax_tier.set_yticks(y_pos)
-ax_tier.set_yticklabels(tier_labels, fontsize=8)
+ax_tier.set_yticklabels(tier_labels, fontsize=12)
 ax_tier.set_xlim(0, 1)
 ax_tier.set_xticks([])
-ax_tier.set_xlabel("Gate decision", fontsize=9)
-ax_tier.set_title("(a) Tier per image", fontsize=10, fontweight="bold")
+ax_tier.set_xlabel("Gate decision", fontsize=13)
+ax_tier.set_title("(a) Tier per image", fontsize=14, fontweight="bold")
 for spine in ["top", "right", "bottom"]:
     ax_tier.spines[spine].set_visible(False)
 
@@ -120,30 +126,32 @@ for i, (b, r) in enumerate(zip(block_counts, review_counts)):
     total = b + r
     if b > 0:
         ax_bar.text(b / 2, i, str(b), ha="center", va="center",
-                    color="white", fontsize=8, fontweight="bold")
+                    color="white", fontsize=12, fontweight="bold")
     if r > 0:
         x_mid = b + r / 2
         # only annotate if bar wide enough to fit label
         if r >= 2:
             ax_bar.text(x_mid, i, str(r), ha="center", va="center",
-                        color="white" if r > 5 else "#92400E", fontsize=8)
+                        color="white" if r > 5 else "#92400E", fontsize=12)
 
 ax_bar.set_yticks(y_pos)
 ax_bar.set_yticklabels([])
 ax_bar.set_xscale("symlog", linthresh=1)
-ax_bar.set_xlabel("Finding count (symlog scale)", fontsize=9)
-ax_bar.set_title("(b) Block and review finding counts", fontsize=10, fontweight="bold")
+ax_bar.set_xlabel("Finding count (symlog scale)", fontsize=13)
+ax_bar.set_title("(b) Block and review finding counts", fontsize=14, fontweight="bold")
 ax_bar.legend(handles=[
     mpatches.Patch(color=C_BLOCK,  alpha=0.85, label="Block tier"),
     mpatches.Patch(color=C_REVIEW, alpha=0.7,  label="Review tier"),
-], loc="lower right", fontsize=8)
+], loc="lower right", fontsize=12)
 for spine in ["top", "right"]:
     ax_bar.spines[spine].set_visible(False)
 
 fig.suptitle("Group V validation suite: gate decisions and finding counts (10 images)",
-             fontsize=11, fontweight="bold", y=1.01)
+             fontsize=16, fontweight="bold", y=1.01)
 plt.tight_layout()
 fig.savefig(os.path.join(OUT, "fig11_validation_outcomes.png"),
+            dpi=150, bbox_inches="tight")
+fig.savefig(os.path.join(OUT, "fig11_validation_outcomes.pdf"),
             dpi=150, bbox_inches="tight")
 plt.close(fig)
 print("  Saved fig11_validation_outcomes.png")
@@ -182,7 +190,7 @@ path_order = ["kev_fix", "review_crit", "review_high", "review_crit_eol_context"
 path_tiers  = {"kev_fix": "block", "review_crit": "review", "review_high": "review",
                "review_crit_eol_context": "review", "pass_clean": "pass"}
 
-fig, ax = plt.subplots(figsize=(11, 4))
+fig, ax = plt.subplots(figsize=(7.5, 3.4))
 
 y_pos = np.arange(len(path_order))
 counts = [path_counts.get(p, 0) for p in path_order]
@@ -192,25 +200,27 @@ labels  = [PATH_LABELS[p] for p in path_order]
 bars = ax.barh(y_pos, counts, height=0.55, color=colours, alpha=0.85,
                edgecolor="white", linewidth=0.5)
 for i, (bar, c) in enumerate(zip(bars, counts)):
-    ax.text(c + 0.05, i, str(c), va="center", fontsize=10, fontweight="bold")
+    ax.text(c + 0.05, i, str(c), va="center", fontsize=14, fontweight="bold")
 
 ax.set_yticks(y_pos)
-ax.set_yticklabels(labels, fontsize=9)
+ax.set_yticklabels(labels, fontsize=13)
 ax.set_xlim(0, max(counts) + 1.5)
-ax.set_xlabel("Number of validation images", fontsize=9)
+ax.set_xlabel("Number of validation images", fontsize=13)
 ax.set_xticks(range(max(counts) + 2))
 ax.set_title("Gate path coverage across the validation suite",
-             fontsize=11, fontweight="bold")
+             fontsize=16, fontweight="bold")
 ax.legend(handles=[
     mpatches.Patch(color=C_BLOCK,  alpha=0.85, label="BLOCK tier"),
     mpatches.Patch(color=C_REVIEW, alpha=0.85, label="REVIEW tier"),
     mpatches.Patch(color=C_PASS,   alpha=0.85, label="PASS tier"),
-], loc="lower right", fontsize=8)
+], loc="lower right", fontsize=12)
 for spine in ["top", "right"]:
     ax.spines[spine].set_visible(False)
 
 plt.tight_layout()
 fig.savefig(os.path.join(OUT, "fig12_validation_gate_paths.png"),
+            dpi=150, bbox_inches="tight")
+fig.savefig(os.path.join(OUT, "fig12_validation_gate_paths.pdf"),
             dpi=150, bbox_inches="tight")
 plt.close(fig)
 print("  Saved fig12_validation_gate_paths.png")
