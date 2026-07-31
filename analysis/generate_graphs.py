@@ -76,8 +76,11 @@ GROUP_EDGES = [3.5, 6.5]
 
 def group_rules(ax, offset=0.0):
     for e in GROUP_EDGES:
-        ax.axvline(e + offset, color="#B8B8B8", linewidth=0.8,
-                   linestyle=":", alpha=0.9, zorder=1)
+        # full-height rule, extended below the axis so it also separates the
+        # group labels underneath
+        ax.axvline(e + offset, ymin=-0.42, ymax=1.0, color="#4A4A4A",
+                   linewidth=1.4, linestyle="-", alpha=0.9, zorder=5,
+                   clip_on=False)
 
 def group_bg(ax, n_bars=1, pad=0.5):
     """Shade group regions on ax."""
