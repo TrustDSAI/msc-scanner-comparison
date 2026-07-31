@@ -216,10 +216,12 @@ for i in range(len(ORDER)):
             fontsize=9, color=C_GRYPE, fontweight="bold")
 
 ax.set_yscale("log")
+ax.set_ylim(top=max(totals_t.max(), totals_g.max()) * 4.0)
 ax.set_ylabel("Findings per image (log scale)", fontsize=9)
 ax.set_xticks(x)
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=35, ha="right", fontsize=10)
-ax.legend(fontsize=10, loc="upper left", ncol=4, frameon=False)
+ax.legend(fontsize=10, loc="lower left", ncol=4, frameon=False,
+          bbox_to_anchor=(0.0, 1.01))
 ax.yaxis.grid(True, which="both", linestyle="--", alpha=0.4)
 ax.set_axisbelow(True)
 save(fig, "fig2_total_findings.png")
@@ -422,35 +424,30 @@ for s in ORDER:
         g_means.append(b["grype"]["mean_ms"] / 1000)
     o_means.append(b["osv"]["mean_ms"] / 1000)
 
-fig, ax = plt.subplots(figsize=(6.4, 4.6))
-for means, col, lbl in [(t_means, C_TRIVY, "Trivy"),
-                         (g_means, C_GRYPE, "Grype"),
-                         (o_means, C_OSV,   "OSV-Scanner")]:
-    ax.scatter(sizes, means, color=col, label=lbl, s=90, zorder=4, alpha=0.9)
+fig, ax = plt.subplots(figsize=(6.4, 4.0))
+
+# Log y: on a linear axis spanning 0-100s every Trivy point sits on zero and
+# the flat trend the figure exists to show is invisible.
+for means, col, mark, lbl, _dy in [(t_means, C_TRIVY, "o", "Trivy", -3),
+                                   (g_means, C_GRYPE, "s", "Grype", 8),
+                                   (o_means, C_OSV,   "^", "OSV-Scanner", -13)]:
+    ax.scatter(sizes, means, color=col, label=lbl, s=55, marker=mark,
+               zorder=4, alpha=0.9, edgecolor="white", linewidth=0.6)
     coeffs = np.polyfit(sizes, means, 1)
-    xs = np.linspace(0, max(sizes)*1.05, 200)
-    ax.plot(xs, np.polyval(coeffs, xs), color=col, linestyle="--", alpha=0.5, linewidth=1.2)
+    xs = np.linspace(min(sizes), max(sizes)*1.02, 200)
+    ax.plot(xs, np.polyval(coeffs, xs), color=col, linestyle="--",
+            alpha=0.55, linewidth=1.1, zorder=3)
+    # slope in ms per MB says the same thing as the fitted line, in a number
+    ax.annotate(f"{coeffs[0]*1000:,.0f} ms/MB", (xs[-1], np.polyval(coeffs, xs[-1])),
+                textcoords="offset points", xytext=(6, _dy), fontsize=9,
+                color=col, fontweight="bold", annotation_clip=False)
 
-ax.set_xlabel("Image size (MB)", fontsize=9)
-ax.set_ylabel("Mean scan time (seconds)", fontsize=9)
-ax.legend(fontsize=10, loc="upper left", framealpha=0.95)
-
-# Image names on a top axis rather than beside each point: at this width the
-# per-point annotations collided with each other and ran outside the axes.
-# Two alternating rows: node:20 and python:3.12 differ by 11 MB on a
-# 1,100 MB axis, so a single row of labels overlaps no matter the rotation.
-_pairs = sorted(zip(sizes, [LABEL[s] for s in ORDER]))
-for _row, _pad in ((0, 2), (1, 30)):
-    _ax = ax.twiny()
-    _ax.set_xlim(ax.get_xlim())
-    _ax.set_xticks([p[0] for p in _pairs[_row::2]])
-    _ax.set_xticklabels([p[1] for p in _pairs[_row::2]], rotation=45,
-                        ha="left", va="bottom", fontsize=9, color="#444444")
-    _ax.tick_params(axis="x", length=3, pad=_pad)
-    _ax.grid(False)
-    for side in ("top", "right", "left", "bottom"):
-        _ax.spines[side].set_visible(False)
-ax.yaxis.grid(True, linestyle="-", alpha=0.18)
+ax.set_yscale("log")
+ax.set_xlabel("Image size (MB)", fontsize=10)
+ax.set_ylabel("Mean scan time (seconds, log scale)", fontsize=10)
+ax.set_xlim(-40, max(sizes)*1.30)
+ax.legend(fontsize=10, loc="lower right", framealpha=0.95)
+ax.yaxis.grid(True, which="major", linestyle="-", alpha=0.18)
 ax.xaxis.grid(False)
 ax.set_axisbelow(True)
 save(fig, "fig8_time_vs_size.png")
@@ -598,55 +595,51 @@ def _build_matrix(pkg_list, side):
 t_mat, t_cols = _build_matrix(top_t_pkgs, 0)
 g_mat, g_cols = _build_matrix(top_g_pkgs, 1)
 
-fig, (ax_t, ax_g) = plt.subplots(1, 2, figsize=(6.5, 4.4))
-fig.subplots_adjust(wspace=0.45)
+# 100 per cent stacked bars rather than a heatmap. The claim this figure
+# supports is about concentration: Trivy's exclusive CVEs pile into one
+# package while Grype's spread across several. A share-of-total bar shows
+# that directly; a heatmap of raw counts left most cells empty and buried
+# the comparison in a colour scale.
+fig, (ax_t, ax_g) = plt.subplots(2, 1, figsize=(6.4, 6.8))
+fig.subplots_adjust(hspace=0.85)
 
 ylabels = [LABEL[s] for s in ORDER]
+y = np.arange(len(ORDER))
 
-for idx, (ax, mat, cols, cmap_name, title) in enumerate([
-    (ax_t, t_mat, t_cols, "Reds",  "Trivy-exclusive CVEs (T-only)\nby source package"),
-    (ax_g, g_mat, g_cols, "Blues", "Grype-exclusive CVEs (G-only)\nby source package"),
-]):
-    masked = np.where(mat == 0, np.nan, mat)
-    pos_vals = mat[mat > 0]
-    norm = _LogNorm(vmin=max(1, pos_vals.min()), vmax=pos_vals.max()) if len(pos_vals) else None
+for ax, mat, cols, palette, title in [
+    (ax_t, t_mat, t_cols, COLORS_T, "CVEs reported only by Trivy"),
+    (ax_g, g_mat, g_cols, COLORS_G, "CVEs reported only by Grype"),
+]:
+    totals = mat.sum(axis=1)
+    totals[totals == 0] = 1          # avoid divide-by-zero on clean images
+    share = mat / totals[:, None] * 100
 
-    cmap = matplotlib.cm.get_cmap(cmap_name).copy()
-    cmap.set_bad("white")
+    left = np.zeros(len(ORDER))
+    for j, col in enumerate(cols):
+        ax.barh(y, share[:, j], left=left, height=0.68,
+                color=palette[j % len(palette)], alpha=0.9,
+                edgecolor="white", linewidth=0.5, label=col)
+        left += share[:, j]
 
-    im = ax.imshow(masked, cmap=cmap, norm=norm, aspect="auto")
-    _cb = plt.colorbar(im, ax=ax, shrink=0.85)
-    if idx == 1:
-        _cb.set_label("CVE count (log scale)")
+    # total count per image, so the shares stay interpretable
+    for i, tot in enumerate(mat.sum(axis=1)):
+        ax.text(101, i, f"n={int(tot):,}", va="center", ha="left",
+                fontsize=8, color="#555555")
 
-    ax.set_xticks(range(len(cols)))
-    ax.set_xticklabels(cols, rotation=35, ha="right", fontsize=10)
-    ax.set_yticks(range(len(ORDER)))
-    ax.set_yticklabels(ylabels, fontsize=10)
-    ax.set_title(title, fontsize=9, fontweight="bold", pad=10)
+    ax.set_yticks(y)
+    ax.set_yticklabels(ylabels, fontsize=9)
+    ax.invert_yaxis()
+    ax.set_xlim(0, 100)
+    ax.set_xlabel("Share of that tool's exclusive CVEs (%)", fontsize=9)
+    ax.set_title(title, fontsize=10, fontweight="bold", loc="left")
+    ax.legend(fontsize=8, ncol=3, frameon=False, loc="upper left",
+              bbox_to_anchor=(0.0, -0.28), columnspacing=1.0, handlelength=1.1)
+    ax.xaxis.grid(True, linestyle="-", alpha=0.18)
+    ax.yaxis.grid(False)
+    ax.set_axisbelow(True)
+    for side in ("top", "right"):
+        ax.spines[side].set_visible(False)
 
-    # colour y-tick labels by group
-    for i, tick in enumerate(ax.get_yticklabels()):
-        tick.set_color(GROUP_COLOUR[IMG_GROUPS[i]])
-        tick.set_fontweight("bold")
-
-    # group separators (horizontal lines between groups)
-    for boundary in [3.5, 6.5]:
-        ax.axhline(boundary, color="black", linewidth=1.5, zorder=5)
-
-    # cell annotations
-    vmax = pos_vals.max() if len(pos_vals) else 1
-    vmin_log = np.log(max(1, pos_vals.min())) if len(pos_vals) else 0
-    vmax_log = np.log(vmax) if vmax > 0 else 1
-    for i in range(len(ORDER)):
-        for j in range(len(cols)):
-            val = int(mat[i, j])
-            if val == 0:
-                continue
-            norm_v = (np.log(val) - vmin_log) / (vmax_log - vmin_log) if vmax_log != vmin_log else 0.5
-            txt_col = "white" if norm_v > 0.55 else "black"
-            ax.text(j, i, f"{val:,}", ha="center", va="center",
-                    fontsize=10, color=txt_col)
 save(fig, "fig10_jaccard_packages.png")
 
 print(f"\nDone — 10 graphs saved to {OUT}/")
