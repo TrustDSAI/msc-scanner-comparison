@@ -595,50 +595,53 @@ def _build_matrix(pkg_list, side):
 t_mat, t_cols = _build_matrix(top_t_pkgs, 0)
 g_mat, g_cols = _build_matrix(top_g_pkgs, 1)
 
-# 100 per cent stacked bars rather than a heatmap. The claim this figure
-# supports is about concentration: Trivy's exclusive CVEs pile into one
-# package while Grype's spread across several. A share-of-total bar shows
-# that directly; a heatmap of raw counts left most cells empty and buried
-# the comparison in a colour scale.
-fig, (ax_t, ax_g) = plt.subplots(2, 1, figsize=(6.4, 6.8))
-fig.subplots_adjust(hspace=0.85)
+# Concentration, not composition. The claim is that Trivy's exclusive CVEs
+# pile into a single package while Grype's do not, which is one number per
+# tool per image: the share contributed by that tool's largest single
+# package. Plotting composition instead forced an "other" bucket that was
+# the largest entry on several rows and told the reader nothing.
+fig, ax = plt.subplots(figsize=(6.4, 4.2))
 
-ylabels = [LABEL[s] for s in ORDER]
 y = np.arange(len(ORDER))
+bar_h = 0.38
 
-for ax, mat, cols, palette, title in [
-    (ax_t, t_mat, t_cols, COLORS_T, "CVEs reported only by Trivy"),
-    (ax_g, g_mat, g_cols, COLORS_G, "CVEs reported only by Grype"),
-]:
-    totals = mat.sum(axis=1)
-    totals[totals == 0] = 1          # avoid divide-by-zero on clean images
-    share = mat / totals[:, None] * 100
+# The count matters as much as the share: 100% of two findings is not
+# concentration, so each label carries the denominator.
+t_share, g_share, t_top, g_top = [], [], [], []
+for sfe in ORDER:
+    tc, gc = pkg_data[sfe]
+    tt, gt = sum(tc.values()), sum(gc.values())
+    t_share.append(100 * max(tc.values()) / tt if tt else 0.0)
+    g_share.append(100 * max(gc.values()) / gt if gt else 0.0)
+    t_top.append(f"{tc.most_common(1)[0][0]}  n={tt:,}" if tc else "")
+    g_top.append(f"{gc.most_common(1)[0][0]}  n={gt:,}" if gc else "")
 
-    left = np.zeros(len(ORDER))
-    for j, col in enumerate(cols):
-        ax.barh(y, share[:, j], left=left, height=0.68,
-                color=palette[j % len(palette)], alpha=0.9,
-                edgecolor="white", linewidth=0.5, label=col)
-        left += share[:, j]
+ax.barh(y - bar_h/2, t_share, bar_h, color=C_TRIVY, alpha=0.9,
+        label="Trivy-only findings")
+ax.barh(y + bar_h/2, g_share, bar_h, color=C_GRYPE, alpha=0.9,
+        label="Grype-only findings")
 
-    # total count per image, so the shares stay interpretable
-    for i, tot in enumerate(mat.sum(axis=1)):
-        ax.text(101, i, f"n={int(tot):,}", va="center", ha="left",
-                fontsize=8, color="#555555")
+for i in range(len(ORDER)):
+    if t_share[i] > 0:
+        ax.text(t_share[i] + 1.5, i - bar_h/2, t_top[i], va="center",
+                ha="left", fontsize=8, color=C_TRIVY)
+    if g_share[i] > 0:
+        ax.text(g_share[i] + 1.5, i + bar_h/2, g_top[i], va="center",
+                ha="left", fontsize=8, color=C_GRYPE)
 
-    ax.set_yticks(y)
-    ax.set_yticklabels(ylabels, fontsize=9)
-    ax.invert_yaxis()
-    ax.set_xlim(0, 100)
-    ax.set_xlabel("Share of that tool's exclusive CVEs (%)", fontsize=9)
-    ax.set_title(title, fontsize=10, fontweight="bold", loc="left")
-    ax.legend(fontsize=8, ncol=3, frameon=False, loc="upper left",
-              bbox_to_anchor=(0.0, -0.28), columnspacing=1.0, handlelength=1.1)
-    ax.xaxis.grid(True, linestyle="-", alpha=0.18)
-    ax.yaxis.grid(False)
-    ax.set_axisbelow(True)
-    for side in ("top", "right"):
-        ax.spines[side].set_visible(False)
+ax.set_yticks(y)
+ax.set_yticklabels([LABEL[sfe] for sfe in ORDER], fontsize=9)
+ax.invert_yaxis()
+ax.set_xlim(0, 178)
+ax.set_xticks([0, 20, 40, 60, 80, 100])
+ax.set_xlabel("Share of that tool's exclusive CVEs from its single "
+              "largest package (%)", fontsize=9)
+ax.legend(fontsize=9, loc="lower right", frameon=False)
+ax.xaxis.grid(True, linestyle="-", alpha=0.18)
+ax.yaxis.grid(False)
+ax.set_axisbelow(True)
+for side in ("top", "right"):
+    ax.spines[side].set_visible(False)
 
 save(fig, "fig10_jaccard_packages.png")
 
