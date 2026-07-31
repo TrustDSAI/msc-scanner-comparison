@@ -31,12 +31,12 @@ plt.rcParams.update({
     "ytick.color":       "#333333",
     "text.color":        "#1A1A1A",
     "axes.labelcolor":   "#1A1A1A",
-    "font.size":         16,
-    "axes.titlesize":    18,
-    "axes.labelsize":    17,
-    "xtick.labelsize":   16,
-    "ytick.labelsize":   16,
-    "legend.fontsize":   16,
+    "font.size": 10,
+    "axes.titlesize": 11,
+    "axes.labelsize": 11,
+    "xtick.labelsize": 10,
+    "ytick.labelsize": 10,
+    "legend.fontsize": 10,
 })
 
 # ── palette (matches generate_graphs.py) ──────────────────────────────────────
@@ -77,7 +77,7 @@ def load_result(image_id):
 # ── Figure 11: Tier summary (categorical heatmap-style) ─────────────────────
 print("Fig 11: Validation tier summary…")
 
-fig, axes = plt.subplots(1, 2, figsize=(9.0, 7.2),
+fig, axes = plt.subplots(1, 2, figsize=(6.5, 7.0),
                          gridspec_kw={"width_ratios": [1, 2.2]})
 
 # Left panel: tier indicator per image
@@ -94,14 +94,14 @@ bars = ax_tier.barh(y_pos, [1]*len(tier_order), height=0.7,
 
 for i, (yp, tier) in enumerate(zip(y_pos, tier_values)):
     ax_tier.text(0.5, yp, tier.upper(), ha="center", va="center",
-                 color="white", fontweight="bold", fontsize=16)
+                 color="white", fontweight="bold", fontsize=10)
 
 ax_tier.set_yticks(y_pos)
-ax_tier.set_yticklabels(tier_labels, fontsize=15)
+ax_tier.set_yticklabels(tier_labels, fontsize=10)
 ax_tier.set_xlim(0, 1)
 ax_tier.set_xticks([])
-ax_tier.set_xlabel("Gate decision", fontsize=16)
-ax_tier.set_title("(a) Tier per image", fontsize=17, fontweight="bold")
+ax_tier.set_xlabel("Gate decision", fontsize=10)
+ax_tier.set_title("(a) Tier per image", fontsize=11, fontweight="bold")
 for spine in ["top", "right", "bottom"]:
     ax_tier.spines[spine].set_visible(False)
 
@@ -129,23 +129,23 @@ for i, (b, r) in enumerate(zip(block_counts, review_counts)):
     total = b + r
     if b > 0:
         ax_bar.text(b / 2, i, str(b), ha="center", va="center",
-                    color="white", fontsize=15, fontweight="bold")
+                    color="white", fontsize=10, fontweight="bold")
     if r > 0:
         x_mid = b + r / 2
         # only annotate if bar wide enough to fit label
         if r >= 2:
             ax_bar.text(x_mid, i, str(r), ha="center", va="center",
-                        color="white" if r > 5 else "#92400E", fontsize=15)
+                        color="white" if r > 5 else "#92400E", fontsize=10)
 
 ax_bar.set_yticks(y_pos)
 ax_bar.set_yticklabels([])
 ax_bar.set_xscale("symlog", linthresh=1)
-ax_bar.set_xlabel("Finding count (symlog scale)", fontsize=16)
-ax_bar.set_title("(b) Block and review finding counts", fontsize=17, fontweight="bold")
+ax_bar.set_xlabel("Finding count (symlog scale)", fontsize=10)
+ax_bar.set_title("(b) Block and review finding counts", fontsize=11, fontweight="bold")
 ax_bar.legend(handles=[
     mpatches.Patch(color=C_BLOCK,  alpha=0.85, label="Block tier"),
     mpatches.Patch(color=C_REVIEW, alpha=0.7,  label="Review tier"),
-], loc="upper right", fontsize=14, frameon=False, ncol=2,
+], loc="upper right", fontsize=9, frameon=False, ncol=2,
               bbox_to_anchor=(1.0, 1.10))
 for spine in ["top", "right"]:
     ax_bar.spines[spine].set_visible(False)
@@ -196,7 +196,7 @@ path_tiers  = {"kev_fix": "block", "review_crit": "review", "review_high": "revi
                "review_corroborated": "review",
                "review_crit_eol_context": "review", "pass_clean": "pass"}
 
-fig, ax = plt.subplots(figsize=(8.8, 4.0))
+fig, ax = plt.subplots(figsize=(6.4, 4.2))
 
 y_pos = np.arange(len(path_order))
 counts = [path_counts.get(p, 0) for p in path_order]
@@ -206,18 +206,18 @@ labels  = [PATH_LABELS[p] for p in path_order]
 bars = ax.barh(y_pos, counts, height=0.55, color=colours, alpha=0.85,
                edgecolor="white", linewidth=0.5)
 for i, (bar, c) in enumerate(zip(bars, counts)):
-    ax.text(c + 0.05, i, str(c), va="center", fontsize=17, fontweight="bold")
+    ax.text(c + 0.05, i, str(c), va="center", fontsize=11, fontweight="bold")
 
 ax.set_yticks(y_pos)
-ax.set_yticklabels(labels, fontsize=16)
+ax.set_yticklabels(labels, fontsize=10)
 ax.set_xlim(0, max(counts) + 1.5)
-ax.set_xlabel("Number of validation images", fontsize=16)
+ax.set_xlabel("Number of validation images", fontsize=10)
 ax.set_xticks(range(max(counts) + 2))
 ax.legend(handles=[
     mpatches.Patch(color=C_BLOCK,  alpha=0.85, label="BLOCK tier"),
     mpatches.Patch(color=C_REVIEW, alpha=0.85, label="REVIEW tier"),
     mpatches.Patch(color=C_PASS,   alpha=0.85, label="PASS tier"),
-], loc="upper right", fontsize=14, frameon=False, ncol=2,
+], loc="upper right", fontsize=9, frameon=False, ncol=2,
               bbox_to_anchor=(1.0, 1.10))
 for spine in ["top", "right"]:
     ax.spines[spine].set_visible(False)
