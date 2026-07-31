@@ -75,12 +75,16 @@ SPANS = {"C": (0, 3), "B": (4, 6), "A": (7, 8)}
 GROUP_EDGES = [3.5, 6.5]
 
 def group_rules(ax, offset=0.0):
-    for e in GROUP_EDGES:
-        # full-height rule, extended below the axis so it also separates the
-        # group labels underneath
-        ax.axvline(e + offset, ymin=-0.42, ymax=1.0, color="#4A4A4A",
-                   linewidth=1.4, linestyle="-", alpha=0.9, zorder=5,
-                   clip_on=False)
+    """Tint each maintenance-state group's band of the plot.
+
+    Rules drawn between groups cut through the rotated tick labels; a tint
+    marks the same regions without crossing any text. The colour matches
+    each group's label underneath.
+    """
+    for grp, (lo, hi) in SPANS.items():
+        ax.axvspan(lo - 0.5 + offset, hi + 0.5 + offset,
+                   color=GROUP_COLOUR[grp], alpha=0.10, zorder=0,
+                   linewidth=0)
 
 def group_bg(ax, n_bars=1, pad=0.5):
     """Shade group regions on ax."""
