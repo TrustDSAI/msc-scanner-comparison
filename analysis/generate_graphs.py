@@ -406,24 +406,29 @@ for r in tables:
     for cwe, cnt in r["trivy_cwes"].items(): trivy_cwe_agg[cwe] += cnt
     for cwe, cnt in r["grype_cwes"].items(): grype_cwe_agg[cwe] += cnt
 
-top10_cwes = [c for c, _ in (trivy_cwe_agg + grype_cwe_agg).most_common(10)]
+top_cwes = [c for c, _ in (trivy_cwe_agg + grype_cwe_agg).most_common(20)]
 CWE_NAMES = {
-    "CWE-476": "NULL Ptr\nDeref", "CWE-416": "Use After\nFree",
-    "CWE-125": "OOB\nRead",       "CWE-787": "OOB\nWrite",
-    "CWE-190": "Integer\nOverflow","CWE-119": "Memory\nOps",
-    "CWE-401": "Memory\nLeak",    "CWE-400": "Resource\nExhaustion",
-    "CWE-362": "Race\nCondition", "CWE-122": "Heap\nBuffer Overflow",
+    "CWE-476": "NULL Ptr Deref",       "CWE-416": "Use After Free",
+    "CWE-125": "OOB Read",             "CWE-787": "OOB Write",
+    "CWE-190": "Integer Overflow",     "CWE-119": "Memory Ops",
+    "CWE-401": "Memory Leak",          "CWE-400": "Resource Exhaustion",
+    "CWE-362": "Race Condition",       "CWE-122": "Heap Buffer Overflow",
+    "CWE-120": "Classic Buffer Overflow", "CWE-667": "Improper Locking",
+    "CWE-20":  "Improper Input Validation", "CWE-415": "Double Free",
+    "CWE-908": "Uninitialised Resource",   "CWE-835": "Infinite Loop",
+    "CWE-770": "Alloc Without Limits",     "CWE-674": "Uncontrolled Recursion",
+    "CWE-369": "Divide By Zero",           "CWE-404": "Improper Resource Shutdown",
 }
-xlabels = [f"{c}\n{CWE_NAMES.get(c,'')}" for c in top10_cwes]
-t_vals  = [trivy_cwe_agg[c] for c in top10_cwes]
-g_vals  = [grype_cwe_agg[c] for c in top10_cwes]
+xlabels = [f"{c} {CWE_NAMES.get(c, '')}".strip() for c in top_cwes]
+t_vals  = [trivy_cwe_agg[c] for c in top_cwes]
+g_vals  = [grype_cwe_agg[c] for c in top_cwes]
 
-x = np.arange(len(top10_cwes))
+x = np.arange(len(top_cwes))
 width = 0.35
 
 # Horizontal bars: the CWE names are long, and rotating them on an x-axis
 # spent roughly 40% of the figure height on labels alone.
-fig, ax = plt.subplots(figsize=(6.4, 4.2))
+fig, ax = plt.subplots(figsize=(6.4, 7.4))
 ax.barh(x - width/2, t_vals, width, label="Trivy", color=C_TRIVY, alpha=0.85)
 ax.barh(x + width/2, g_vals, width, label="Grype", color=C_GRYPE, alpha=0.85)
 
@@ -433,13 +438,13 @@ for i, (tv, gv) in enumerate(zip(t_vals, g_vals)):
 
 ax.set_xlabel("Occurrence count (all 9 images)", fontsize=10)
 ax.set_yticks(x)
-ax.set_yticklabels([l.replace("\n", " ") for l in xlabels], fontsize=10)
+ax.set_yticklabels(xlabels, fontsize=9)
 ax.invert_yaxis()
 ax.set_xlim(0, max(max(t_vals), max(g_vals)) * 1.22)
 ax.legend(fontsize=10, loc="lower right", framealpha=0.95)
 ax.xaxis.grid(True, linestyle="-", alpha=0.18)
 ax.yaxis.grid(False); ax.set_axisbelow(True)
-save(fig, "fig7_cwe_top10.png")
+save(fig, "fig7_cwe_top20.png")
 
 # ── Fig 8: Scan time vs image size scatter ───────────────────────────────────
 print("Fig 8: Scan time vs image size…")
