@@ -52,10 +52,13 @@ C_OSV   = "#D55E00"  # vermillion
 C_A, C_B, C_C = "#A6447A", "#B36A00", "#0B72A8"  # plum, ochre, steel blue
 GROUP_COLOUR = {"A": C_A, "B": C_B, "C": C_C}
 
+# Group order matches the tables in Chapter 5 (A, then B, then C) so that a
+# reader cross-referencing a figure against Table 5.1 or 5.2 on the facing
+# page meets the images in the same sequence.
 ORDER = [
-    "alpine_3.19", "nginx_1.29.7", "node_20", "python_3.12",
-    "nginx_1.19", "node_14", "python_3.8",
     "vulnerables_web-dvwa", "bkimminich_juice-shop",
+    "nginx_1.19", "node_14", "python_3.8",
+    "alpine_3.19", "nginx_1.29.7", "node_20", "python_3.12",
 ]
 LABEL = {
     "alpine_3.19": "alpine:3.19",
@@ -67,12 +70,12 @@ LABEL = {
     "bkimminich_juice-shop": "juice-shop",
 }
 # group background spans (index ranges, inclusive)
-SPANS = {"C": (0, 3), "B": (4, 6), "A": (7, 8)}
+SPANS = {"A": (0, 1), "B": (2, 4), "C": (5, 8)}
 
 # Boundaries between maintenance-state groups, drawn as thin rules. The
 # group labels alone left nothing marking where one group ends and the
 # next begins.
-GROUP_EDGES = [3.5, 6.5]
+GROUP_EDGES = [1.5, 4.5]
 
 def group_rules(ax, offset=0.0):
     """Tint each maintenance-state group's band of the plot.
@@ -269,7 +272,6 @@ fig, axes = plt.subplots(1, 2, figsize=(6.5, 4.0))
 # left: Jaccard bars
 ax = axes[0]
 bars = ax.bar(range(len(ORDER)), jaccards, color=bar_col, alpha=0.85, zorder=3)
-ax.axhline(0.5, color="grey", linestyle="--", linewidth=1.2, alpha=0.7, label="0.5")
 ax.set_ylabel("Jaccard similarity", fontsize=9)
 ax.set_xticks(range(len(ORDER)))
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=40, ha="right", fontsize=10)
