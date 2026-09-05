@@ -52,10 +52,13 @@ C_OSV   = "#D55E00"  # vermillion
 C_A, C_B, C_C = "#A6447A", "#B36A00", "#0B72A8"  # plum, ochre, steel blue
 GROUP_COLOUR = {"A": C_A, "B": C_B, "C": C_C}
 
+# Group order matches the tables in Chapter 5 (A, then B, then C) so that a
+# reader cross-referencing a figure against Table 5.1 or 5.2 on the facing
+# page meets the images in the same sequence.
 ORDER = [
-    "alpine_3.19", "nginx_1.29.7", "node_20", "python_3.12",
-    "nginx_1.19", "node_14", "python_3.8",
     "vulnerables_web-dvwa", "bkimminich_juice-shop",
+    "nginx_1.19", "node_14", "python_3.8",
+    "alpine_3.19", "nginx_1.29.7", "node_20", "python_3.12",
 ]
 LABEL = {
     "alpine_3.19": "alpine:3.19",
@@ -67,12 +70,12 @@ LABEL = {
     "bkimminich_juice-shop": "juice-shop",
 }
 # group background spans (index ranges, inclusive)
-SPANS = {"C": (0, 3), "B": (4, 6), "A": (7, 8)}
+SPANS = {"A": (0, 1), "B": (2, 4), "C": (5, 8)}
 
 # Boundaries between maintenance-state groups, drawn as thin rules. The
 # group labels alone left nothing marking where one group ends and the
 # next begins.
-GROUP_EDGES = [3.5, 6.5]
+GROUP_EDGES = [1.5, 4.5]
 
 def group_rules(ax, offset=0.0):
     """Tint each maintenance-state group's band of the plot.
@@ -163,6 +166,13 @@ for i, (tool, col, lbl) in enumerate(tools_cfg):
     means, sds = [], []
     for safe in ORDER:
         b = bb[safe]
+        # alpine:3.19 excludes run 1 for Trivy and Grype: that run pays the
+        # one-off ~80 s Grype database initialisation, and plotting it makes
+        # every other bar unreadable on the shared log axis. This is what the
+        # delivered report (Figure 6.6) shows, so the script must keep
+        # reproducing it. Note the cost: Table 6.6 tabulates the same Grype
+        # cell over all 30 runs (6,915 +- 13,911 ms) while the figure plots
+        # 4,385 +- 1,214 ms, and both are captioned n = 30.
         if safe == "alpine_3.19" and tool in ("trivy", "grype"):
             runs = b[tool]["runs_ms"][1:]
         else:
@@ -218,7 +228,7 @@ bottom_g = np.zeros(len(ORDER))
 for i, sev in enumerate(SEV_ORDER):
     ax.bar(x - width/2, trivy_stacks[:, i], width, bottom=bottom_t,
            color=SEV_COLOUR[sev], edgecolor="white", linewidth=0.4,
-           label=sev if sev != "LOW" else "LOW (incl. negligible/unknown)")
+           label=sev)
     ax.bar(x + width/2, grype_stacks[:, i], width, bottom=bottom_g,
            color=SEV_COLOUR[sev], edgecolor="white", linewidth=0.4)
     bottom_t += trivy_stacks[:, i]
@@ -269,7 +279,6 @@ fig, axes = plt.subplots(1, 2, figsize=(6.5, 4.0))
 # left: Jaccard bars
 ax = axes[0]
 bars = ax.bar(range(len(ORDER)), jaccards, color=bar_col, alpha=0.85, zorder=3)
-ax.axhline(0.5, color="grey", linestyle="--", linewidth=1.2, alpha=0.7, label="0.5")
 ax.set_ylabel("Jaccard similarity", fontsize=9)
 ax.set_xticks(range(len(ORDER)))
 ax.set_xticklabels([LABEL[s] for s in ORDER], rotation=40, ha="right", fontsize=10)
@@ -306,6 +315,36 @@ for grp, (lo, hi) in SPANS.items():
             fontsize=9, color=GROUP_COLOUR[grp], fontweight="bold",
             clip_on=False)
 save(fig, "fig3_cve_overlap.png")
+
+# ── Fig 3a: Jaccard alone, wide format ───────────────────────────────────────
+# The left panel of Fig 3 as a standalone figure, laid out wide and low so it
+# costs little vertical space on the page. Same data, same group colours and
+# tints as Fig 3; the extra width lets the image labels sit horizontally
+# instead of rotated 40 degrees.
+print("Fig 3a: Jaccard (wide)…")
+fig, ax = plt.subplots(figsize=(6.4, 2.4))
+ax.bar(range(len(ORDER)), jaccards, color=bar_col, alpha=0.85, zorder=3)
+ax.set_ylabel("Jaccard similarity", fontsize=9)
+ax.set_xticks(range(len(ORDER)))
+# fontsize 7 is the largest that fits nine horizontal labels on one row at
+# this width without collisions (measured: +4.6 px minimum gap; fontsize 8
+# overlaps by 2 px). Widening the figure does not help -- LaTeX scales it to
+# \textwidth, so the printed label size is fontsize/width, which 6.4in at 7pt
+# maximises among the combinations that fit.
+ax.set_xticklabels([LABEL[s] for s in ORDER], fontsize=7)
+ax.set_ylim(0, 1.12)
+ax.set_yticks([0.0, 0.25, 0.50, 0.75, 1.00])
+ax.yaxis.grid(True, linestyle="-", alpha=0.18); ax.set_axisbelow(True)
+group_rules(ax)
+for i, v in enumerate(jaccards):
+    ax.text(i, v + 0.03, f"{v:.2f}", ha="center", va="bottom", fontsize=7,
+            color="#4A4A4A")
+for grp, (lo, hi) in SPANS.items():
+    ax.text((lo+hi)/2, -0.17, f"Group {grp}",
+            transform=ax.get_xaxis_transform(), ha="center", va="top",
+            fontsize=9, color=GROUP_COLOUR[grp], fontweight="bold",
+            clip_on=False)
+save(fig, "fig3a_jaccard_wide.png")
 
 # ── Fig 4: Severity agreement ─────────────────────────────────────────────────
 print("Fig 4: Severity agreement…")
