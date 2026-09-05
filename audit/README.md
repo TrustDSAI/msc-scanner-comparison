@@ -1,11 +1,17 @@
 # audit/ — independent recomputation scripts
 
-Written for `validation-report.md`. These do **not** import `analysis/` or
-`policy/`; they re-derive every metric from `data/raw/`, `logs/` and
-`policy/output/` directly, from the definitions in Section 4.1.5 of the
-dissertation. The two exceptions are noted in the report.
+These do **not** import `analysis/` or `policy/`; they re-derive every metric
+from `data/raw/`, `logs/` and `policy/output/` directly, from the definitions
+in the dissertation's analysis-method section. Two checks reuse repository
+code and say so in their own output.
 
 Run from the repository root.
+
+Script names and the table numbers below follow the draft the audit was written
+against. The delivered report inserts a chapter, so Chapter 5 there is Chapter 6
+here: Table 5.1 below is Tables 6.1 and 6.2 in the report (it was split), 5.2 is
+6.3, 5.3 is 6.4, 5.4 is 6.5, 5.5 is 6.6, and 5.6 through 5.10 are 6.7 through
+6.11. Figures shift the same way.
 
 | Script | Checks |
 |---|---|

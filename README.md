@@ -107,8 +107,8 @@ Full environment detail (binary checksums, DB URLs): [`logs/environment.txt`](lo
 | 8 | `p_gate` blocks 10 of the 30 images where a naive any-CRITICAL gate blocks 26, routing the rest to review |
 
 Every figure above is recomputed from `data/raw/` by the scripts in
-[`audit/`](audit/); [`validation-report.md`](validation-report.md) records the
-check and its results.
+[`audit/`](audit/), which re-derive each metric from the raw scanner output
+rather than from `analysis/`.
 
 
 ---

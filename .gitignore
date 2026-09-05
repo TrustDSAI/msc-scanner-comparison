@@ -39,3 +39,6 @@ final_delivery.pdf
 # Working notes — kept locally, not shipped; the README carries what a
 # reader of this package needs, and the report carries the rest
 docs/
+
+# Audit write-up — kept locally, not shipped
+validation-report.md
