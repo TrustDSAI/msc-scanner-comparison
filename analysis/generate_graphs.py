@@ -166,6 +166,13 @@ for i, (tool, col, lbl) in enumerate(tools_cfg):
     means, sds = [], []
     for safe in ORDER:
         b = bb[safe]
+        # alpine:3.19 excludes run 1 for Trivy and Grype: that run pays the
+        # one-off ~80 s Grype database initialisation, and plotting it makes
+        # every other bar unreadable on the shared log axis. This is what the
+        # delivered report (Figure 6.6) shows, so the script must keep
+        # reproducing it. Note the cost: Table 6.6 tabulates the same Grype
+        # cell over all 30 runs (6,915 +- 13,911 ms) while the figure plots
+        # 4,385 +- 1,214 ms, and both are captioned n = 30.
         if safe == "alpine_3.19" and tool in ("trivy", "grype"):
             runs = b[tool]["runs_ms"][1:]
         else:
@@ -221,7 +228,7 @@ bottom_g = np.zeros(len(ORDER))
 for i, sev in enumerate(SEV_ORDER):
     ax.bar(x - width/2, trivy_stacks[:, i], width, bottom=bottom_t,
            color=SEV_COLOUR[sev], edgecolor="white", linewidth=0.4,
-           label=sev if sev != "LOW" else "LOW (incl. negligible/unknown)")
+           label=sev)
     ax.bar(x + width/2, grype_stacks[:, i], width, bottom=bottom_g,
            color=SEV_COLOUR[sev], edgecolor="white", linewidth=0.4)
     bottom_t += trivy_stacks[:, i]
@@ -308,6 +315,36 @@ for grp, (lo, hi) in SPANS.items():
             fontsize=9, color=GROUP_COLOUR[grp], fontweight="bold",
             clip_on=False)
 save(fig, "fig3_cve_overlap.png")
+
+# ── Fig 3a: Jaccard alone, wide format ───────────────────────────────────────
+# The left panel of Fig 3 as a standalone figure, laid out wide and low so it
+# costs little vertical space on the page. Same data, same group colours and
+# tints as Fig 3; the extra width lets the image labels sit horizontally
+# instead of rotated 40 degrees.
+print("Fig 3a: Jaccard (wide)…")
+fig, ax = plt.subplots(figsize=(6.4, 2.4))
+ax.bar(range(len(ORDER)), jaccards, color=bar_col, alpha=0.85, zorder=3)
+ax.set_ylabel("Jaccard similarity", fontsize=9)
+ax.set_xticks(range(len(ORDER)))
+# fontsize 7 is the largest that fits nine horizontal labels on one row at
+# this width without collisions (measured: +4.6 px minimum gap; fontsize 8
+# overlaps by 2 px). Widening the figure does not help -- LaTeX scales it to
+# \textwidth, so the printed label size is fontsize/width, which 6.4in at 7pt
+# maximises among the combinations that fit.
+ax.set_xticklabels([LABEL[s] for s in ORDER], fontsize=7)
+ax.set_ylim(0, 1.12)
+ax.set_yticks([0.0, 0.25, 0.50, 0.75, 1.00])
+ax.yaxis.grid(True, linestyle="-", alpha=0.18); ax.set_axisbelow(True)
+group_rules(ax)
+for i, v in enumerate(jaccards):
+    ax.text(i, v + 0.03, f"{v:.2f}", ha="center", va="bottom", fontsize=7,
+            color="#4A4A4A")
+for grp, (lo, hi) in SPANS.items():
+    ax.text((lo+hi)/2, -0.17, f"Group {grp}",
+            transform=ax.get_xaxis_transform(), ha="center", va="top",
+            fontsize=9, color=GROUP_COLOUR[grp], fontweight="bold",
+            clip_on=False)
+save(fig, "fig3a_jaccard_wide.png")
 
 # ── Fig 4: Severity agreement ─────────────────────────────────────────────────
 print("Fig 4: Severity agreement…")

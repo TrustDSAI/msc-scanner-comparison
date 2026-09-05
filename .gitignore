@@ -31,3 +31,11 @@ __pycache__/
 # Locally-installed agent skills (npx skills add), not part of the project
 .agents/
 skills-lock.json
+
+# The dissertation PDF itself — this repository is public
+_MSI__*.pdf
+final_delivery.pdf
+
+# Working notes — kept locally, not shipped; the README carries what a
+# reader of this package needs, and the report carries the rest
+docs/

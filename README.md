@@ -41,11 +41,9 @@ Empirical dataset, analysis tooling, and documentation for an MSc dissertation c
 │       ├── harborguard_scan.py
 │       └── harborguard_analysis.py
 │
-├── docs/                      # Documentation
-│   ├── experiment_log.md      # Experiment log — results, findings, datasets
-│   ├── analysis_narrative.md  # Narrative walkthrough of all results
-│   ├── notes_scanner_internals.md
-│   └── notes_architectural_decision.md
+├── audit/                     # Independent recomputation of every published number
+│   ├── README.md              # What each script checks
+│   └── *.py                   # Re-derive the metrics from data/raw, not from analysis/
 │
 └── logs/                      # Runtime execution logs
     ├── benchmark.log          # Raw benchmark timing (30 runs × 9 images × 3 tools)
@@ -92,7 +90,6 @@ All images pulled and pinned by digest on **2026-03-31**.
 | Syft | 1.42.3 | Schema v16.1.3 | SBOM generation only |
 
 Full environment detail (binary checksums, DB URLs): [`logs/environment.txt`](logs/environment.txt)
-Full experiment log: [`docs/experiment_log.md`](docs/experiment_log.md)
 
 ---
 
@@ -100,15 +97,19 @@ Full experiment log: [`docs/experiment_log.md`](docs/experiment_log.md)
 
 | # | Finding |
 |---|---------|
-| 1 | Trivy reports 1.2–2.2× more total findings than Grype for Debian images, driven by LOW severity inflation |
-| 2 | CVE-level overlap (Jaccard) ranges from **0.14** (python:3.8) to **0.89** (nginx:1.29.7) |
-| 3 | Severity agreement on shared CVEs ranges from **8%** (juice-shop) to **96%** (nginx:1.19) — Trivy almost always rates higher |
-| 4 | CRITICAL counts converge across tools (delta ≤3 in 7/9 images) — the most reliable cross-tool signal |
-| 5 | Fix rates diverge significantly between tools for the same image (node:14: Trivy 77% vs Grype 34%) |
-| 6 | Trivy is 10–100× faster than Grype and OSV-Scanner across all images |
-| 7 | Top CWEs are memory-safety weaknesses (CWE-476, 416, 125, 787) — OS base layer dominates risk |
+| 1 | Total counts diverge by up to **6.9×** on the same image (python:3.8: Trivy 3,684, Grype 537); almost all of the gap is one package, `linux-libc-dev`, which Grype does not enumerate |
+| 2 | CVE-level overlap (Jaccard) ranges from **0.14** (python:3.8) to **0.95** (juice-shop) |
+| 3 | Severity agreement on shared CVEs ranges from **32.6%** (nginx:1.29.7) to **96.3%** (nginx:1.19); Trivy rates higher in 647 of the 743 disagreements |
+| 4 | CRITICAL counts converge across tools — delta ≤3 on 8 of the 9 design images and on 25 of all 30 — the most portable cross-tool signal, with PHP the recurring exception |
+| 5 | Fix rates diverge by more than a factor of two on the same image (node:14: Trivy 77.3% vs Grype 34.1%) |
+| 6 | Trivy is **38 to 128×** faster than Grype on every image, and near-flat in image size (1 ms/MB against 90 and 92) |
+| 7 | Top CWEs are memory-safety weaknesses (CWE-476, 416, 125, 787) — the OS base layer dominates the distribution |
+| 8 | `p_gate` blocks 10 of the 30 images where a naive any-CRITICAL gate blocks 26, routing the rest to review |
 
-Full narrative: [`docs/analysis_narrative.md`](docs/analysis_narrative.md)
+Every figure above is recomputed from `data/raw/` by the scripts in
+[`audit/`](audit/); [`validation-report.md`](validation-report.md) records the
+check and its results.
+
 
 ---
 
@@ -285,11 +286,20 @@ python3 analysis/generate_graphs.py
 
 ## Reproducibility
 
-See [`docs/experiment_log.md`](docs/experiment_log.md) for full details:
-- Pinned image digests for all 9 images
-- Vulnerability DB versions and archived Grype DB source URL
-- Binary SHA-256 checksums for all tools
-- Known reproducibility constraints (OSV-Scanner live DB, Trivy DB expiry, registry availability)
+- Pinned image digests: [`logs/digests.log`](logs/digests.log), all 30 images
+- Vulnerability DB versions, archived Grype DB source URL and binary SHA-256
+  checksums: [`logs/environment.txt`](logs/environment.txt)
+- Tool versions as the tools reported them: [`logs/tool_versions.txt`](logs/tool_versions.txt)
+- Timing runs: [`logs/benchmark.log`](logs/benchmark.log) (Grype, OSV-Scanner)
+  and [`logs/benchmark_trivy.log`](logs/benchmark_trivy.log) (Trivy, re-run
+  separately against a warmed database)
+
+Known reproducibility limits: OSV-Scanner queries `api.osv.dev` live and has no
+pinned database, so its counts are not reproducible from a digest alone; the
+policy gate's NVD, OSV, EPSS and KEV enrichment is likewise fetched live, so a
+later run of the gate will not reproduce the published verdicts exactly. Trivy's
+Java database was cached and past expiry at scan time; no reported finding
+depends on it.
 
 **SBOMs** are excluded from this repository (up to 33 MB per image). Regenerate with:
 ```bash

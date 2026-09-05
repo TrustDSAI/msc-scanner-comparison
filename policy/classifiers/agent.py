@@ -1,18 +1,20 @@
 """LLM-based layer classifier.
 
 Asks an LLM whether a CVE finding is operating-system layer or
-application layer, returning a structured Label. Supports Anthropic and
-OpenAI APIs via direct HTTPS calls (no SDK dependencies).
+application layer, returning a structured Label. Anthropic calls go
+through the official `anthropic` SDK; OpenAI and Ollama are called over
+direct HTTPS with no SDK dependency.
 
 Configuration via environment variables:
 
     Provider                                Model env / default
     ----------------------------------------------------------------
-    ANTHROPIC_API_KEY  Anthropic            CLASSIFIER_MODEL or "claude-sonnet-4-5"
+    ANTHROPIC_API_KEY  Anthropic            CLASSIFIER_MODEL or "claude-haiku-4-5"
     OPENAI_API_KEY     OpenAI               CLASSIFIER_MODEL or "gpt-4o-mini"
+    OLLAMA_HOST        Ollama (local)       CLASSIFIER_MODEL or "qwen2.5:3b"
 
-If neither key is set, calling .classify() raises RuntimeError with a clear
-message. The CLI / orchestrator must check `is_available()` first.
+If none of these is set, calling .classify() raises RuntimeError with a
+clear message. The CLI / orchestrator must check `is_available()` first.
 
 Determinism:
     temperature=0 is used for both providers. We additionally request
@@ -33,8 +35,9 @@ from typing import Any
 from . import _llm_client
 from .base import Classifier, Label
 
-# Local Ollama instance (for testing / development without hitting external APIs)
-_OLLAMA_URL    = "http://192.168.2.61:11434/api/chat"
+# Local Ollama instance (for testing / development without hitting external APIs).
+# Point OLLAMA_HOST at your own instance; the default is Ollama's own.
+_OLLAMA_URL    = "http://localhost:11434/api/chat"
 _DEFAULT_OLLAMA_MODEL    = "qwen2.5:3b"
 _DEFAULT_ANTHROPIC_MODEL = "claude-haiku-4-5"
 _DEFAULT_OPENAI_MODEL    = "gpt-4o-mini"
@@ -150,7 +153,7 @@ class AgentClassifier(Classifier):
                                         max_tokens=300, json_mode=True)
 
     def _call_ollama(self, user_prompt: str) -> str:
-        ollama_url = os.environ.get("OLLAMA_HOST", "http://192.168.2.61:11434")
+        ollama_url = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
         url = f"{ollama_url.rstrip('/')}/api/chat"
         body = json.dumps({
             "model":  self.model,
