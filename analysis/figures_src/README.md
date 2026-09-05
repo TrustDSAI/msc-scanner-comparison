@@ -18,7 +18,7 @@ cites. The counts shown were re-verified against the stored data:
 
 matching the figure's `Total findings: 2112  Severity: CRITICAL 328 HIGH 760
 MEDIUM 702 LOW 322`. The block/review split (31 / 742) is reproduced by
-`analysis/ablation.py` and by `audit/oldgate.py`.
+`analysis/ablation.py`.
 
 ## Run
 
