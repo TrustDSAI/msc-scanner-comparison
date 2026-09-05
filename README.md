@@ -41,10 +41,6 @@ Empirical dataset, analysis tooling, and documentation for an MSc dissertation c
 │       ├── harborguard_scan.py
 │       └── harborguard_analysis.py
 │
-├── audit/                     # Independent recomputation of every published number
-│   ├── README.md              # What each script checks
-│   └── *.py                   # Re-derive the metrics from data/raw, not from analysis/
-│
 └── logs/                      # Runtime execution logs
     ├── benchmark.log          # Raw benchmark timing (30 runs × 9 images × 3 tools)
     ├── benchmark_trivy.log    # Trivy-only re-run log (30 runs, pre-warmed DB)
@@ -106,9 +102,8 @@ Full environment detail (binary checksums, DB URLs): [`logs/environment.txt`](lo
 | 7 | Top CWEs are memory-safety weaknesses (CWE-476, 416, 125, 787) — the OS base layer dominates the distribution |
 | 8 | `p_gate` blocks 10 of the 30 images where a naive any-CRITICAL gate blocks 26, routing the rest to review |
 
-Every figure above is recomputed from `data/raw/` by the scripts in
-[`audit/`](audit/), which re-derive each metric from the raw scanner output
-rather than from `analysis/`.
+Every figure above is derived from the raw scanner output in `data/raw/`;
+`analysis/analysis.py` reproduces the tables it comes from.
 
 
 ---

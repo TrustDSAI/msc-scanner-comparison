@@ -40,5 +40,6 @@ final_delivery.pdf
 # reader of this package needs, and the report carries the rest
 docs/
 
-# Audit write-up — kept locally, not shipped
+# Audit write-up and its scripts — kept locally, not shipped
 validation-report.md
+audit/
